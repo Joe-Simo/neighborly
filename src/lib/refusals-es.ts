@@ -13,6 +13,10 @@ export const serverRefusalsEs: Record<string, string> = {
   "Choose a time zone.": "Elige una zona horaria.",
   // The web form's settings and its requests on the Help line (convex/intake.ts).
   "A weekly limit is a whole number from 1 to 1000.": "Un límite semanal es un número entero de 1 a 1000.",
+  "A team phone has 10 numbers, like (313) 555-0100.": "El teléfono del equipo tiene 10 números, como (313) 555-0100.",
+  "Only an owner can review these.": "Esto lo puede revisar solo quien administra la parroquia.",
+  "That request is not waiting for a review.": "Esa petición no está esperando una revisión.",
+  "That case is not waiting for a review.": "Ese caso no está esperando una revisión.",
   "An overlap order is a whole number from 0 to 1000.": "Un orden de prioridad es un número entero de 0 a 1000.",
   "Check the email address.": "Revisa el correo electrónico.",
   "Give the partner a name.": "Dale un nombre a la organización.",

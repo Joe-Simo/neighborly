@@ -39,6 +39,8 @@ export default defineSchema({
       order: v.optional(v.number()),
       /** Days ("yyyy-MM-dd") the team is closed: skipped when counting business days. */
       holidays: v.optional(v.array(v.string())),
+      /** The team's public phone, "(313) 555-0100", shown to a person once their request has reached this team. */
+      phone: v.optional(v.string()),
       /** Last time an owner or coordinator opened the Help line; 30 days without one pauses the form. */
       seenAt: v.optional(v.number()),
       /** Why the form is off when it was turned off for the team, not by it. */
@@ -267,7 +269,7 @@ export default defineSchema({
   /** A partner's sign-in code, waiting. */
   webPartnerCodes: defineTable({ partnerId: v.id("webPartners"), codeHash: v.string(), tries: v.number(), expiresAt: v.number() }).index("by_partner", ["partnerId"]),
   /** "Not genuine" marks, one per team per contact. Two teams on one contact puts it in the admin review queue, never in front of other teams. */
-  webFlags: defineTable({ churchId: v.id("churches"), contactHash: v.string(), at: v.number() }).index("by_contact", ["contactHash", "churchId"]).index("by_church", ["churchId"]),
+  webFlags: defineTable({ churchId: v.id("churches"), contactHash: v.string(), at: v.number(), /** The owner looked at the shared case and kept the mark. */ decided: v.optional(v.boolean()) }).index("by_contact", ["contactHash", "churchId"]).index("by_church", ["churchId"]),
   webReviews: defineTable({ contactHash: v.string(), teams: v.number(), at: v.number(), settled: v.optional(v.boolean()) }).index("by_contact", ["contactHash"]).index("by_settled", ["settled", "at"]),
   /** A delete asked from the status page, waiting for the code sent to the request's own email. */
   webDeletes: defineTable({ requestId: v.id("webRequests"), codeHash: v.string(), tries: v.number(), expiresAt: v.number() }).index("by_request", ["requestId"]),
@@ -319,11 +321,13 @@ export default defineSchema({
     /** The partner (shelter, parish office) who sent it, signed in by their confirmed email. */
     partnerId: v.optional(v.id("webPartners")),
     closedAt: v.optional(v.number()),
+    /** When the team marked it not genuine; cleared if the owner later says it was genuine. */
+    notGenuineAt: v.optional(v.number()),
     /** Set once the one-year erasure has removed the person's words and contact. */
     erased: v.optional(v.boolean()),
     /** How many times it was passed on; at 3 it stays with its team to settle by phone. */
     passes: v.optional(v.number()),
-  }).index("by_church_stage", ["churchId", "stage", "createdAt"]).index("by_status_key", ["statusKeyHash"]).index("by_contact", ["contactHash", "createdAt"]).index("by_stage_created", ["stage", "createdAt"]).index("by_call", ["callId"]),
+  }).index("by_church_not_genuine", ["churchId", "notGenuineAt"]).index("by_church_stage", ["churchId", "stage", "createdAt"]).index("by_status_key", ["statusKeyHash"]).index("by_contact", ["contactHash", "createdAt"]).index("by_stage_created", ["stage", "createdAt"]).index("by_call", ["callId"]),
   /** What a team keeps after passing a request on: one line, no contact details. */
   webPasses: defineTable({ fromChurchId: v.id("churches"), toChurchName: v.string(), reason: v.string(), at: v.number() }).index("by_from", ["fromChurchId", "at"]),
   /** A team's silent blocks on the web form: a hash of a contact or of an address. */

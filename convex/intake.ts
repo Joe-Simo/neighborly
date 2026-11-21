@@ -119,6 +119,8 @@ const answer = v.object({
   team: v.optional(v.string()),
   by: v.optional(v.number()),
   timeZone: v.optional(v.string()),
+  /** The team's public phone, when it has one: with "landed", or with "slow" for a partner (its team is known). */
+  phone: v.optional(v.string()),
 });
 const submission = {
   kinds: v.array(helpKind), need: v.string(), email: v.string(), phone: v.string(), zip: v.string(), language: v.union(v.literal("en"), v.literal("es")),
@@ -142,10 +144,11 @@ export const receive = internalMutation({
   handler: async (ctx, args) => {
     const now = Date.now();
     const partner = args.partnerId ? await ctx.db.get("webPartners", args.partnerId) : null;
-    if (args.partnerId && !partner?.active) return { result: "slow" as const };
+    const partnerPhone = partner ? { phone: (await ctx.db.get("churches", partner.churchId))?.intake?.phone } : {};
+    if (args.partnerId && !partner?.active) return { result: "slow" as const, ...partnerPhone };
     const unverified = !partner && (!args.email || !args.safe);
     if (partner) {
-      if (!(await bump(ctx, `partner:${partner._id}`, DAY, LIMITS.partnerPerDay, now))) return { result: "slow" as const };
+      if (!(await bump(ctx, `partner:${partner._id}`, DAY, LIMITS.partnerPerDay, now))) return { result: "slow" as const, ...partnerPhone };
     } else if (!(await bump(ctx, `ip:${args.ipHash}`, HOUR, LIMITS.ipPerHour, now)) || !(await bump(ctx, `device:${args.deviceHash}`, HOUR, LIMITS.devicePerHour, now))) return { result: "slow" as const };
     // The unverified door is the open one, so it is narrow: one a day per device and per network.
     if (unverified && (!(await bump(ctx, `unv-ip:${args.ipHash}`, DAY, 1, now)) || !(await bump(ctx, `unv-device:${args.deviceHash}`, DAY, 1, now)))) return { result: "slow" as const };
@@ -158,7 +161,7 @@ export const receive = internalMutation({
     const church = await ctx.db.get("churches", churchId);
     if (!church) return { result: "no_team" as const };
     const landsNow = unverified || !!partner;
-    const quiet = landsNow ? { result: "landed" as const, team: church.name, by: nextBusinessDay(now, church.timeZone, church.intake?.holidays), timeZone: church.timeZone } : { result: "sent" as const };
+    const quiet = landsNow ? { result: "landed" as const, team: church.name, by: nextBusinessDay(now, church.timeZone, church.intake?.holidays), timeZone: church.timeZone, phone: church.intake?.phone } : { result: "sent" as const };
     // From here on every answer is the same, so the reply never says whether a contact is known, over its limit or blocked.
     // Codes per destination: three a day per email (and per phone).
     if (!(await bump(ctx, `contact:${args.contactHash}`, DAY, LIMITS.contactPerDay, now))) return quiet;
@@ -265,7 +268,7 @@ async function land(ctx: MutationCtx, request: Doc<"webRequests">, now: number) 
 
 export const confirm = internalMutation({
   args: { statusKeyHash: v.string(), codeHash: v.string(), ipHash: v.string() },
-  returns: v.union(v.null(), v.object({ team: v.string(), by: v.number(), timeZone: v.string() })),
+  returns: v.union(v.null(), v.object({ team: v.string(), by: v.number(), timeZone: v.string(), phone: v.optional(v.string()) })),
   handler: async (ctx, { statusKeyHash, codeHash, ipHash }) => {
     const now = Date.now();
     if (!(await bump(ctx, `confirm:${ipHash}`, HOUR, LIMITS.confirmTriesPerIpHour, now))) return null;
@@ -276,7 +279,7 @@ export const confirm = internalMutation({
       return null;
     }
     const church = await ctx.db.get("churches", request.churchId);
-    const shown = { team: church?.name ?? "", by: nextBusinessDay(now, church?.timeZone ?? "America/New_York", church?.intake?.holidays), timeZone: church?.timeZone ?? "America/New_York" };
+    const shown = { team: church?.name ?? "", by: nextBusinessDay(now, church?.timeZone ?? "America/New_York", church?.intake?.holidays), timeZone: church?.timeZone ?? "America/New_York", phone: church?.intake?.phone };
     // A block made since the code was sent: it goes quietly, and the answer looks the same.
     if (await blocked(ctx, request.churchId, [request.contactHash, request.phoneHash, request.ipHash])) {
       await ctx.db.delete("webRequests", request._id);
@@ -297,7 +300,7 @@ export const confirm = internalMutation({
     const landed = await ctx.db.get("webRequests", request._id);
     const holder = landed && landed.churchId !== request.churchId ? await ctx.db.get("churches", landed.churchId) : null;
     // Joined to the same person's open request at another team: they hear about the team that has it.
-    return holder ? { team: holder.name, by: landed?.firstContactBy ?? shown.by, timeZone: holder.timeZone } : shown;
+    return holder ? { team: holder.name, by: landed?.firstContactBy ?? shown.by, timeZone: holder.timeZone, phone: holder.intake?.phone } : shown;
   },
 });
 
@@ -311,7 +314,7 @@ export const status = query({
   args: { key: v.string() },
   returns: v.union(v.null(), v.object({
     status: v.union(v.literal("pending"), v.literal("received"), v.literal("assigned"), v.literal("contacted"), v.literal("closed")),
-    sentAt: v.number(), by: v.union(v.number(), v.null()), timeZone: v.string(),
+    sentAt: v.number(), by: v.union(v.number(), v.null()), timeZone: v.string(), phone: v.union(v.string(), v.null()),
   })),
   handler: async (ctx, { key }) => {
     if (!/^[0-9a-f]{32}$/.test(key)) return null;
@@ -321,7 +324,7 @@ export const status = query({
     const call = request.callId ? await ctx.db.get("calls", request.callId) : null;
     if (request.stage === "closed" && (call?.returnedAt ?? request.confirmedAt ?? request.createdAt) < Date.now() - LINK_DAYS_AFTER_CLOSE * DAY) return null;
     const church = await ctx.db.get("churches", request.churchId);
-    return { status: publicStatus(request, call), sentAt: request.confirmedAt ?? request.createdAt, by: request.firstContactBy ?? null, timeZone: church?.timeZone ?? "America/New_York" };
+    return { status: publicStatus(request, call), sentAt: request.confirmedAt ?? request.createdAt, by: request.firstContactBy ?? null, timeZone: church?.timeZone ?? "America/New_York", phone: church?.intake?.phone ?? null };
   },
 });
 function publicStatus(request: Doc<"webRequests">, call: Doc<"calls"> | null) {
@@ -334,7 +337,7 @@ function publicStatus(request: Doc<"webRequests">, call: Doc<"calls"> | null) {
 
 const settingsRow = v.union(v.null(), v.object({
   enabled: v.boolean(), autoPaused: v.boolean(), address: v.string(), zip: v.string(), miles: v.number(), placed: v.union(v.literal("address"), v.literal("zip")),
-  weeklyLimit: v.union(v.number(), v.null()), order: v.union(v.number(), v.null()), holidays: v.array(v.string()),
+  weeklyLimit: v.union(v.number(), v.null()), order: v.union(v.number(), v.null()), holidays: v.array(v.string()), phone: v.union(v.string(), v.null()),
 }));
 export const settings = query({
   args: { churchId: v.id("churches") },
@@ -347,10 +350,17 @@ export const settings = query({
     const placed = zipCentre && zipCentre.lat === intake.center.lat && zipCentre.lng === intake.center.lng ? "zip" : "address";
     return {
       enabled: intake.enabled, autoPaused: intake.pausedBy === "auto", address: intake.address ?? intake.zip, zip: intake.zip, miles: intake.miles, placed: placed as "address" | "zip",
-      weeklyLimit: intake.weeklyLimit ?? null, order: intake.order ?? null, holidays: intake.holidays ?? [],
+      weeklyLimit: intake.weeklyLimit ?? null, order: intake.order ?? null, holidays: intake.holidays ?? [], phone: intake.phone ?? null,
     };
   },
 });
+/** A US phone as the public pages show it, "(313) 555-0100"; null when it is not 10 numbers (a leading 1 is allowed). */
+export function publicPhone(typed: string): string | null {
+  if (typed.length > 30 || /[^\d\s().+-]/.test(typed)) return null;
+  const digits = typed.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "");
+  if (!/^[2-9]\d{2}[2-9]\d{6}$/.test(digits)) return null;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
 const DAY_TEXT = /^\d{4}-\d{2}-\d{2}$/;
 /**
  * Where the team helps: the church's address and miles, drawn as a circle. `at` is the address's point from the Census
@@ -360,9 +370,10 @@ export const saveSettings = mutation({
   args: {
     churchId: v.id("churches"), enabled: v.boolean(), address: v.string(), miles: v.number(), at: v.optional(v.object({ lat: v.number(), lng: v.number() })),
     weeklyLimit: v.optional(v.union(v.number(), v.null())), order: v.optional(v.union(v.number(), v.null())), holidays: v.optional(v.array(v.string())),
+    phone: v.optional(v.union(v.string(), v.null())),
   },
   returns: v.null(),
-  handler: async (ctx, { churchId, enabled, address, miles, at, weeklyLimit, order, holidays }) => {
+  handler: async (ctx, { churchId, enabled, address, miles, at, weeklyLimit, order, holidays, phone }) => {
     const member = await neighborAccess(ctx, churchId);
     const church = await ctx.db.get("churches", churchId);
     if (!church || church.sample) throw new ConvexError("The sample conference does not take requests from the web.");
@@ -383,8 +394,10 @@ export const saveSettings = mutation({
     if (rank !== undefined && (!Number.isInteger(rank) || rank < 0 || rank > 1000)) throw new ConvexError("An overlap order is a whole number from 0 to 1000.");
     const closedDays = holidays === undefined ? kept?.holidays : [...new Set(holidays)].sort();
     if (closedDays && (closedDays.length > 60 || closedDays.some((day) => !DAY_TEXT.test(day)))) throw new ConvexError("Holidays are days like 2026-12-25, at most 60.");
+    const line = phone === undefined ? kept?.phone : phone === null || !phone.trim() ? undefined : publicPhone(phone);
+    if (line === null) throw new ConvexError("A team phone has 10 numbers, like (313) 555-0100.");
     await ctx.db.patch("churches", churchId, {
-      intake: { enabled, address: written, zip: typed, miles, area, bbox: bbox(area), center, weeklyLimit: limit, order: rank, holidays: closedDays, seenAt: Date.now() },
+      intake: { enabled, address: written, zip: typed, miles, area, bbox: bbox(area), center, weeklyLimit: limit, order: rank, holidays: closedDays, phone: line, seenAt: Date.now() },
     });
     await ctx.db.insert("auditEvents", { churchId, actorId: member.userId, action: "intake.settings", targetId: `${enabled ? "on" : "off"}:${miles}`, at: Date.now() });
     return null;
@@ -615,6 +628,7 @@ export const notGenuine = mutation({
     const now = Date.now();
     for (const hash of [request.contactHash, request.phoneHash, request.ipHash]) if (hash) await ctx.db.insert("webBlocks", { churchId, hash, by: member._id, at: now });
     await closeRequest(ctx, request, member);
+    await ctx.db.patch("webRequests", request._id, { notGenuineAt: now });
     const marked = await ctx.db.query("webFlags").withIndex("by_contact", (q) => q.eq("contactHash", request.contactHash)).take(50);
     if (!marked.some((flag) => flag.churchId === churchId)) await ctx.db.insert("webFlags", { churchId, contactHash: request.contactHash, at: now });
     const teams = new Set([...marked.map((flag) => flag.churchId), churchId]).size;

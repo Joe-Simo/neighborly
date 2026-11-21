@@ -12,6 +12,7 @@ export const saveArea = action({
   args: {
     churchId: v.id("churches"), enabled: v.boolean(), address: v.string(), miles: v.number(),
     weeklyLimit: v.optional(v.union(v.number(), v.null())), order: v.optional(v.union(v.number(), v.null())), holidays: v.optional(v.array(v.string())),
+    phone: v.optional(v.union(v.string(), v.null())),
   },
   returns: v.null(),
   handler: async (ctx, args): Promise<null> => {

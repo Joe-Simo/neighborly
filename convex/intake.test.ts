@@ -353,6 +353,67 @@ describe("passing, marking, deleting", () => {
     const queue = await t.query(internal.intakeCare.reviews, {});
     expect(queue).toEqual([expect.objectContaining({ teams: 2 })]);
   });
+  test("the owner reviews the team's own marks and the shared cases, seeing only a hash and a count of the others", async () => {
+    const { t, ids, as } = await setup();
+    for (const zip of ["48201", "48124"]) {
+      await t.mutation(internal.intake.receive, { ...ask({ zip, contactHash: "same-person", ipHash: zip, deviceHash: zip, need: `Secret words ${zip}` }), email: "", phone: "3135550100" });
+    }
+    const rows = await t.run((ctx) => ctx.db.query("webRequests").collect());
+    for (const row of rows) await as(row.churchId === ids.detroit.churchId ? ids.detroit.userId : ids.dearborn.userId).mutation(api.intake.notGenuine, { churchId: row.churchId, requestId: row._id });
+    const detroit = { churchId: ids.detroit.churchId };
+    const seen = await as(ids.detroit.userId).query(api.intakeReview.forOwner, detroit);
+    expect(seen?.marked).toHaveLength(1);
+    expect(seen?.shared).toEqual([{ id: expect.any(String), hash: "same-per", teams: 2, at: expect.any(Number) }]);
+    // Nothing of the other team: not its name, not its request's words.
+    expect(JSON.stringify(seen)).not.toContain("Dearborn");
+    expect(JSON.stringify(seen)).not.toContain("Secret words 48124");
+    await expect(as(ids.detroit.member).query(api.intakeReview.forOwner, detroit)).rejects.toThrow();
+    await expect(as(ids.dearborn.userId).mutation(api.intakeReview.decideShared, { churchId: ids.dearborn.churchId, flagId: seen!.shared[0].id, genuine: true })).rejects.toThrow("not waiting for a review");
+
+    // "Genuine" on the team's own request takes back its blocks and its mark; the shared case falls under two teams.
+    const mine = seen!.marked[0].id;
+    await as(ids.detroit.userId).mutation(api.intakeReview.decideMarked, { ...detroit, requestId: mine, genuine: true });
+    const after = await t.run(async (ctx) => ({
+      blocks: (await ctx.db.query("webBlocks").collect()).filter((row) => row.churchId === ids.detroit.churchId),
+      flags: await ctx.db.query("webFlags").collect(),
+      review: await ctx.db.query("webReviews").first(),
+    }));
+    expect(after.blocks).toEqual([]);
+    expect(after.flags.map((flag) => flag.churchId)).toEqual([ids.dearborn.churchId]);
+    expect(after.review).toMatchObject({ teams: 1, settled: true });
+    expect(await as(ids.detroit.userId).query(api.intakeReview.forOwner, detroit)).toEqual({ marked: [], shared: [] });
+    // Dearborn's own mark and blocks stand.
+    const dearborn = await as(ids.dearborn.userId).query(api.intakeReview.forOwner, { churchId: ids.dearborn.churchId });
+    expect(dearborn?.marked).toHaveLength(1);
+    expect(dearborn?.shared).toEqual([]);
+    await as(ids.dearborn.userId).mutation(api.intakeReview.decideMarked, { churchId: ids.dearborn.churchId, requestId: dearborn!.marked[0].id, genuine: false });
+    expect((await t.run((ctx) => ctx.db.query("webBlocks").collect())).length).toBeGreaterThan(0);
+  });
+  test("'Not genuine' on a shared case keeps the team's mark and takes it off the owner's list", async () => {
+    const { t, ids, as } = await setup();
+    for (const zip of ["48201", "48124"]) await t.mutation(internal.intake.receive, { ...ask({ zip, contactHash: "twice", ipHash: zip, deviceHash: zip }), email: "", phone: "3135550101" });
+    for (const row of await t.run((ctx) => ctx.db.query("webRequests").collect())) await as(row.churchId === ids.detroit.churchId ? ids.detroit.userId : ids.dearborn.userId).mutation(api.intake.notGenuine, { churchId: row.churchId, requestId: row._id });
+    const detroit = { churchId: ids.detroit.churchId };
+    const [shared] = (await as(ids.detroit.userId).query(api.intakeReview.forOwner, detroit))!.shared;
+    await as(ids.detroit.userId).mutation(api.intakeReview.decideShared, { ...detroit, flagId: shared.id, genuine: false });
+    expect((await as(ids.detroit.userId).query(api.intakeReview.forOwner, detroit))?.shared).toEqual([]);
+    expect(await t.query(internal.intakeCare.reviews, {})).toEqual([expect.objectContaining({ teams: 2 })]);
+  });
+  test("a team's public phone is checked when saved, and shown once a request has reached the team", async () => {
+    const { t, ids, as } = await setup();
+    const save = (phone: string | null) => as(ids.detroit.userId).mutation(api.intake.saveSettings, { churchId: ids.detroit.churchId, enabled: true, address: "1 Example St, Detroit, MI 48201", miles: 10, phone });
+    await expect(save("555-0100")).rejects.toThrow("A team phone has 10 numbers");
+    await expect(save("call 313 555 0100")).rejects.toThrow("A team phone has 10 numbers");
+    await save("+1 313.555.0100");
+    expect((await as(ids.detroit.userId).query(api.intake.settings, { churchId: ids.detroit.churchId }))?.phone).toBe("(313) 555-0100");
+    // Pending (a code is on its way): no phone yet. Landed or confirmed: the team's phone.
+    const pending = ask();
+    expect(await t.mutation(internal.intake.receive, pending)).toEqual({ result: "sent" });
+    expect(await t.mutation(internal.intake.confirm, { statusKeyHash: pending.statusKeyHash, codeHash: pending.codeHash, ipHash: "c" })).toMatchObject({ phone: "(313) 555-0100" });
+    expect(await t.mutation(internal.intake.receive, { ...ask(), email: "", phone: "3135550111" })).toMatchObject({ result: "landed", phone: "(313) 555-0100" });
+    await save(null);
+    expect((await as(ids.detroit.userId).query(api.intake.settings, { churchId: ids.detroit.churchId }))?.phone).toBe(null);
+  });
   test("deleting from the status page needs the code sent to the request's own email", async () => {
     const { t } = await setup();
     const one = ask();

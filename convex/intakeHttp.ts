@@ -109,8 +109,8 @@ export const submit = httpAction(async (ctx, request) => {
     ...(at ? { at } : {}), ...(partnerId ? { partnerId } : {}),
   });
   if (answer.result === "sent") return reply(200, { result: "sent", key: statusKey });
-  if (answer.result === "landed") return reply(200, { result: "landed", key: statusKey, team: answer.team ?? "", by: String(answer.by ?? ""), timeZone: answer.timeZone ?? "" });
-  return reply(answer.result === "slow" ? 429 : 200, { result: answer.result });
+  if (answer.result === "landed") return reply(200, { result: "landed", key: statusKey, team: answer.team ?? "", by: String(answer.by ?? ""), timeZone: answer.timeZone ?? "", phone: answer.phone ?? "" });
+  return reply(answer.result === "slow" ? 429 : 200, { result: answer.result, ...("phone" in answer && answer.phone ? { phone: answer.phone } : {}) });
 });
 
 export const confirm = httpAction(async (ctx, request) => {
@@ -119,7 +119,7 @@ export const confirm = httpAction(async (ctx, request) => {
   const key = readKey(input?.key), code = readCode(input?.code);
   if (!key || !code) return reply(400, { result: "wrong" });
   const shown = await ctx.runMutation(internal.intake.confirm, { statusKeyHash: await statusKeyHash(key), codeHash: await keyed(`code:${key}:${code}`), ipHash: await keyed(`ip:${address(input?.ip)}`) });
-  return reply(200, shown ? { result: "confirmed", team: shown.team, by: String(shown.by), timeZone: shown.timeZone } : { result: "wrong" });
+  return reply(200, shown ? { result: "confirmed", team: shown.team, by: String(shown.by), timeZone: shown.timeZone, phone: shown.phone ?? "" } : { result: "wrong" });
 });
 
 export const resendCode = httpAction(async (ctx, request) => {
