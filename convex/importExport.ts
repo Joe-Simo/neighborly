@@ -335,6 +335,9 @@ const exportFile = v.union(
   v.literal("ledger"), v.literal("deposits"), v.literal("statements"), v.literal("vouchers"), v.literal("payees"), v.literal("referrals"),
   v.literal("members"), v.literal("teams"), v.literal("commitments"), v.literal("history"),
 );
+/** An adult's work, as the Household column of the export says it. */
+const workNames = { fullTime: "works full time", partTime: "works part time", looking: "looking for work", unable: "not able to work", retired: "retired" } as const;
+
 const exportColumns = {
   neighbors: ["Name", "Phone", "Email", "Address", "Adults", "Children", "Language", "Notes", "Alert", "Household", "Monthly Income", "Monthly Expenses", "Accounts"],
   requests: ["Name", "Phone", "Request Date", "Request Status", "Assistance Type", "Value", "Payee", "Request Notes", "Outcome", "Amount Requested", "Amount Approved", "Decision Note", "Decided On", "Referrals", "How It Was Entered"],
@@ -429,7 +432,7 @@ export const exportPage = query({
       const result = await ctx.db.query("neighbors").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
       const sum = (lines: { amount: number }[] | undefined) => (lines ? dollars(lines.reduce((total, line) => total + line.amount, 0)) : "");
       return finish(result, result.page.map((row) => [row.name, row.phone, row.email, row.address, String(row.adults), String(row.children), spokenName(row), row.notes, row.alert ?? "",
-        (row.household ?? []).map((person) => `${person.relationship}${person.child ? " (child)" : ""}${person.birthYear ? `, born ${person.birthYear}` : ""}`).join("; "),
+        (row.household ?? []).map((person) => `${person.relationship}${person.child ? " (child)" : ""}${person.birthYear ? `, born ${person.birthYear}` : ""}${person.work ? `, ${workNames[person.work]}${person.employer ? ` at ${person.employer}` : ""}` : ""}`).join("; "),
         sum(row.money?.income), sum(row.money?.expenses), (row.accounts ?? []).map(maskedAccount).join("; ")]));
     }
     if (file === "requests") {

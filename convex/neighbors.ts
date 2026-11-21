@@ -342,7 +342,10 @@ export const saveHousehold = mutation({
       if (person.birthYear !== undefined && (!Number.isInteger(person.birthYear) || person.birthYear < 1900 || person.birthYear > thisYear)) throw new ConvexError("A birth year looks wrong.");
       const relationship = short(person.relationship, "A relationship", 60);
       if (!relationship) throw new ConvexError("Each person needs a relationship, such as mother or son.");
-      return { relationship, child: person.child, birthYear: person.birthYear };
+      // Work is asked of adults only, and a place of work only of someone who has one.
+      const work = person.child ? undefined : person.work;
+      const employer = work === "fullTime" || work === "partTime" ? short(person.employer ?? "", "An employer", 80) || undefined : undefined;
+      return { relationship, child: person.child, birthYear: person.birthYear, ...(work ? { work } : {}), ...(employer ? { employer } : {}) };
     });
     if (people?.length && !people.some((person) => !person.child)) throw new ConvexError("A household needs at least one adult.");
     await ctx.db.patch("neighbors", neighborId, {

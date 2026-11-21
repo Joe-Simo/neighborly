@@ -165,6 +165,7 @@ export const fieldLabelsEs: Readonly<Record<string, string>> = {
   "A phone number": "Teléfono",
   "A referral": "Referencia",
   "A relationship": "Parentesco",
+  "An employer": "El lugar de trabajo",
   Adults: "Adultos",
   "An account number": "Número de cuenta",
   Children: "Niños",

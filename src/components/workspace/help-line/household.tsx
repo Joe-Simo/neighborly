@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { lazy, Suspense, useState, type ReactNode } from "react";
 import { useMutation } from "convex/react";
 import { Plus, X } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
@@ -22,6 +22,11 @@ import {
   type NeighborRecord,
 } from "@/components/workspace/help-line/format";
 import { useSave } from "@/components/workspace/help-line/use-save";
+import type { Work } from "@/components/workspace/help-line/household-work";
+
+// Work, its words and all, is its own chunk: fetched only where a household shows or asks it.
+const WorkRow = lazy(() => import("@/components/workspace/help-line/household-work").then((module) => ({ default: module.WorkRow })));
+const WorkFields = lazy(() => import("@/components/workspace/help-line/household-work").then((module) => ({ default: module.WorkFields })));
 
 type Target = { churchId: Id<"churches">; neighborId: Id<"neighbors"> };
 export type HomeStep = "details" | "people" | "money" | "accounts";
@@ -90,6 +95,11 @@ export function AtHome({
           </dd>
           {change("people", !household.length, at.sayWho)}
         </div>
+        {household.some((person) => person.work) && (
+          <Suspense fallback={null}>
+            <WorkRow household={household} change={change("people", false, "")} />
+          </Suspense>
+        )}
         <div>
           <dt>{at.month}</dt>
           {money ? (
@@ -221,14 +231,16 @@ export function PeopleForm({
   const saveHousehold = useMutation(api.neighbors.saveHousehold);
   const { pending, error, save } = useSave();
   const text = useWorkspace().words.rooms.neighbors.people;
-  const [people, setPeople] = useState(
+  const [people, setPeople] = useState<{ relationship: string; child: boolean; born: string; work: Work | ""; employer: string }[]>(
     household.length
       ? household.map((person) => ({
           relationship: person.relationship,
           child: person.child,
           born: person.birthYear?.toString() ?? "",
+          work: person.work ?? "",
+          employer: person.employer ?? "",
         }))
-      : [{ relationship: "", child: false, born: "" }],
+      : [{ relationship: "", child: false, born: "", work: "", employer: "" }],
   );
   return (
     <form
@@ -241,11 +253,15 @@ export function PeopleForm({
             ...target,
             household: people.map((person) => {
               const birthYear = /^\d{4}$/.test(person.born) ? Number(person.born) : undefined;
+              // A birth year says adult or child by itself; the question is only asked without one.
+              const child = birthYear === undefined ? person.child : thisYear - birthYear < 18;
+              const work = child || !person.work ? undefined : person.work;
               return {
                 relationship: person.relationship,
-                // A birth year says adult or child by itself; the question is only asked without one.
-                child: birthYear === undefined ? person.child : thisYear - birthYear < 18,
+                child,
                 birthYear,
+                work,
+                employer: work === "fullTime" || work === "partTime" ? person.employer.trim() || undefined : undefined,
               };
             }),
           }),
@@ -257,7 +273,7 @@ export function PeopleForm({
         legend={text.legend}
         shape="three"
         lines={people}
-        blank={{ relationship: "", child: true, born: "" }}
+        blank={{ relationship: "", child: true, born: "", work: "", employer: "" }}
         add={text.add}
         remove={text.removeLine}
         onChange={setPeople}
@@ -295,6 +311,9 @@ export function PeopleForm({
                 </NativeSelect>
               </LiveField>
             )}
+            <Suspense fallback={null}>
+              <WorkFields person={person} set={set} />
+            </Suspense>
           </>
         )}
       </Lines>

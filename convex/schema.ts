@@ -57,8 +57,12 @@ export default defineSchema({
     languageName: v.optional(v.string()),
     notes: v.string(),
     alert: v.optional(v.string()),
-    // No names and a birth year, not a birth date, on purpose.
-    household: v.optional(v.array(v.object({ relationship: v.string(), child: v.boolean(), birthYear: v.optional(v.number()) }))),
+    // No names and a birth year, not a birth date, on purpose. `work` is an adult's employment, as ServWare asks it; `employer` only the place, never a supervisor or pay.
+    household: v.optional(v.array(v.object({
+      relationship: v.string(), child: v.boolean(), birthYear: v.optional(v.number()),
+      work: v.optional(v.union(v.literal("fullTime"), v.literal("partTime"), v.literal("looking"), v.literal("unable"), v.literal("retired"))),
+      employer: v.optional(v.string()),
+    }))),
     // Monthly amounts.
     money: v.optional(v.object({
       income: v.array(v.object({ label: v.string(), amount: cents })),
