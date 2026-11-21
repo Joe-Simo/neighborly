@@ -5,7 +5,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { hour, hourAsked, mayOpenNeighborRecords, membership, user } from "./access";
 import { approvedBetween, balanceOf, sumApproved } from "./treasury";
 import { fiscalYear, fiscalYearOf } from "./reports";
-import { callbackDays } from "./digest";
+import { isLateCallback, keptForCount } from "../src/lib/late-callback";
 import { notesSayOne } from "../src/lib/duplicate-set";
 
 /**
@@ -46,7 +46,7 @@ async function wholeConference(ctx: QueryCtx, church: Doc<"churches">, me: Doc<"
   const spans = yearSpans(at, zone);
   const today = DateTime.fromMillis(at, { zone }).toFormat("yyyy-MM-dd");
   const [owed, monthNow, monthThen, yearNow, yearThen, ahead, behind, members, timeOff, balance, drafts, pairs] = await Promise.all([
-    ctx.db.query("calls").withIndex("by_church_callback", (q) => q.eq("churchId", churchId).eq("callback", "needed")).take(500),
+    ctx.db.query("calls").withIndex("by_church_callback", (q) => q.eq("churchId", churchId).eq("callback", "needed")).take(500).then((calls) => calls.filter((call) => !keptForCount(call))),
     approvedBetween(ctx, churchId, month.toMillis(), at),
     approvedBetween(ctx, churchId, monthBefore.toMillis(), monthBefore.endOf("month").toMillis()),
     approvedBetween(ctx, churchId, spans.now.from, spans.now.to),
@@ -69,7 +69,7 @@ async function wholeConference(ctx: QueryCtx, church: Doc<"churches">, me: Doc<"
     return !!first?.nameKey && !!second?.nameKey && notesSayOne(pair.read?.same ?? 0, first, second);
   }));
   return {
-    callbacks: { owed: owed.length, late: owed.filter((call) => at - call.takenAt >= callbackDays * DAY).length, mine: owed.filter((call) => call.ownerId === me._id).length },
+    callbacks: { owed: owed.length, late: owed.filter((call) => isLateCallback(call.takenAt, at)).length, mine: owed.filter((call) => call.ownerId === me._id).length },
     month: { month: month.month, approved: { now: sumApproved(monthNow), before: sumApproved(monthThen) }, budget: church.monthlyBudget ?? null, day: DateTime.fromMillis(at, { zone }).day, days: month.daysInMonth ?? 30 },
     year: { fiscalYear: spans.year, approved: { now: sumApproved(yearNow), before: sumApproved(yearThen) }, households: { now: households(yearNow), before: households(yearThen) } },
     visits: { due: ahead.filter((visit) => visit.status === "scheduled").length, late: behind.filter((visit) => visit.scheduledAt < at).length },

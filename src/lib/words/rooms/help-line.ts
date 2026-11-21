@@ -10,6 +10,7 @@ const esN = counter("es");
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const en = (t: Terms, place: string) => ({
+  lateView: { title: "Callbacks two days late", all: "All calls" },
   /** The room's one button in the page head, and the same words wherever a call is logged. */
   log: "Log a call",
   /** The green line that says what changed. */
@@ -122,6 +123,7 @@ export const en = (t: Terms, place: string) => ({
 /** Spanish. The founder, who speaks Spanish, said on November 19, 2026 that it is fine as written. */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
+  lateView: { title: "Llamadas con dos días de retraso", all: "Todas las llamadas" },
   log: "Anotar una llamada",
   done: {
     savedToDecide: `Petición guardada. Cuando tu ${t.group} se reúna, anota su sí en el registro de {name}.`,

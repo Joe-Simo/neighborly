@@ -100,9 +100,9 @@ function conferenceTiles(c: Conference, w: Said, money: (cents: number) => strin
   const flags = c.flags.urgent + c.flags.drafts + c.flags.doubles;
   return [
     // The week's figures above already count calls waiting, visits planned and requests open: these say what they do not.
-    { href: "/app/help-line", label: w.callbacks, figure: `${c.callbacks.late}`, line: w.callbackLine(c.callbacks.owed, c.callbacks.mine), waits: c.callbacks.late > 0 },
+    { href: "/app/help-line?late=1", label: w.callbacks, figure: `${c.callbacks.late}`, line: w.callbackLine(c.callbacks.owed, c.callbacks.mine), waits: c.callbacks.late > 0 },
     { href: "/app/help-line", label: w.flags, figure: `${flags}`, line: w.flagLine(c.flags.urgent, c.flags.drafts, c.flags.doubles), waits: flags > 0 },
-    { href: "/app/visits", label: w.unwritten, figure: `${c.visits.late}`, line: w.dueLine(c.visits.due), waits: c.visits.late > 0 },
+    { href: "/app/visits#to-write-up", label: w.unwritten, figure: `${c.visits.late}`, line: w.dueLine(c.visits.due), waits: c.visits.late > 0 },
     {
       href: "/app/treasury", label: w.month(w.months[c.month.month - 1] ?? ""), figure: money(c.month.approved.now),
       line: [c.month.budget ? w.budget(money(c.month.budget), spent, day) : w.noBudget, w.lastYear(money(c.month.approved.before))],

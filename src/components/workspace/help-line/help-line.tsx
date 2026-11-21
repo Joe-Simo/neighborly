@@ -16,6 +16,8 @@ import {
 } from "react";
 import { flushSync } from "react-dom";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { isLateCallback } from "@/lib/late-callback";
 import { useAction, useMutation, useQueries } from "convex/react";
 import { keptAnswer, useHour, useQuery } from "@/components/workspace/query";
 import { WebRequests } from "@/components/intake/web-requests";
@@ -103,6 +105,8 @@ function HelpLine() {
   const churchId = data.church.id;
   const at = useHour();
   const calls = useQuery(api.assistance.calls, at ? { churchId, at } : "skip");
+  // `?late=1`, from the home's glance: only the callbacks owed two days or more, by the glance's own rule.
+  const lateOnly = useSearchParams().get("late") === "1";
   const draftRequest = useAction(api.drafts.draftRequest);
   const createRequest = useMutation(api.assistance.createRequest);
   const setUrgency = useMutation(api.assistance.setUrgency);
@@ -427,8 +431,14 @@ function HelpLine() {
       {(calls.waiting.length > 0 || calls.returned.length > 0 || lineIsSet({ data })) && (
         <OnTheLine turns={turnsToday({ data, now, format })} calling={owners(calls.waiting)} />
       )}
+      {lateOnly && (
+        <div className="live-section-head help-late-head">
+          <h2>{text.lateView.title}</h2>
+          <Link href="/app/help-line" className="live-link">{text.lateView.all}</Link>
+        </div>
+      )}
       <HelpLineView
-        calls={calls}
+        calls={lateOnly && at ? { ...calls, waiting: calls.waiting.filter((call) => isLateCallback(call.takenAt, at)), returned: [] } : calls}
         at={at}
         format={format}
         busy={drafting.pending}
