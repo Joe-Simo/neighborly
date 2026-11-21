@@ -400,3 +400,7 @@
 .help-row .help-first:has(.help-first-read) { flex-wrap: wrap; column-gap: 8px; }
 .help-first-read { flex-basis: 100%; }
 .help-first-read > button { padding-left: 23px; }
+
+/* The one next step the assistant read in a returned call's outcome: one plum line, never faded. */
+.help-row .help-next-step { display: flex; flex-wrap: wrap; align-items: baseline; margin-top: var(--space-4); }
+.help-next-step svg { position: relative; top: 2px; flex: none; }

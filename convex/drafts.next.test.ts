@@ -128,3 +128,66 @@ describe("repeat help before a decision", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 });
+
+describe("the next step after a returned call", () => {
+  async function returned(outcome: string) {
+    const made = await group();
+    const callId = await made.t.run(async ctx => {
+      const member = (await ctx.db.query("memberships").first())!;
+      const neighbor = (await ctx.db.query("neighbors").first())!;
+      return ctx.db.insert("calls", { churchId: made.ids.churchId, neighborId: neighbor._id, callerName: "Rosa Delgado", phone: "", note: "Asked for a call back.", callback: "needed", takenBy: member._id, takenAt: Date.now() });
+    });
+    vi.useFakeTimers();
+    await made.signed.mutation(api.assistance.markReturned, { churchId: made.ids.churchId, callId, outcome });
+    await made.t.finishAllScheduledFunctions(vi.runAllTimers);
+    vi.useRealTimers();
+    const row = (await made.signed.query(api.assistance.calls, { churchId: made.ids.churchId, at: Math.floor(Date.now() / 3_600_000) * 3_600_000 })).returned.find(call => call.id === callId);
+    return { ...made, callId, row };
+  }
+
+  test("a step at 0.9 is kept on the call and shown; the outcome leaves without names; nothing is started", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    const fetch = replying({ nextStep: { type: "choice", choice: "request", confidence: 0.95 } });
+    vi.stubGlobal("fetch", fetch);
+    const { t, row } = await returned("Rosa Delgado at 14 Sample St owes $150 on the power bill and asked us for help.");
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const body = JSON.parse(fetch.mock.calls[0][1].body) as Body;
+    expect(Object.keys(body.questions)).toEqual(["nextStep"]);
+    expect(Object.keys((body.questions.nextStep as { criteria: object }).criteria)).toEqual(["resolved", "request", "refer", "callAgain", "none"]);
+    expect(fetch.mock.calls[0][1].body).not.toMatch(/Rosa|Delgado|14 Sample/);
+    expect(row?.nextStep).toBe("request");
+    expect(await t.run(ctx => ctx.db.query("assistanceRequests").collect())).toHaveLength(1);
+  });
+
+  test("under 0.9, or \"none\", nothing is shown; an empty outcome is never sent", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    vi.stubGlobal("fetch", replying({ nextStep: { type: "choice", choice: "refer", confidence: 0.8 } }));
+    expect((await returned("Gave her the legal aid number.")).row?.nextStep).toBeNull();
+    vi.stubGlobal("fetch", replying({ nextStep: { type: "choice", choice: "none", confidence: 0.99 } }));
+    expect((await returned("Talked for a while.")).row?.nextStep).toBeNull();
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    expect((await returned("")).row?.nextStep).toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  test("a read that finishes after the return was undone keeps nothing", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    vi.stubGlobal("fetch", replying({ nextStep: { type: "choice", choice: "callAgain", confidence: 0.97 } }));
+    const { t, ids, callId } = await returned("No answer, try again tomorrow.");
+    await t.run(ctx => ctx.db.patch("calls", callId, { callback: "needed", returnedAt: undefined, nextStep: undefined }));
+    expect(await t.action(internal.drafts.readOutcome, { churchId: ids.churchId, callId, returnedAt: 1, userId: ids.userId })).toBeNull();
+    expect((await t.run(ctx => ctx.db.get("calls", callId)))?.nextStep).toBeUndefined();
+  });
+
+  test("the measured set is judged on the same 0.9 line", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    vi.stubGlobal("fetch", replying({ nextStep: { type: "choice", choice: "callAgain", confidence: 0.95 } }));
+    const { t, ids } = await group();
+    const run = await t.action(internal.drafts.measureNextStep, { churchId: ids.churchId });
+    expect(run.status).toBe("done");
+    expect(run.rows).toHaveLength(12);
+    expect(run.all).toEqual({ right: 3, missed: 0, wrong: 9 });
+    expect(run.heldOut).toEqual({ right: 1, missed: 0, wrong: 3 });
+  });
+});

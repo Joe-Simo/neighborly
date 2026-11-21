@@ -95,6 +95,13 @@ export const en = (t: Terms, place: string) => ({
     count: (count: number) => (count === 1 ? "1 call" : `${enN(count)} calls`),
     returned: "Returned",
     returnedBy: (name: string) => `Returned by ${name}`,
+    /** One line under a returned call: the one next step the assistant read in its outcome. A person decides; nothing follows from it. */
+    nextStep: {
+      resolved: "From the outcome, the assistant suggests: nothing more.",
+      request: "From the outcome, the assistant suggests: start a request.",
+      refer: "From the outcome, the assistant suggests: refer elsewhere.",
+      callAgain: "From the outcome, the assistant suggests: call back later.",
+    },
   },
   /** While the assistant reads a call note. */
   reading: {
@@ -217,6 +224,12 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     count: (count) => (count === 1 ? "1 llamada" : `${esN(count)} llamadas`),
     returned: "Devuelta",
     returnedBy: (name) => `Devuelta por ${name}`,
+    nextStep: {
+      resolved: "Por el resultado, el asistente sugiere: nada más.",
+      request: "Por el resultado, el asistente sugiere: empezar una petición.",
+      refer: "Por el resultado, el asistente sugiere: derivar a otro lugar.",
+      callAgain: "Por el resultado, el asistente sugiere: llamar más tarde.",
+    },
   },
   reading: {
     label: "El asistente",

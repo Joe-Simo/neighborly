@@ -989,6 +989,17 @@ function HelpLineView({
                 <div>
                   <h3>{caller(call, words)}</h3>
                   <p>{sampleSaid(call.outcome || call.note)}</p>
+                  {call.nextStep && (
+                    <p className="help-assistant help-next-step">
+                      <Sparkles size={16} aria-hidden="true" />
+                      {text.nextStep[call.nextStep]}
+                      {call.nextStep === "request" && call.neighborId && !call.openRequest && (
+                        <Button variant="link" className="help-text-action" onClick={() => onStep({ kind: "request", call })}>
+                          {words.rooms.helpLine.sheets.request.title}
+                        </Button>
+                      )}
+                    </p>
+                  )}
                 </div>
                 <span className="live-status help-returned">
                   {call.returnedByName ? text.returnedBy(call.returnedByName) : text.returned}

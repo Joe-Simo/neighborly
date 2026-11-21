@@ -8,6 +8,8 @@ import { urgentReasons } from "../src/lib/urgency";
 import schema from "./schema";
 import { tally } from "./counts";
 import { dropReads } from "./aiReads";
+import { isSampleVisitor } from "./demo";
+import { internal } from "./_generated/api";
 
 /**
  * The help line and requests for help.
@@ -338,6 +340,8 @@ export const callRow = v.object({
   returnedAt: v.union(v.number(), v.null()),
   returnedByName: v.union(v.string(), v.null()),
   outcome: v.string(),
+  /** The next step the assistant suggests from the outcome, or null when it suggests none. */
+  nextStep: v.union(v.literal("resolved"), v.literal("request"), v.literal("refer"), v.literal("callAgain"), v.null()),
   /** True when the neighbor already has a request waiting, so a second one is not drafted from this call. */
   openRequest: v.boolean(),
   urgent: v.union(v.object({ reasons: v.array(v.string()), day: v.union(v.number(), v.null()), by: urgentBy, byName: v.union(v.string(), v.null()) }), v.null()),
@@ -357,6 +361,7 @@ export async function toCallRow(found: Lookups, call: Doc<"calls">): Promise<Inf
     returnedAt: call.returnedAt ?? null,
     returnedByName: call.returnedBy ? await found.memberName(call.returnedBy) : null,
     outcome: call.outcome ?? "",
+    nextStep: call.nextStep?.step ?? null,
     openRequest: call.neighborId ? await found.openRequest(call.neighborId) : false,
     urgent: call.urgent ? { reasons: call.urgent.reasons, day: call.urgent.day ?? null, by: call.urgent.by, byName: call.urgent.byMember ? await found.memberName(call.urgent.byMember) : null } : null,
   };
@@ -468,7 +473,15 @@ export const markReturned = mutation({
     const member = await neighborAccess(ctx, churchId);
     const call = await ownCall(ctx, churchId, callId);
     if (call.callback !== "needed") throw new ConvexError("This call is not waiting for a callback.");
-    await ctx.db.patch("calls", callId, { callback: "done", returnedBy: member._id, returnedAt: Date.now(), outcome: text(outcome ?? "", "The outcome", 500) });
+    const written = text(outcome ?? "", "The outcome", 500);
+    const returnedAt = Date.now();
+    await ctx.db.patch("calls", callId, { callback: "done", returnedBy: member._id, returnedAt, outcome: written, nextStep: undefined });
+    // The assistant reads the outcome for one next step, after the save; a sample visitor's read counts against their own session.
+    if (written) {
+      const identity = await ctx.auth.getUserIdentity();
+      const session = isSampleVisitor(identity?.subject) ? (typeof identity?.sid === "string" ? identity.sid : "unnamed") : undefined;
+      await ctx.scheduler.runAfter(0, internal.drafts.readOutcome, { churchId, callId, returnedAt, userId: member.userId, session });
+    }
     return null;
   },
 });
@@ -506,7 +519,7 @@ export const unmarkReturned = mutation({
     const call = await ownCall(ctx, churchId, callId);
     if (call.callback !== "done") throw new ConvexError("This call is not marked returned.");
     mayUndo({ by: call.returnedBy, at: call.returnedAt }, member._id, Date.now());
-    await ctx.db.patch("calls", callId, { callback: "needed", returnedBy: undefined, returnedAt: undefined, outcome: undefined });
+    await ctx.db.patch("calls", callId, { callback: "needed", returnedBy: undefined, returnedAt: undefined, outcome: undefined, nextStep: undefined });
     return null;
   },
 });
