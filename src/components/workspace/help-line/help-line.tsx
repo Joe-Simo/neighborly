@@ -428,16 +428,11 @@ function HelpLine() {
         </div>
       )}
       {/* A conference with no call and no turn on the line has nothing for the side column to say. */}
-      {(calls.waiting.length > 0 || calls.returned.length > 0 || lineIsSet({ data })) && (
+      {!lateOnly && (calls.waiting.length > 0 || calls.returned.length > 0 || lineIsSet({ data })) && (
         <OnTheLine turns={turnsToday({ data, now, format })} calling={owners(calls.waiting)} />
       )}
-      {lateOnly && (
-        <div className="live-section-head help-late-head">
-          <h2>{text.lateView.title}</h2>
-          <Link href="/app/help-line" className="live-link">{text.lateView.all}</Link>
-        </div>
-      )}
       <HelpLineView
+        late={lateOnly ? { title: text.lateView.title, back: <Link href="/app/help-line" className="live-link">{text.lateView.all}</Link> } : undefined}
         calls={lateOnly && at ? { ...calls, waiting: calls.waiting.filter((call) => isLateCallback(call.takenAt, at)), returned: [] } : calls}
         at={at}
         format={format}
@@ -681,6 +676,7 @@ function HelpLineView({
   format,
   onStep,
   sheet,
+  late,
   busy = false,
   reading = null,
   draftedCallIds = [],
@@ -702,6 +698,8 @@ function HelpLineView({
   reading?: Call["id"] | null;
   /** The one thing waiting for a yes, when there is one. */
   sheet?: ReactNode;
+  /** `?late=1`: the late callbacks alone, under their own heading with the way back to all calls. Nothing else is drawn. */
+  late?: { title: string; back: ReactNode };
 }) {
   const { words, sampleSaid } = useWorkspace();
   const text = { ...words.rooms.helpLine.calls, ...lineWords(words.locale).calls };
@@ -846,15 +844,15 @@ function HelpLineView({
   const none = calls.waiting.length === 0 && calls.returned.length === 0;
   return (
     <div className="help-lists" ref={lists}>
-      {sheet}
+      {!late && sheet}
       {/* Requests from the public web form (kindhelps.com/help): where the team helps, and the web-only actions. */}
-      <WebRequests />
+      {!late && <WebRequests />}
       {none ? (
         <EmptyLine first line={text.noneTitle} />
       ) : (
       <section>
         <div className="live-section-head">
-          <h2>{text.toCallBack}</h2>
+          <h2>{late ? late.title : text.toCallBack}</h2>
           {/* The calls waiting as paper: the figure on a cut slip, how long the oldest has waited as the quiet line under it. */}
           <div className="room-tally">
             {/* The heading names the figure, so the slip carries no label of its own; a screen reader hears it whole. */}
@@ -865,6 +863,7 @@ function HelpLineView({
             {oldest && at !== undefined && (
               <span className="live-count help-oldest">{oldestWaiting(waited(oldest))}</span>
             )}
+            {late?.back}
           </div>
         </div>
         {/* Each source says itself: the assistant's mark only where the assistant read the note, the rules' in plain words. */}

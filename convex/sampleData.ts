@@ -191,7 +191,7 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
   // a help-line morning and a home visit next week.
   const mine = monday.plus({ weeks: 1 });
   await db.insert("commitments", { churchId, teamId: helpLine, title: "Help line morning", start: mine.plus({ days: 1, hours: 9 }).toMillis(), end: mine.plus({ days: 1, hours: 12 }).toMillis(), location: "Parish office", preparation: "Check the callback list first. Record every call, even a wrong number.", assigneeId: owner, coordinatorId: others[1], version: 1 });
-  await db.insert("commitments", { churchId, teamId: homeVisits, title: "Home visit", start: mine.plus({ days: 3, hours: 10 }).toMillis(), end: mine.plus({ days: 3, hours: 12 }).toMillis(), location: "Meet at the parish office", preparation: "Read the request before you go. Bring the visit sheet. Always go as a pair.", assigneeId: owner, coordinatorId: others[0], version: 1 });
+  await db.insert("commitments", { churchId, teamId: homeVisits, title: "Home visit with Thomas Okafor", start: mine.plus({ days: 3, hours: 10 }).toMillis(), end: mine.plus({ days: 3, hours: 12 }).toMillis(), location: "Meet at the parish office", preparation: "Read the request before you go. Bring the visit sheet. Always go as a pair.", assigneeId: owner, coordinatorId: others[0], version: 1 });
   // A member's own week: Daniel Whitcombe goes on a home visit with Colleen Marsh on the next weekday after tomorrow,
   // so a member's This week always has one commitment of their own, in Coming up and in the glance alike.
   const daniel = members[volunteerNames.indexOf("Daniel Whitcombe") + (visitor ? 1 : 0)];

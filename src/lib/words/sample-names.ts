@@ -16,7 +16,8 @@ const es: Readonly<Record<string, string>> = {
   // Commitments and the meeting
   "Help line morning": "Línea de ayuda por la mañana",
   "Help line afternoon": "Línea de ayuda por la tarde",
-  "Home visit": "Visita domiciliaria",
+  "Home visit with Thomas Okafor": "Visita domiciliaria con Thomas Okafor",
+  "Home visit with Colleen Marsh": "Visita domiciliaria con Colleen Marsh",
   "Pantry morning": "Despensa por la mañana",
   "Conference meeting": "Reunión de la conferencia",
   // Places
