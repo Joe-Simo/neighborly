@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && bun scripts/app-styles.mts",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "unused": "knip",

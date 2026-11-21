@@ -5,7 +5,6 @@ import type { ComponentProps, MouseEvent, MouseEventHandler, PointerEvent } from
 import { askFirstRoom } from "@/lib/first-room";
 import { whenIdle } from "@/lib/idle";
 import { askSampleTicket, startSignIn, warmSignIn } from "@/lib/sample-ticket";
-import { warmAppStyles } from "@/lib/app-styles";
 
 /**
  * What every way into the sample does before the visitor arrives: pointing at it or reaching it by keyboard fetches
@@ -13,9 +12,8 @@ import { warmAppStyles } from "@/lib/app-styles";
  */
 export function useSampleDoor(onClick?: MouseEventHandler<HTMLAnchorElement>) {
   return {
-    onPointerEnter: () => { warmSignIn(); warmAppStyles(); },
-    onFocus: () => { warmSignIn(); warmAppStyles(); },
-    onTouchStart: warmAppStyles,
+    onPointerEnter: warmSignIn,
+    onFocus: warmSignIn,
     onPointerDown: (event: PointerEvent<HTMLAnchorElement>) => {
       if (event.button !== 0) return;
       askSampleTicket();
