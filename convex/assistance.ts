@@ -345,6 +345,8 @@ export const callRow = v.object({
   /** True when the neighbor already has a request waiting, so a second one is not drafted from this call. */
   openRequest: v.boolean(),
   urgent: v.union(v.object({ reasons: v.array(v.string()), day: v.union(v.number(), v.null()), by: urgentBy, byName: v.union(v.string(), v.null()) }), v.null()),
+  /** The caller needs Spanish: "record" from the neighbor's record, "assistant" when the assistant read it in the note. */
+  spanish: v.union(v.literal("record"), v.literal("assistant"), v.null()),
 });
 export async function toCallRow(found: Lookups, call: Doc<"calls">): Promise<Infer<typeof callRow>> {
   return {
@@ -364,13 +366,14 @@ export async function toCallRow(found: Lookups, call: Doc<"calls">): Promise<Inf
     nextStep: call.nextStep?.step ?? null,
     openRequest: call.neighborId ? await found.openRequest(call.neighborId) : false,
     urgent: call.urgent ? { reasons: call.urgent.reasons, day: call.urgent.day ?? null, by: call.urgent.by, byName: call.urgent.byMember ? await found.memberName(call.urgent.byMember) : null } : null,
+    spanish: call.neighborId ? ((await found.neighbor(call.neighborId))?.language === "es" ? "record" : null) : call.spanish ? "assistant" : null,
   };
 }
 
 /** The help line: messages still to call back, oldest first, and the calls returned in the last seven days. */
 export const calls = query({
   args: { churchId: v.id("churches"), at: hour },
-  returns: v.object({ waiting: v.array(callRow), returned: v.array(callRow) }),
+  returns: v.object({ waiting: v.array(callRow), returned: v.array(callRow), /** Active, approved members who speak Spanish, named for a call that needs it. */ spanishSpeakers: v.array(v.string()) }),
   handler: async (ctx, { churchId, at }) => {
     await neighborAccess(ctx, churchId);
     const needed = await ctx.db.query("calls").withIndex("by_church_callback", (q) => q.eq("churchId", churchId).eq("callback", "needed")).take(100);
@@ -390,9 +393,13 @@ export const calls = query({
     const done = [...returnedSince, ...takenSince];
     const returned = done.filter((call) => !kept(call)).sort((a, b) => (b.returnedAt ?? b.takenAt) - (a.returnedAt ?? a.takenAt));
     const found = lookups(ctx);
+    const rows = await Promise.all(waiting.map((call) => toCallRow(found, call)));
+    // Read only when a waiting call needs Spanish, so the list costs nothing more on most days.
+    const members = rows.some((row) => row.spanish) ? await ctx.db.query("memberships").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(500) : [];
     return {
-      waiting: await Promise.all(waiting.map((call) => toCallRow(found, call))),
+      waiting: rows,
       returned: await Promise.all(returned.map((call) => toCallRow(found, call))),
+      spanishSpeakers: members.filter((member) => member.active && member.approved && !member.removedAt && member.language === "es").map((member) => member.name),
     };
   },
 });
@@ -461,6 +468,18 @@ export const keepReading = internalMutation({
     const call = await ctx.db.get("calls", callId);
     if (!call || call.churchId !== churchId || !reasons.length || call.urgent?.by === "person") return null;
     await ctx.db.patch("calls", callId, { urgent: { reasons: [...new Set(reasons)], day, by } });
+    return null;
+  },
+});
+
+/** Keeps what the assistant read about Spanish on a call with no neighbor linked (drafts.readUrgency). */
+export const keepSpanish = internalMutation({
+  args: { churchId: v.id("churches"), callId: v.id("calls"), spanish: v.boolean() },
+  returns: v.null(),
+  handler: async (ctx, { churchId, callId, spanish }) => {
+    const call = await ctx.db.get("calls", callId);
+    if (!call || call.churchId !== churchId || call.neighborId) return null;
+    await ctx.db.patch("calls", callId, { spanish });
     return null;
   },
 });

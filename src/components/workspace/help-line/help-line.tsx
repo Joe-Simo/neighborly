@@ -26,6 +26,8 @@ import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { fill } from "@/lib/words/fill";
+import { formatList } from "@/lib/words/numbers";
+import { lineWords } from "./line-words";
 import { useWorkspace, type Workspace, type WayBack } from "@/components/workspace/context";
 import { UndoAct } from "@/components/workspace/undo";
 import { sayFailure } from "@/components/workspace/failure";
@@ -691,7 +693,7 @@ function HelpLineView({
   sheet?: ReactNode;
 }) {
   const { words, sampleSaid } = useWorkspace();
-  const text = words.rooms.helpLine.calls;
+  const text = { ...words.rooms.helpLine.calls, ...lineWords(words.locale).calls };
   const isFirst = (call: Call) => !!call.urgent?.reasons.length;
   // How long a call has waited, from the room's hour: "5 hours", "2 days". Two days and more is old.
   const DAY = 24 * 60 * 60 * 1000;
@@ -900,6 +902,13 @@ function HelpLineView({
                       {call.urgent.by === "assistant" && <UrgencyRead callId={call.id as Id<"calls">} />}
                     </p>
                   )}
+                  {call.spanish && (
+                    // A neighbor's record is a plain fact; only the assistant's reading takes its mark.
+                    <p className={call.spanish === "assistant" ? "help-assistant help-spanish" : "help-spanish"}>
+                      {call.spanish === "assistant" && <Sparkles size={15} aria-hidden="true" />}
+                      {lineWords(words.locale).spanish(formatList(calls.spanishSpeakers ?? [], words.locale), (calls.spanishSpeakers?.length ?? 0) > 1)}
+                    </p>
+                  )}
                   {call.urgent?.by === "person" && call.urgent.byName && (
                     <p className="help-first help-moved paper-rise">
                       {isFirst(call) ? text.putFirstBy(call.urgent.byName) : text.notUrgentBy(call.urgent.byName)}
@@ -992,7 +1001,7 @@ function HelpLineView({
                   {call.nextStep && (
                     <p className="help-assistant help-next-step">
                       <Sparkles size={16} aria-hidden="true" />
-                      {text.nextStep[call.nextStep]}
+                      {lineWords(words.locale).nextStep[call.nextStep]}
                       {call.nextStep === "request" && call.neighborId && !call.openRequest && (
                         <Button variant="link" className="help-text-action" onClick={() => onStep({ kind: "request", call })}>
                           {words.rooms.helpLine.sheets.request.title}

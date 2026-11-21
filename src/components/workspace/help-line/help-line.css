@@ -32,6 +32,7 @@
 .help-row .help-first { margin-top: var(--space-8); font-size: 16px; }
 .help-first strong { font-weight: 600; }
 .help-row .help-moved { color: var(--live-ink); }
+.help-row .help-spanish { margin-top: var(--space-8); font-size: 16px; }
 .help-first-origin { margin: -6px 0 var(--space-8); font-size: 15px; }
 /* In a dialog the form scrolls and its last line, the button, stays in view. */
 /* The home: three quiet facts, each with its own way in. */
