@@ -17,4 +17,10 @@ describe("paper email", () => {
   test("nothing needs a picture", () => {
     for (const kind of ["invitation", "cover_request", "meeting"] as const) expect(paperEmail({ kind, language: "en", set: "general", place: "Hope Pantry", link: "https://kindhelps.com/app" }).html).not.toContain("<img");
   });
+  test("an announcement carries its own title and message, its markup escaped and its lines kept", () => {
+    const email = paperEmail({ kind: "announcement", language: "es", set: "general", place: "Hope Pantry", link: "https://kindhelps.com/app", content: { title: "Colecta", body: "Sábado <9>\nTraigan latas" } });
+    expect(email.subject).toBe("Aviso de Hope Pantry: Colecta");
+    expect(email.html).toContain("Sábado &#60;9&#62;<br>Traigan latas");
+    expect(email.text).toContain("Abrir Kind Helps: https://kindhelps.com/app");
+  });
 });

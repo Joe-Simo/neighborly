@@ -6,16 +6,18 @@ import type { Language, WordSet } from "../words/sets";
  * meaning here, so the sheet is ink on paper; the one link is ink too. Nothing is an image, so a mail app that
  * blocks pictures shows the whole email. Each comes with a plain-text twin that says the same thing.
  */
-type EmailKind = "invitation" | "cover_request" | "meeting" | "digest";
+type EmailKind = "invitation" | "cover_request" | "meeting" | "digest" | "announcement";
 /** The week's counts for the Monday email: numbers only, never a name, so nothing about a household leaves in a mailbox. */
 type WeekCounts = { waiting: number; overdue: number; approved: number; budget: number | null };
+/** An announcement carries its own words: its title becomes the head and its message the body. */
+type Content = { title: string; body: string };
 type Email = { subject: string; text: string; html: string };
 
 const group = { en: { general: "group", vincentian: "conference" }, es: { general: "grupo", vincentian: "conferencia" } } as const;
 
 type Said = { subject: string; head: string; body: string; action: string; foot: string };
 
-function said(kind: EmailKind, language: Language, set: WordSet, place: string, week?: WeekCounts): Said {
+function said(kind: EmailKind, language: Language, set: WordSet, place: string, week?: WeekCounts, content?: Content): Said {
   const g = group[language][set];
   if (kind === "digest") return weekSaid(language, place, week ?? { waiting: 0, overdue: 0, approved: 0, budget: null });
   if (language === "es") {
@@ -41,6 +43,13 @@ function said(kind: EmailKind, language: Language, set: WordSet, place: string, 
         action: "Ver la reunión",
         foot: `Recibes este correo porque eres parte de ${place} en Kind Helps.`,
       };
+      case "announcement": return {
+        subject: content ? `Aviso de ${place}: ${content.title}` : `Aviso de ${place}`,
+        head: content?.title ?? "Un aviso nuevo.",
+        body: content?.body ?? "Inicia sesión para leerlo.",
+        action: "Abrir Kind Helps",
+        foot: `Recibes este correo porque eres parte de ${place} en Kind Helps. El aviso también está en la página de inicio.`,
+      };
     }
   }
   switch (kind) {
@@ -65,6 +74,13 @@ function said(kind: EmailKind, language: Language, set: WordSet, place: string, 
       action: "See the meeting",
       foot: `You get this email because you’re part of ${place} on Kind Helps.`,
     };
+    case "announcement": return {
+      subject: content ? `Announcement from ${place}: ${content.title}` : `Announcement from ${place}`,
+      head: content?.title ?? "A new announcement.",
+      body: content?.body ?? "Sign in to read it.",
+      action: "Open Kind Helps",
+      foot: `You get this email because you’re part of ${place} on Kind Helps. The announcement is on the home page too.`,
+    };
   }
 }
 
@@ -74,14 +90,14 @@ const escape = (text: string) => text.replace(/[&<>"']/g, (c) => `&#${c.charCode
 const display = "Newsreader,Georgia,'Times New Roman',serif";
 const body = "'Source Sans 3','Segoe UI',Helvetica,Arial,sans-serif";
 
-export function paperEmail({ kind, language, set, place, link, week }: { kind: EmailKind; language: Language; set: WordSet; place: string; link: string; week?: WeekCounts }): Email {
-  return render(language, said(kind, language, set, place, week), link);
+export function paperEmail({ kind, language, set, place, link, week, content }: { kind: EmailKind; language: Language; set: WordSet; place: string; link: string; week?: WeekCounts; content?: Content }): Email {
+  return render(language, said(kind, language, set, place, week, content), link);
 }
 
 /** One sheet of paper: the head, the words (a line break kept as one), the one way in, and the foot. */
 function render(language: Language, s: Said, link: string): Email {
   const text = [s.head, "", s.body, "", `${s.action}: ${link}`, "", s.foot, "", "kind helps"].join("\n");
-  const e = { head: escape(s.head), body: escape(s.body).replace(/\n/g, "<br>"), action: escape(s.action), foot: escape(s.foot), link: escape(link) };
+  const e = { head: escape(s.head), body: escape(s.body).replace(/\r?\n/g, "<br>"), action: escape(s.action), foot: escape(s.foot), link: escape(link) };
   const html = `<!doctype html>
 <html lang="${language}">
 <head>
