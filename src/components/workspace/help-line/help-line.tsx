@@ -18,6 +18,7 @@ import { flushSync } from "react-dom";
 import Link from "next/link";
 import { useAction, useMutation, useQueries } from "convex/react";
 import { keptAnswer, useHour, useQuery } from "@/components/workspace/query";
+import { WebRequests } from "@/components/intake/web-requests";
 import { useFirstLook } from "@/components/workspace/first-look";
 import { canKeep, keepHelpLine } from "@/lib/kept-room";
 import { getFunctionName, type FunctionReturnType } from "convex/server";
@@ -834,6 +835,8 @@ function HelpLineView({
   return (
     <div className="help-lists" ref={lists}>
       {sheet}
+      {/* Requests from the public web form (kindhelps.com/help): where the team helps, and the web-only actions. */}
+      <WebRequests />
       {none ? (
         <HelpEmpty first title={text.noneTitle}>
           {text.none}

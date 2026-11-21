@@ -111,6 +111,7 @@ describe("the one read that needs no sign-in", () => {
       found.auditEvents ??= await ctx.db.insert("auditEvents", { churchId: found.churches as never, actorId: found.users as never, action: "neighbor.opened", at: 0 });
       // No council comes with the sample, so the check gets one to name.
       found.councils ??= await ctx.db.insert("councils", { name: "Sample District Council", timeZone: "UTC", createdAt: 0 });
+      found.webRequests ??= await ctx.db.insert("webRequests", { churchId: found.churches as never, kind: "food", need: "x", phone: "", email: "a@example.org", zip: "48201", language: "en", stage: "received", statusKeyHash: "k", codeHash: "", codeTries: 0, contactHash: "c", ipHash: "i", createdAt: 0 });
       return found;
     });
     // The smallest arguments each query's own validator accepts, with real ids of the sample, so the refusal
@@ -140,7 +141,8 @@ describe("the one read that needs no sign-in", () => {
     }
     expect(asked.length).toBeGreaterThan(40);
     // Two older ones answer a plain yes or no and read nothing: whether the caller is the sample visitor, and
-    // whether email delivery is set up. The seed read is the only one that answers with anything more.
-    expect(open.sort()).toEqual(["demo:firstRoom: answered", "demo:visiting: answered", "workspace:emailConfiguration: answered"]);
+    // whether email delivery is set up. The seed read is the only one that answers with anything more. The web form's
+    // two say only whether a zip is served, and where one request stands to the holder of its private key.
+    expect(open.sort()).toEqual(["demo:firstRoom: answered", "demo:visiting: answered", "intake:coverage: answered", "intake:status: answered", "workspace:emailConfiguration: answered"]);
   });
 });

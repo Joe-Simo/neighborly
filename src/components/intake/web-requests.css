@@ -1,0 +1,22 @@
+/* The Help line's web requests. Late is ochre (waiting on a person), never red. */
+.web-requests .web-area p,
+.web-requests .web-held p { margin: 0 0 8px; }
+.web-requests .web-held { padding: 12px 0; border-top: 1px solid var(--rule, #ddd6c6); }
+.web-row .web-need { white-space: pre-wrap; margin: 4px 0; }
+.web-row .web-mark { margin: 2px 0; font-size: 15px; }
+.web-row .web-passed { margin: 0 0 6px; font-weight: 600; }
+.web-row.web-late { box-shadow: inset 3px 0 0 var(--paper-ochre, #c8962e); }
+.web-row .web-late-note { color: color-mix(in srgb, var(--paper-ochre, #c8962e) 70%, #283c32); }
+.web-row .web-choice { display: flex; gap: 8px; align-items: center; min-height: 44px; }
+.web-requests .web-traces h3 { font-size: 13px; margin: 16px 0 4px; }
+.web-requests .web-traces ul { margin: 0; padding-left: 18px; font-size: 15px; }
+.service-area-figure { margin: 8px 0 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.service-area-figure figcaption { font-size: 15px; }
+.web-requests .web-partners { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--rule, #ddd6c6); }
+.web-requests .web-partners h3 { font-size: 13px; margin: 0 0 4px; }
+.web-requests .web-review { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--rule, #ddd6c6); }
+.web-requests .web-review h3 { font-size: 13px; margin: 0 0 4px; }
+.web-requests .web-review h4 { font-size: 13px; font-weight: 600; margin: 12px 0 2px; }
+.web-requests .web-partner { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-height: 44px; }
+.web-requests .web-link code { word-break: break-all; }
+.web-requests .web-days { list-style: none; padding: 0; margin: 8px 0; }
