@@ -25,6 +25,7 @@ import type * as invitations from "../invitations.js";
 import type * as knownNames from "../knownNames.js";
 import type * as language from "../language.js";
 import type * as meetingFanout from "../meetingFanout.js";
+import type * as minutes from "../minutes.js";
 import type * as nameKeys from "../nameKeys.js";
 import type * as neighbors from "../neighbors.js";
 import type * as notificationEvents from "../notificationEvents.js";
@@ -65,6 +66,7 @@ declare const fullApi: ApiFromModules<{
   knownNames: typeof knownNames;
   language: typeof language;
   meetingFanout: typeof meetingFanout;
+  minutes: typeof minutes;
   nameKeys: typeof nameKeys;
   neighbors: typeof neighbors;
   notificationEvents: typeof notificationEvents;

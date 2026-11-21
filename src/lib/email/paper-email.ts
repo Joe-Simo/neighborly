@@ -75,9 +75,13 @@ const display = "Newsreader,Georgia,'Times New Roman',serif";
 const body = "'Source Sans 3','Segoe UI',Helvetica,Arial,sans-serif";
 
 export function paperEmail({ kind, language, set, place, link, week }: { kind: EmailKind; language: Language; set: WordSet; place: string; link: string; week?: WeekCounts }): Email {
-  const s = said(kind, language, set, place, week);
+  return render(language, said(kind, language, set, place, week), link);
+}
+
+/** One sheet of paper: the head, the words (a line break kept as one), the one way in, and the foot. */
+function render(language: Language, s: Said, link: string): Email {
   const text = [s.head, "", s.body, "", `${s.action}: ${link}`, "", s.foot, "", "kind helps"].join("\n");
-  const e = { head: escape(s.head), body: escape(s.body), action: escape(s.action), foot: escape(s.foot), link: escape(link) };
+  const e = { head: escape(s.head), body: escape(s.body).replace(/\n/g, "<br>"), action: escape(s.action), foot: escape(s.foot), link: escape(link) };
   const html = `<!doctype html>
 <html lang="${language}">
 <head>
@@ -161,4 +165,23 @@ function weekSaid(language: Language, place: string, week: WeekCounts): Said {
     action: "See the week",
     foot: "No names in this email, on purpose. You can stop it on the same page.",
   };
+}
+
+/**
+ * A meeting's minutes for every member: when it met, who came (a count), the decisions (counts), the reflection and the
+ * minutes as typed with neighbors' names and addresses already taken out by the caller.
+ */
+export function minutesEmail(m: { language: Language; set: WordSet; place: string; title: string; start: number; timeZone: string; attended: number; approved: number; declined: number; reflection: string; minutes: string; link: string }): Email {
+  const es = m.language === "es";
+  const day = new Intl.DateTimeFormat(es ? "es-US" : "en-US", { dateStyle: "long", timeZone: m.timeZone }).format(m.start);
+  const lines = es
+    ? [`${m.title}, ${day}.`, `Asistieron ${m.attended}. Decisiones: ${m.approved} aprobadas, ${m.declined} rechazadas.`, m.reflection && `Reflexión:\n${m.reflection}`, m.minutes && `Acta:\n${m.minutes}`]
+    : [`${m.title}, ${day}.`, `${m.attended} came. Decisions: ${m.approved} approved, ${m.declined} declined.`, m.reflection && `Reflection:\n${m.reflection}`, m.minutes && `Minutes:\n${m.minutes}`];
+  return render(m.language, {
+    subject: es ? `Acta de ${m.title}, ${m.place}` : `Minutes of ${m.title}, ${m.place}`,
+    head: es ? "El acta de la reunión." : "The meeting’s minutes.",
+    body: lines.filter(Boolean).join("\n\n"),
+    action: es ? "Abrir Kind Helps" : "Open Kind Helps",
+    foot: es ? "Sin nombres de las personas que ayudamos, a propósito." : "No names of the people we help, on purpose.",
+  }, m.link);
 }
