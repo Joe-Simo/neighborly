@@ -3,7 +3,7 @@
 import { DateLeaf } from "@/components/workspace/primitives";
 
 import "@/components/workspace/for-good.css";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useMutation } from "convex/react";
 import { useQuery } from "@/components/workspace/query";
@@ -47,6 +47,9 @@ import {
   HelpEmpty,
   HelpLoading,
 } from "@/components/workspace/help-line/room";
+
+/** Other records that may be this household: fetched with the record's own code only once the record is on the page. */
+const PossibleSame = lazy(() => import("@/components/workspace/help-line/possible-same").then((module) => ({ default: module.PossibleSame })));
 
 type Step =
   | { kind: "request" | "details" | "note" | "remove" | HomeStep }
@@ -172,14 +175,8 @@ export function NeighborRecord({
       : "skip",
   );
   const read = removed ? undefined : (live ?? held ?? undefined);
-  // The website goes live before the backend does. Until the backend knows about the home,
-  // the record shows without it instead of failing.
-  const homeReady = Array.isArray(read?.household);
   const record = read && {
     ...read,
-    household: homeReady ? read.household : [],
-    accounts: homeReady ? read.accounts : [],
-    money: homeReady ? read.money : null,
     open: [...read.open].sort(
       (a, b) => Number(b.id === requestId) - Number(a.id === requestId),
     ),
@@ -326,12 +323,12 @@ export function NeighborRecord({
         record={record}
         format={format}
         now={now}
-        home={homeReady}
         numbers={numbers}
         // Under an open dialog the page says nothing: the dialog says it.
         covered={step ? null : covered}
         approvedNow={approvedNow}
         onShowNumbers={() => void reveal()}
+        alike={<Suspense><PossibleSame neighborId={neighborId} onMerged={(said) => finish(said)} /></Suspense>}
         onStep={(next) => {
           setDone("");
           moveOn();
@@ -580,18 +577,19 @@ function NeighborRecordView({
   record,
   format,
   now,
-  home = true,
   numbers = null,
   covered = null,
   approvedNow = null,
   onShowNumbers = () => {},
+  alike = null,
   onStep,
 }: {
+  /** Other records that may be the same household, laid under the home's details. */
+  alike?: ReactNode;
   record: Record;
   format: Workspace["format"];
   /** The page's own clock, for what depends on the time, such as whether a voucher may still be taken back. */
   now: number;
-  home?: boolean;
   numbers?: Accounts | null;
   /** "Show numbers" was refused: said in plum just above "At home", where it was asked. */
   covered?: Covered | null;
@@ -602,15 +600,11 @@ function NeighborRecordView({
 }) {
   const { words, sampleSaid } = useWorkspace();
   const text = words.rooms.neighbors.record;
-  const homeText = words.rooms.neighbors.home;
   const { title: requestTitle } = requestWords(words);
   const { neighbor, open } = record;
   const [first, ...alsoOpen] = open;
   const year = (at: number) =>
     format(at, { month: undefined, day: undefined, year: "numeric" });
-  const landlord = record.requests.find(
-    (request) => request.payeeKind === "landlord" && request.payeeName,
-  )?.payeeName;
   const asked = (request: HelpRequest) =>
     request.source === "import"
       ? fill(text.sheet.brought, { date: format(request.createdAt, { weekday: undefined, year: "numeric" }) })
@@ -665,47 +659,7 @@ function NeighborRecordView({
         </div>
       </dl>
 
-      {!home && (
-        <>
-          <dl className="help-record-facts" data-few="">
-            <div>
-              <dt>{text.facts.phone}</dt>
-              <dd className="help-tel">{neighbor.phone || text.facts.none}</dd>
-            </div>
-            <div>
-              <dt>{text.facts.speaks}</dt>
-              <dd>
-                {neighbor.language === "other"
-                  ? neighbor.languageName || words.rooms.neighbors.languages.other
-                  : words.rooms.neighbors.languages[neighbor.language]}
-              </dd>
-            </div>
-            <div>
-              <dt>{text.facts.household}</dt>
-              <dd>
-                {neighbor.children
-                  ? fill(homeText.adultsAndChildren, { adults: homeText.adults(neighbor.adults), children: homeText.children(neighbor.children) })
-                  : homeText.adults(neighbor.adults)}
-              </dd>
-            </div>
-            <div>
-              <dt>{landlord ? text.facts.landlord : text.facts.email}</dt>
-              <dd>{landlord ?? (neighbor.email || text.facts.none)}</dd>
-            </div>
-          </dl>
-          <p className="help-note">
-            {neighbor.notes && <>{sampleSaid(neighbor.notes)} </>}
-            <Button
-              variant="link"
-              className="help-text-action"
-              onClick={() => onStep({ kind: "details" })}
-            >
-              {text.facts.change}
-            </Button>
-          </p>
-        </>
-      )}
-      {home && neighbor.notes && <p className="help-note">{sampleSaid(neighbor.notes)}</p>}
+      {neighbor.notes && <p className="help-note">{sampleSaid(neighbor.notes)}</p>}
 
       {first && (
         <section
@@ -809,22 +763,21 @@ function NeighborRecordView({
       )}
 
       {/* What is open leads, under the figures; the home's details follow it, then the thread. */}
-      {home && covered && (
+      {covered && (
         <StillCovered
           covered={covered}
           kept={text.numbers.keptOnPage}
           onPage
         />
       )}
-      {home && (
-        <AtHome
-          record={record}
-          format={format}
-          numbers={numbers}
-          onShowNumbers={onShowNumbers}
-          onStep={(kind) => onStep({ kind })}
-        />
-      )}
+      <AtHome
+        record={record}
+        format={format}
+        numbers={numbers}
+        onShowNumbers={onShowNumbers}
+        onStep={(kind) => onStep({ kind })}
+      />
+      {alike}
 
       <section
         className={first || alsoOpen.length ? "live-section" : undefined}
@@ -832,15 +785,13 @@ function NeighborRecordView({
         <div className="live-section-head">
           <h2>{text.history.title}</h2>
           <span className="help-head-actions">
-            {home && (
-              <Button
-                variant="link"
-                className="help-text-action"
-                onClick={() => onStep({ kind: "note" })}
-              >
-                {text.history.note}
-              </Button>
-            )}
+            <Button
+              variant="link"
+              className="help-text-action"
+              onClick={() => onStep({ kind: "note" })}
+            >
+              {text.history.note}
+            </Button>
             {!first && (
               <Button
                 variant="outline"
