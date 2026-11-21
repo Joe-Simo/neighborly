@@ -7,8 +7,8 @@ import { readCode, readKey, readSubmission } from "../src/lib/intake-rules";
 
 /**
  * The endpoints behind the "Ask for help" form: POST /intake/submit and POST /intake/confirm, called by the site's own
- * server (src/lib/help-page/), never by a browser. Here: the shared secret, Turnstile (checked with Cloudflare before
- * anything is kept or sent), the input, and hashing. Then convex/intake.ts does the rest in one transaction.
+ * server (src/lib/help-page/), never by a browser. Here: the shared secret, the site's word that Vercel BotID judged
+ * the sender human (the site checks it, since only it sees the browser's request), the input, and hashing. Then convex/intake.ts does the rest in one transaction.
  */
 const encode = (text: string) => new TextEncoder().encode(text);
 const hex = (bytes: ArrayBuffer | Uint8Array) => Array.from(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, "0")).join("");
@@ -54,25 +54,6 @@ async function body(request: Request): Promise<Record<string, unknown> | null> {
   } catch { return null; }
 }
 
-/** Cloudflare's own word on the Turnstile token. With no secret set, the form is closed: nothing is let through unchecked. */
-const TOKEN_MAX_AGE = 5 * 60 * 1000;
-async function turnstile(token: unknown, ip: string) {
-  const secret = process.env.TURNSTILE_SECRET_KEY;
-  if (!secret || typeof token !== "string" || !token || token.length > 2048) return false;
-  const form = new URLSearchParams({ secret, response: token });
-  if (ip !== "unknown") form.set("remoteip", ip);
-  try {
-    const answer = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: form });
-    const result: unknown = await answer.json();
-    if (typeof result !== "object" || result === null) return false;
-    const said = result as { success?: unknown; hostname?: unknown; action?: unknown; challenge_ts?: unknown };
-    // Cloudflare refuses a token used twice; the page's own host, the form's action name and a fresh token are checked here too.
-    const host = siteOrigin() ? new URL(siteOrigin() ?? "").hostname : null;
-    const age = typeof said.challenge_ts === "string" ? Date.now() - Date.parse(said.challenge_ts) : Infinity;
-    return said.success === true && said.action === "ask-for-help" && (!host || said.hostname === host) && age >= 0 && age < TOKEN_MAX_AGE;
-  } catch { return false; }
-}
-
 function statusLink(language: "en" | "es", key: string) {
   const site = siteOrigin();
   return site ? `${site}${language === "es" ? "/ayuda/estado" : "/help/status"}?k=${key}` : null;
@@ -89,8 +70,8 @@ export const submit = httpAction(async (ctx, request) => {
   const partnerLink = readKey(input.partnerLink), partnerSession = readKey(input.partnerSession);
   const partnerId = partnerLink && partnerSession ? await ctx.runQuery(internal.intakePartners.signedIn, { linkHash: await hashPartnerLink(partnerLink), sessionHash: await keyed(`session:${partnerSession}`) }) : null;
   if (partnerLink && !partnerId) return reply(403, { result: "partner" });
-  // Everyone else: the bot check comes before anything is kept, looked up or sent.
-  if (!partnerId && !(await turnstile(input.token, ip))) return reply(403, { result: "check" });
+  // Everyone else: the site checked Vercel BotID before calling here; without its word, nothing is kept, looked up or sent.
+  if (!partnerId && input.human !== true) return reply(403, { result: "check" });
   // A street address is placed with the Census geocoder (the address alone is sent); without it, the zip's centre.
   const street = typeof input.street === "string" ? input.street.replace(/\s+/g, " ").trim().slice(0, 120) : "";
   const at = street && /^\d{5}$/.test(read.value.zip) ? await placeAddress(ctx, `${street}, ${read.value.zip}`) : null;
