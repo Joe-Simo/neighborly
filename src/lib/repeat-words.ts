@@ -51,6 +51,9 @@ const pace = {
   en: {
     month: (month: string, spent: string, before: string, budget: string) => `Approved so far in ${month}: ${spent}${budget && ` of the ${budget} monthly budget`}. ${month} last year: ${before}.`,
     none: "none",
+    household: (had: string) => `This household has had ${had} approved in the past 12 months.`,
+    householdCap: (had: string, cap: string) => `This household has had ${had} approved in the past 12 months, against your limit of ${cap} per household.`,
+    over: (total: string) => ` Approving the full amount would take it to ${total}.`,
     highest: (kind: string, median: string) => `This amount is above every ${kind} approval in the past year. The middle amount was ${median}.`,
     amount: (above: number, kind: string, median: string) => `This amount is above ${above} of every 10 ${kind} approvals in the past year. The middle amount was ${median}.`,
     kinds: { rent: "rent", utility: "utility", food: "food", voucher: "voucher", other: "other" },
@@ -58,6 +61,9 @@ const pace = {
   es: {
     month: (month: string, spent: string, before: string, budget: string) => `Aprobado hasta ahora en ${month}: ${spent}${budget && ` del presupuesto mensual de ${budget}`}. En ${month} del año pasado: ${before}.`,
     none: "nada",
+    household: (had: string) => `Este hogar ha recibido ${had} aprobados en los últimos 12 meses.`,
+    householdCap: (had: string, cap: string) => `Este hogar ha recibido ${had} aprobados en los últimos 12 meses, frente a su límite de ${cap} por hogar.`,
+    over: (total: string) => ` Aprobar la cantidad completa lo llevaría a ${total}.`,
     highest: (kind: string, median: string) => `Esta cantidad supera todas las aprobaciones de ${kind} del último año. La cantidad media fue ${median}.`,
     amount: (above: number, kind: string, median: string) => `Esta cantidad supera ${above} de cada 10 aprobaciones de ${kind} del último año. La cantidad media fue ${median}.`,
     kinds: said.es.kinds,
@@ -68,17 +74,20 @@ const pace = {
  * The group's spending, from the records, ahead of the household lines: this month against the same month last year,
  * and, with enough earlier approvals of the kind, where the asked amount falls when it is above nine in ten of them.
  */
-export function paceLines(language: Language, spent: { month: number; thisMonth: number; lastYear: number; budget?: number | null; kind: RequestKind; asked: number; approvals: number; median: number; above: number; baseline: number }): RepeatLine[] {
+export function paceLines(language: Language, spent: { month: number; thisMonth: number; lastYear: number; budget?: number | null; household?: number; householdCap?: number | null; kind: RequestKind; asked: number; approvals: number; median: number; above: number; baseline: number }): RepeatLine[] {
   const w = pace[language];
   const money = (cents: number) => formatMoney(cents / 100, language, cents % 100 === 0);
   const lines: RepeatLine[] = [];
   if (spent.thisMonth || spent.lastYear || spent.budget) lines.push({ text: w.month(months[language][spent.month - 1], money(spent.thisMonth), spent.lastYear ? money(spent.lastYear) : w.none, spent.budget ? money(spent.budget) : ""), assistant: false });
+  const had = spent.household ?? 0;
+  if (spent.householdCap) lines.push({ text: w.householdCap(money(had), money(spent.householdCap)) + (had + spent.asked > spent.householdCap ? w.over(money(had + spent.asked)) : ""), assistant: false });
+  else if (had) lines.push({ text: w.household(money(had)), assistant: false });
   const tenths = spent.approvals ? Math.floor((spent.above / spent.approvals) * 10) : 0;
   if (spent.kind !== "voucher" && spent.approvals >= spent.baseline && tenths >= 9) lines.push({ text: spent.above === spent.approvals ? w.highest(w.kinds[spent.kind], money(spent.median)) : w.amount(tenths, w.kinds[spent.kind], money(spent.median)), assistant: false });
   return lines;
 }
 
-type Spent = { month: number; thisMonth: number; lastYear: number; budget: number | null; kind: RequestKind; asked: number; approvals: number; median: number; above: number };
+type Spent = { month: number; thisMonth: number; lastYear: number; budget: number | null; household: number; householdCap: number | null; kind: RequestKind; asked: number; approvals: number; median: number; above: number };
 export type RepeatFacts = { recent: { at: number; kind: RequestKind; status: "approved" | "paid"; amount: number }[]; sameAmount: { at: number; kind: RequestKind; amount: number }[]; spent: Spent; baseline: number; timeZone: string };
 
 /** Every line the sheet shows, in order: the group's spending, then the household's records, then the assistant's readings. */

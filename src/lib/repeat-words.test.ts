@@ -28,3 +28,15 @@ describe("pace lines", () => {
 test("a set budget is said in the month's line", () => {
   expect(paceLines("en", { month: 11, thisMonth: 124000, lastYear: 0, budget: 200000, kind: "food", asked: 0, approvals: 0, median: 0, above: 0, baseline: 10 })[0].text).toBe("Approved so far in November: $1,240 of the $2,000 monthly budget. November last year: none.");
 });
+
+test("the household's 12 months are said against the limit, and going over says where the full amount lands", () => {
+  const quiet = { month: 11, thisMonth: 0, lastYear: 0, kind: "rent" as const, approvals: 0, median: 0, above: 0, baseline: 10 };
+  expect(paceLines("en", { ...quiet, household: 40000, householdCap: 60000, asked: 30000 }).map(line => line.text)).toEqual([
+    "This household has had $400 approved in the past 12 months, against your limit of $600 per household. Approving the full amount would take it to $700.",
+  ]);
+  expect(paceLines("en", { ...quiet, household: 10000, householdCap: 60000, asked: 30000 }).map(line => line.text)).toEqual([
+    "This household has had $100 approved in the past 12 months, against your limit of $600 per household.",
+  ]);
+  expect(paceLines("en", { ...quiet, household: 10000, asked: 30000 }).map(line => line.text)).toEqual(["This household has had $100 approved in the past 12 months."]);
+  expect(paceLines("es", { ...quiet, household: 40000, householdCap: 60000, asked: 30000 })).toHaveLength(1);
+});
