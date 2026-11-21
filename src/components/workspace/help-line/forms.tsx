@@ -531,6 +531,8 @@ export function DecideForm({
           approving && !voucher ? cents(value("amount")) : null;
         if (approving && !voucher && !amountApproved) markWrong(form, "amount", w.amountNeeded);
         const places = [...referred, value("elsewhere")].filter(Boolean);
+        const counted = (name: string) => Math.max(0, Math.floor(Number(value(name)) || 0));
+        const goods = { food: counted("food"), furniture: counted("furniture"), clothing: counted("clothing") };
         if (places.length > 4) markWrong(form, "elsewhere", w.tooManyPlaces);
         if (!form.checkValidity()) return;
         const outcome = await save(() =>
@@ -541,6 +543,7 @@ export function DecideForm({
             amountApproved: amountApproved ?? undefined,
             ...(voucher && { quantity: Number(value("quantity")) }),
             note: value("note"),
+            ...(Object.values(goods).some(Boolean) && { goods }),
             // An older backend does not know the list of places yet; it keeps the single line.
             ...(agencies
               ? { referrals: places }
@@ -598,6 +601,17 @@ export function DecideForm({
       >
         <Textarea name="note" rows={3} />
       </LiveField>
+      <fieldset className="help-lines">
+        <legend>{w.goods}</legend>
+        <p className="help-form-note">{w.goodsHelp}</p>
+        <div className="live-form-grid">
+          {(["food", "furniture", "clothing"] as const).map((kind) => (
+            <LiveField key={kind} label={w.goodsKinds[kind]}>
+              <Input name={kind} type="number" inputMode="numeric" min={0} max={500} />
+            </LiveField>
+          ))}
+        </div>
+      </fieldset>
       <fieldset className="help-lines">
         <legend>{w.referred}</legend>
         {suggested.length > 0 && (

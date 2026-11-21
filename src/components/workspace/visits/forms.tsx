@@ -352,6 +352,9 @@ function typedNumber(typed: FormDataEntryValue | null) {
 }
 
 /** After the visit: what the pair found, and the hours and miles each of them gave. */
+const places = ["home", "prison", "hospital", "eldercare", "other"] as const;
+const placeOf = (value: FormDataEntryValue | null) => places.find((place) => place === value) ?? "home";
+
 export function WriteUpForm({
   churchId,
   visit,
@@ -376,6 +379,9 @@ export function WriteUpForm({
         const hours = typedNumber(data.get("hours"));
         const miles = typedNumber(data.get("miles"));
         const drove = String(data.get("drove") ?? "");
+        const guestTyped = String(data.get("guestHours") ?? "").trim();
+        const guestHours = guestTyped ? typedNumber(guestTyped) : 0;
+        if (guestHours === null || guestHours > 200) markWrong(form, "guestHours", text.problems.hours);
         // A field that can't be taken is said under that field, and the first one is put in focus (LiveField):
         // the box that says nothing was saved is kept for a save that truly failed.
         if (hours === null || hours <= 0 || hours > 24) markWrong(form, "hours", text.problems.hours);
@@ -392,6 +398,8 @@ export function WriteUpForm({
           notes: String(data.get("notes") ?? ""),
           hours,
           miles,
+          place: placeOf(data.get("place")),
+          ...(guestHours && { guestHours }),
         };
         const outcome = await save(async () => {
           if (!driver || miles === 0) return writeUp(written);
@@ -435,6 +443,18 @@ export function WriteUpForm({
             inputMode="decimal"
             autoComplete="off"
           />
+        </LiveField>
+      </div>
+      <div className="live-form-grid">
+        <LiveField label={text.place}>
+          <NativeSelect name="place" defaultValue="home" className="w-full">
+            {places.map((place) => (
+              <NativeSelectOption key={place} value={place}>{text.places[place]}</NativeSelectOption>
+            ))}
+          </NativeSelect>
+        </LiveField>
+        <LiveField label={text.guestHours} help={text.guestHoursHelp}>
+          <Input name="guestHours" inputMode="decimal" autoComplete="off" />
         </LiveField>
       </div>
       <LiveField

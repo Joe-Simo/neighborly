@@ -19,7 +19,7 @@ const said = {
       e6: "Those we served", e6rent: "of which rent and eviction prevention", e6utility: "of which utilities", e6food: "of which food", e6other: "of which other help", e7: "Disaster contributions",
       e8: "Twinning sent (domestic and international together)", e10: "Contributions to upper councils (dues)", e11a: "Operating expense: special works", e11b: "Operating expense: stores", e11c: "Operating expense: special events",
       e11d: "Operating expense: other", eTotal: "Total expenses",
-      vA: "Home visits", vAPeople: "People helped by home visits", vB: "Prison visits", vC: "Hospital visits", vD: "Eldercare visits", vE: "Other in-person visits",
+      vA: "Home visits", vB: "Prison visits", vC: "Hospital visits", vD: "Eldercare visits", vE: "Other in-person visits",
       gServices: "In-kind services: legal, medical, dental, other", gFood: "In-kind goods: food", gFurniture: "In-kind goods: furniture", gClothing: "In-kind goods: clothing", gOther: "In-kind goods: other (vouchers given from the shelf)",
       hMembers: "Hours of service: members", hOthers: "Hours of service: non-members", miles: "Miles in Vincentian service",
       households: "Households helped", people: "People in those households", activeMembers: "Active members", meetings: "How often the conference meets", bylaws: "Conference bylaws adopted without changes",
@@ -28,9 +28,12 @@ const said = {
     notes: {
       r1: "Donations are not split between members and others; all are under miscellaneous receipts.",
       e8: "Kind Helps does not split domestic from international twinning.",
-      miles: "Miles logged on home visits only.",
+      miles: "Miles logged on visits only.",
       gOther: "A count of vouchers; their dollar value is not kept.",
       hMembers: "Home visit hours and finished shift hours.",
+      people: (n: number) => `${n} people helped`,
+      goods: (n: number) => `Times given; ${n} items in all. Their dollar value is not kept.`,
+      guests: "Logged on visits only.",
     },
   },
   es: {
@@ -42,7 +45,7 @@ const said = {
       e6: "Ayuda a quienes servimos", e6rent: "de ello, renta y prevención de desalojo", e6utility: "de ello, servicios", e6food: "de ello, comida", e6other: "de ello, otra ayuda", e7: "Contribuciones para desastres",
       e8: "Hermanamiento enviado (nacional e internacional juntos)", e10: "Contribuciones a consejos superiores (cuotas)", e11a: "Gasto de operación: obras especiales", e11b: "Gasto de operación: tiendas", e11c: "Gasto de operación: eventos especiales",
       e11d: "Gasto de operación: otros", eTotal: "Total de gastos",
-      vA: "Visitas a domicilio", vAPeople: "Personas ayudadas en visitas a domicilio", vB: "Visitas a prisiones", vC: "Visitas a hospitales", vD: "Visitas a personas mayores", vE: "Otras visitas en persona",
+      vA: "Visitas a domicilio", vB: "Visitas a prisiones", vC: "Visitas a hospitales", vD: "Visitas a personas mayores", vE: "Otras visitas en persona",
       gServices: "Servicios en especie: legales, médicos, dentales, otros", gFood: "Bienes en especie: comida", gFurniture: "Bienes en especie: muebles", gClothing: "Bienes en especie: ropa", gOther: "Bienes en especie: otros (vales entregados)",
       hMembers: "Horas de servicio: miembros", hOthers: "Horas de servicio: no miembros", miles: "Millas en servicio vicentino",
       households: "Hogares ayudados", people: "Personas en esos hogares", activeMembers: "Miembros activos", meetings: "Con qué frecuencia se reúne la conferencia", bylaws: "Estatutos de la conferencia adoptados sin cambios",
@@ -51,9 +54,12 @@ const said = {
     notes: {
       r1: "Los donativos no se separan entre miembros y otras personas; todos están en ingresos varios.",
       e8: "Kind Helps no separa el hermanamiento nacional del internacional.",
-      miles: "Solo las millas registradas en visitas a domicilio.",
+      miles: "Solo las millas registradas en visitas.",
       gOther: "Una cuenta de vales; su valor en dólares no se guarda.",
       hMembers: "Horas de visitas a domicilio y de turnos terminados.",
+      people: (n: number) => `${n} personas ayudadas`,
+      goods: (n: number) => `Veces entregado; ${n} artículos en total. Su valor en dólares no se guarda.`,
+      guests: "Solo las registradas en visitas.",
     },
   },
 } satisfies Record<Language, unknown>;
@@ -102,17 +108,19 @@ export function svdpForm(report: YearReport, language: Language): FormSection[] 
       { code: "", line: l.eTotal, value: cents(report.money.spent) },
     ] },
     { title: s.visits, lines: [
-      { code: "A", line: l.vA, value: count(report.visits) },
-      { code: "A", line: l.vAPeople, value: count(report.peopleVisited) },
-      none("B", l.vB), none("C", l.vC), none("D", l.vD), none("E", l.vE),
+      ...(["home", "prison", "hospital", "eldercare", "other"] as const).map((place, index) => {
+        const line = report.visitsByPlace[place];
+        return { code: "ABCDE"[index], line: [l.vA, l.vB, l.vC, l.vD, l.vE][index], value: count(line.visits), note: n.people(line.people) };
+      }),
     ] },
     { title: s.goods, lines: [
-      none("F–I", l.gServices), none("J", l.gFood), none("K", l.gFurniture), none("L", l.gClothing),
+      none("F–I", l.gServices),
+      ...(["food", "furniture", "clothing"] as const).map((kind, index) => ({ code: "JKL"[index], line: [l.gFood, l.gFurniture, l.gClothing][index], value: count(report.goods[kind].times), note: n.goods(report.goods[kind].items) })),
       { code: "M", line: l.gOther, value: count(report.vouchers.given), note: n.gOther },
     ] },
     { title: s.hours, lines: [
       { code: "", line: l.hMembers, value: count(report.time.hours), note: n.hMembers },
-      none("", l.hOthers),
+      { code: "", line: l.hOthers, value: count(report.guestHours), note: n.guests },
       { code: "", line: l.miles, value: count(report.visitMiles), note: n.miles },
     ] },
     { title: s.served, lines: [
