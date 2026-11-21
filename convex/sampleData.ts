@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { DateTime } from "luxon";
-import { internalMutation, type MutationCtx } from "./_generated/server";
+import { type MutationCtx } from "./_generated/server";
+import { internalMutation } from "./functions";
 import type { Doc, Id, TableNames } from "./_generated/dataModel";
 import { WAITING_KEPT } from "./counts";
 import { rebuildNames } from "./knownNames";

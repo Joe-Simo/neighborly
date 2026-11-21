@@ -11,7 +11,7 @@ const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
 const at = Date.parse("2026-11-15T15:00:00Z");
 
 beforeEach(() => {
-  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.useFakeTimers({ toFake: ["Date", "setTimeout", "clearTimeout"] });
   vi.setSystemTime(new Date(at));
 });
 afterEach(() => void vi.useRealTimers());
@@ -68,7 +68,14 @@ describe("a council", () => {
       await ctx.db.insert("councilLinks", { councilId, churchId: other, status: "pending", createdAt: at });
     });
     const hourAt = Math.floor(at / 3_600_000) * 3_600_000;
+    // No stored year yet: the conference shows, with nothing added up, as being updated.
+    const before = await as(councilUser).query(api.councils.yearReport, { councilId, year: 2026, at: hourAt });
+    expect(before.updating).toBe(true);
+    expect(before.conferences).toEqual([{ name: "St. Example Conference", figures: sum([]), updating: true }]);
+    await as(councilUser).mutation(api.councils.refresh, { councilId, year: 2026 });
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
     const report = await as(councilUser).query(api.councils.yearReport, { councilId, year: 2026, at: hourAt });
+    expect(report.updating).toBe(false);
     const own = await as(sampleOwner).query(api.reports.year, { churchId: sampleId, year: 2026, at: hourAt });
 
     // A pending conference is not counted.
@@ -95,6 +102,58 @@ describe("a council", () => {
     const keys = new Set<string>();
     JSON.parse(sent, (key: string, value: unknown) => (keys.add(key), value));
     for (const key of ["neighborId", "memberId", "teamId", "members", "teams", "kinds", "householdsByOtherLanguage", "phone", "address", "notes"]) expect(keys.has(key), key).toBe(false);
+  });
+
+  test("a write marks the conference's stored years stale and schedules one recompute each", async () => {
+    const { t, as, councilId, councilUser, otherOwner, other } = await setting();
+    await as(councilUser).mutation(api.councils.invite, { councilId, code: other });
+    const [link] = (await as(otherOwner).query(api.councils.forConference, { churchId: other })).councils;
+    await as(otherOwner).mutation(api.councils.accept, { linkId: link.id });
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    const kept = () => t.run((ctx) => ctx.db.query("yearRollups").withIndex("by_church_year", (q) => q.eq("churchId", other)).collect());
+    const waiting = () =>
+      t.run(async (ctx) => (await ctx.db.system.query("_scheduled_functions").collect()).filter((job) => job.name.includes("recompute") && job.state.kind === "pending").length);
+    // Accepting adds up this fiscal year (November is in 2027's) and the last.
+    expect((await kept()).map((row) => [row.year, row.dirty])).toEqual([[2026, false], [2027, false]]);
+
+    const pat = { name: "Fabrice Pemberton", phone: "(100) 555-0105", email: "", address: "220 Placeholder Rd", adults: 2, children: 4, language: "es", notes: "" } as const;
+    await as(otherOwner).mutation(api.neighbors.create, { churchId: other, ...pat });
+    expect((await kept()).every((row) => row.dirty)).toBe(true);
+    expect(await waiting()).toBe(2);
+    await as(otherOwner).mutation(api.neighbors.create, { churchId: other, ...pat, name: "Rosa Example", phone: "(100) 555-0177", address: "9 Other Ln" });
+    expect(await waiting()).toBe(2);
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    expect((await kept()).some((row) => row.dirty)).toBe(false);
+
+    // Once no council counts the conference, its stored years go.
+    await as(otherOwner).mutation(api.councils.unlink, { linkId: link.id });
+    expect(await kept()).toEqual([]);
+  });
+
+  test("the council's year is read from the stored rows, not the conference's records", async () => {
+    const { t, as, councilId, councilUser, sampleId, sampleOwner } = await setting();
+    await t.run((ctx) => ctx.db.insert("councilLinks", { councilId, churchId: sampleId, status: "accepted", createdAt: at }));
+    await as(councilUser).mutation(api.councils.refresh, { councilId, year: 2026 });
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    const hourAt = Math.floor(at / 3_600_000) * 3_600_000;
+    const own = await as(sampleOwner).query(api.reports.year, { churchId: sampleId, year: 2026, at: hourAt });
+    expect((await t.run((ctx) => ctx.db.query("yearRollups").collect())).map((row) => row.figures)).toEqual([figures(own)]);
+
+    // A row written past the watched builders changes nothing until the stored year is added up again.
+    await t.run(async (ctx) => {
+      const row = await ctx.db.query("yearRollups").first();
+      if (row) await ctx.db.patch("yearRollups", row._id, { figures: { ...row.figures, households: 12345 }, dirty: true });
+    });
+    const report = await as(councilUser).query(api.councils.yearReport, { councilId, year: 2026, at: hourAt });
+    expect(report.total.households).toBe(12345);
+    expect(report.updating).toBe(true);
+    expect(report.conferences[0].updating).toBe(true);
+    // The hourly sweep picks up what is still stale.
+    await t.mutation(internal.councils.recomputeDirty, {});
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    const fresh = await as(councilUser).query(api.councils.yearReport, { councilId, year: 2026, at: hourAt });
+    expect(fresh.total).toEqual(figures(own));
+    expect(fresh.updating).toBe(false);
   });
 
   test("only its owner reads the council's year", async () => {

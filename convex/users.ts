@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { components, internal } from "./_generated/api";
-import { internalMutation, mutation } from "./_generated/server";
+import { internalMutation, mutation } from "./functions";
 import { verifiedIdentity } from "./access";
 
 /**

@@ -1,7 +1,8 @@
 import { ConvexError, v, type Infer } from "convex/values";
 import { DateTime } from "luxon";
 import { internal } from "./_generated/api";
-import { action, internalMutation, mutation, query, type QueryCtx } from "./_generated/server";
+import { action, query, type QueryCtx } from "./_generated/server";
+import { internalMutation, mutation } from "./functions";
 import type { Id } from "./_generated/dataModel";
 import { auditedBy, membership, neighborAccess } from "./access";
 import { nameKey, phoneKey } from "./assistance";

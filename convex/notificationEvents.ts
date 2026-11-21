@@ -1,7 +1,8 @@
 import { user } from "./access";
 import { vStatus, type EmailId } from "@convex-dev/resend";
 import { ConvexError, v } from "convex/values";
-import { mutation, query, type MutationCtx } from "./_generated/server";
+import { query, type MutationCtx } from "./_generated/server";
+import { mutation } from "./functions";
 import type { Doc, Id } from "./_generated/dataModel";
 import { deliveryConfiguration, resend } from "./notifications";
 import { isSampleChurch } from "./demo";

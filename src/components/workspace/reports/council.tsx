@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useState, type FormEvent } from "react";
+import { startTransition, useEffect, useState, type FormEvent } from "react";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
 import { Download } from "lucide-react";
@@ -156,7 +156,13 @@ function CouncilYearTable({ councilId, year, money }: { councilId: Id<"councils"
   const w = councilWords(words.locale);
   const at = useHour();
   const report = useQuery(api.councils.yearReport, { councilId, year, at });
+  const refresh = useMutation(api.councils.refresh);
   const [done, setDone] = useState("");
+  const updating = report?.updating ?? false;
+  // A year no conference has stored yet (an older one) is asked to be added up; stale ones are already on their way.
+  useEffect(() => {
+    if (updating) void refresh({ councilId, year }).catch(() => undefined);
+  }, [updating, councilId, year, refresh]);
   const language = words.locale;
   if (!report) return <LiveLoading label={w.loading} />;
   const number = new Intl.NumberFormat(language === "es" ? "es-US" : "en-US", { maximumFractionDigits: 2 });
@@ -174,6 +180,7 @@ function CouncilYearTable({ councilId, year, money }: { councilId: Id<"councils"
   return (
     <>
       <p className="housing-note">{report.closed ? w.year(report.year) : `${w.year(report.year)}, ${w.soFar}`}</p>
+      {report.updating && <p className="housing-note" role="status">{w.updating}</p>}
       <div className="housing-scroll" tabIndex={0} role="region" aria-label={w.title}>
         <table className="housing-table">
           <thead>

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, type MutationCtx } from "./_generated/server";
+import { type MutationCtx } from "./_generated/server";
+import { mutation } from "./functions";
 import { membership } from "./access";
 import { isSampleVisitor } from "./demo";
 

@@ -1,7 +1,8 @@
 import { ConvexError, v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Id, TableNames } from "./_generated/dataModel";
-import { internalMutation, mutation, type MutationCtx } from "./_generated/server";
+import { type MutationCtx } from "./_generated/server";
+import { internalMutation, mutation } from "./functions";
 import { membership } from "./access";
 
 /**
@@ -19,7 +20,7 @@ export const swept = [
   "aiReads", "requestDrafts", "calls", "neighborNotes", "visits", "ledgerEntries", "voucherStock", "assistanceRequests", "duplicatePairs", "duplicateDismissals", "neighbors",
   "files", "referralAgencies", "payees", "deposits", "ledgerKinds", "bankStatements",
   "outbox", "meetingResponses", "meetingInvitees", "meetings", "requests", "commitmentHistory", "commitments", "series",
-  "teamMembers", "teams", "availability", "timeOff", "tasks", "announcements", "aiUsageByChurch", "knownNames", "auditEvents", "councilLinks",
+  "teamMembers", "teams", "availability", "timeOff", "tasks", "announcements", "aiUsageByChurch", "knownNames", "auditEvents", "councilLinks", "yearRollups",
 ] as const satisfies readonly TableNames[];
 type Swept = (typeof swept)[number];
 
@@ -31,6 +32,8 @@ async function rows(ctx: MutationCtx, table: Swept, churchId: Id<"churches">, li
       return ctx.db.query(table).withIndex("by_church_month", (q) => q.eq("churchId", churchId)).take(limit);
     case "ledgerKinds":
       return ctx.db.query(table).withIndex("by_church_key", (q) => q.eq("churchId", churchId)).take(limit);
+    case "yearRollups":
+      return ctx.db.query(table).withIndex("by_church_year", (q) => q.eq("churchId", churchId)).take(limit);
     case "memberships":
       return ctx.db.query(table).withIndex("by_church", (q) => q.eq("churchId", churchId)).take(limit);
     case "commitmentHistory": {

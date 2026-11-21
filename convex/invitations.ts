@@ -1,7 +1,8 @@
 import { user as account } from "./access";
 import { ConvexError, v } from "convex/values";
 import { internal } from "./_generated/api";
-import { action, internalMutation, internalQuery, mutation, type MutationCtx } from "./_generated/server";
+import { action, internalQuery, type MutationCtx } from "./_generated/server";
+import { internalMutation, mutation } from "./functions";
 import type { Id } from "./_generated/dataModel";
 import { enqueueInvitation, resend } from "./notifications";
 import { isSampleChurch, isSampleVisitor, sampleOwner } from "./demo";

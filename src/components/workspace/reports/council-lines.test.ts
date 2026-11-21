@@ -3,7 +3,7 @@ import { councilCsv, councilFileName, figureOrder } from "@/components/workspace
 import { councilWords } from "@/components/workspace/reports/council-words";
 
 const figures = { households: 2, people: 5, adults: 3, children: 2, visits: 1, peopleVisited: 5, visitHours: 1.5, visitMiles: 4, requestsReceived: 2, amountRequested: 10050, helpPaid: 5000, callsTaken: 3, hoursOfService: 2.5, activeMembers: 4, membersServing: 2, moneyReceived: 9000, moneySpent: 5000, endingBalance: 4000 };
-const report = { council: "Sample District Council", year: 2026, closed: true, total: figures, conferences: [{ name: "St. Example Conference", figures }] };
+const report = { council: "Sample District Council", year: 2026, closed: true, updating: false, total: figures, conferences: [{ name: "St. Example Conference", figures, updating: false }] };
 
 describe("the council report's spreadsheet", () => {
   test("has a row per figure, a column per conference and the total, money in dollars", () => {

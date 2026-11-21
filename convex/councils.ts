@@ -1,9 +1,13 @@
 import { ConvexError, v, type Infer } from "convex/values";
+import { internal } from "./_generated/api";
 import { IANAZone } from "luxon";
-import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
+import { query, type MutationCtx, type QueryCtx } from "./_generated/server";
+import { internalMutation, mutation } from "./functions";
 import type { Doc, Id } from "./_generated/dataModel";
 import { hour, hourAsked, membership, user } from "./access";
-import { yearFigures, type YearReport } from "./reports";
+import { fiscalYear, fiscalYearOf, yearFigures, type YearReport } from "./reports";
+import { dropYears, ensureYears } from "./rollups";
+import { councilFigures, type CouncilFigures } from "./councilFigures";
 
 /**
  * District and particular councils: a council links its member conferences and adds up their year together, as
@@ -16,27 +20,7 @@ import { yearFigures, type YearReport } from "./reports";
  */
 const MOST_CONFERENCES = 200;
 
-export const councilFigures = v.object({
-  households: v.number(),
-  people: v.number(),
-  adults: v.number(),
-  children: v.number(),
-  visits: v.number(),
-  peopleVisited: v.number(),
-  visitHours: v.number(),
-  visitMiles: v.number(),
-  requestsReceived: v.number(),
-  amountRequested: v.number(),
-  helpPaid: v.number(),
-  callsTaken: v.number(),
-  hoursOfService: v.number(),
-  activeMembers: v.number(),
-  membersServing: v.number(),
-  moneyReceived: v.number(),
-  moneySpent: v.number(),
-  endingBalance: v.number(),
-});
-export type CouncilFigures = Infer<typeof councilFigures>;
+export { councilFigures, type CouncilFigures };
 const figureKeys = Object.keys(councilFigures.fields) as (keyof CouncilFigures)[];
 
 /** The numbers, and only the numbers, of one conference's year. */
@@ -173,6 +157,12 @@ export const accept = mutation({
     const link = await linkOf(ctx, args.linkId);
     await conferenceOwner(ctx, link.churchId);
     if (link.status !== "accepted") await ctx.db.patch("councilLinks", link._id, { status: "accepted" });
+    // The council's report reads stored years: this one and the last are added up now.
+    const church = await ctx.db.get("churches", link.churchId);
+    if (church) {
+      const current = fiscalYearOf(Date.now(), church.timeZone);
+      await ensureYears(ctx, church._id, [current, current - 1]);
+    }
     return null;
   },
 });
@@ -187,21 +177,34 @@ export const unlink = mutation({
     const seat = await ctx.db.query("councilMembers").withIndex("by_council_user", (q) => q.eq("councilId", link.councilId).eq("userId", account.id)).unique();
     if (seat?.role !== "owner") await conferenceOwner(ctx, link.churchId);
     await ctx.db.delete("councilLinks", link._id);
+    if (!(await countedByAny(ctx, link.churchId))) await dropYears(ctx, link.churchId);
     return null;
   },
 });
+
+async function countedByAny(ctx: QueryCtx, churchId: Id<"churches">) {
+  const links = await ctx.db.query("councilLinks").withIndex("by_church", (q) => q.eq("churchId", churchId)).take(50);
+  return links.some((link) => link.status === "accepted");
+}
 
 export const councilYear = v.object({
   council: v.string(),
   year: v.number(),
   /** False while any conference's year is still running. */
   closed: v.boolean(),
+  /** True while any conference's stored year is missing or being added up again: its figures are the last ones kept. */
+  updating: v.boolean(),
   total: councilFigures,
-  conferences: v.array(v.object({ name: v.string(), figures: councilFigures })),
+  conferences: v.array(v.object({ name: v.string(), figures: councilFigures, updating: v.boolean() })),
 });
 export type CouncilYear = Infer<typeof councilYear>;
 
-/** The council's year: each accepted conference's counts and sums, and all of them added up. Council owners only. */
+const noFigures = sum([]);
+
+/**
+ * The council's year: each accepted conference's counts and sums, and all of them added up. Council owners only.
+ * Reads one stored row per conference (convex/rollups.ts), never a conference's records.
+ */
 export const yearReport = query({
   args: { councilId: v.id("councils"), year: v.number(), at: hour },
   returns: councilYear,
@@ -214,8 +217,13 @@ export const yearReport = query({
       accepted.map(async (link) => {
         const church = await ctx.db.get("churches", link.churchId);
         if (!church) return null;
-        const report = await yearFigures(ctx, { churchId: church._id, year: args.year }, now);
-        return { name: church.name, closed: report.closed, figures: figures(report) };
+        const kept = await ctx.db.query("yearRollups").withIndex("by_church_year", (q) => q.eq("churchId", church._id).eq("year", args.year)).unique();
+        return {
+          name: church.name,
+          closed: fiscalYear(args.year, church.timeZone).end <= now,
+          figures: kept?.figures ?? noFigures,
+          updating: !kept || kept.dirty,
+        };
       }),
     );
     const conferences = rows.flatMap((row) => (row ? [row] : [])).sort((a, b) => a.name.localeCompare(b.name));
@@ -223,8 +231,56 @@ export const yearReport = query({
       council: council.name,
       year: args.year,
       closed: conferences.every((row) => row.closed),
+      updating: conferences.some((row) => row.updating),
       total: sum(conferences.map((row) => row.figures)),
-      conferences: conferences.map(({ name, figures: numbers }) => ({ name, figures: numbers })),
+      conferences: conferences.map(({ name, figures: numbers, updating }) => ({ name, figures: numbers, updating })),
     };
+  },
+});
+
+/** A council owner asks for a year no stored row holds yet (an older year): each accepted conference's is added up. */
+export const refresh = mutation({
+  args: { councilId: v.id("councils"), year: v.number() },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await councilOwner(ctx, args.councilId);
+    if (!Number.isInteger(args.year) || args.year < 2000 || args.year > 2200) throw new ConvexError("Choose a year.");
+    for (const link of await linksOf(ctx, args.councilId)) {
+      if (link.status !== "accepted") continue;
+      const missing = !(await ctx.db.query("yearRollups").withIndex("by_church_year", (q) => q.eq("churchId", link.churchId).eq("year", args.year)).unique());
+      if (missing) await ensureYears(ctx, link.churchId, [args.year]);
+    }
+    return null;
+  },
+});
+
+/** Adds up one conference's year, as its own report does, and keeps the numbers. Only while a council counts it. */
+export const recompute = internalMutation({
+  args: { churchId: v.id("churches"), year: v.number() },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const row = await ctx.db.query("yearRollups").withIndex("by_church_year", (q) => q.eq("churchId", args.churchId).eq("year", args.year)).unique();
+    const church = await ctx.db.get("churches", args.churchId);
+    if (!church || !(await countedByAny(ctx, args.churchId))) {
+      if (row) await ctx.db.delete("yearRollups", row._id);
+      return null;
+    }
+    const computedAt = Date.now();
+    // Counted at the whole hour, as the conference's own report is asked for.
+    const numbers = figures(await yearFigures(ctx, { churchId: args.churchId, year: args.year }, Math.floor(computedAt / 3_600_000) * 3_600_000));
+    if (row) await ctx.db.patch("yearRollups", row._id, { figures: numbers, computedAt, dirty: false });
+    else await ctx.db.insert("yearRollups", { churchId: args.churchId, year: args.year, figures: numbers, computedAt, dirty: false });
+    return null;
+  },
+});
+
+/** Hourly: any stored year still marked stale (a recompute that failed or was lost) is added up again. */
+export const recomputeDirty = internalMutation({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    for (const row of await ctx.db.query("yearRollups").withIndex("by_dirty", (q) => q.eq("dirty", true)).take(200))
+      await ctx.scheduler.runAfter(0, internal.councils.recompute, { churchId: row.churchId, year: row.year });
+    return null;
   },
 });

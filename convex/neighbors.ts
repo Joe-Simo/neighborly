@@ -1,6 +1,7 @@
 import { ConvexError, v, type Infer } from "convex/values";
 import { DateTime } from "luxon";
-import { mutation, query } from "./_generated/server";
+import { query } from "./_generated/server";
+import { mutation } from "./functions";
 import type { Doc } from "./_generated/dataModel";
 import { logNeighborOpening, neighborAccess, neighborRecord, openedBy, opening } from "./access";
 import { mayUndo } from "./undo";

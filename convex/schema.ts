@@ -1,6 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { spoken } from "./spoken";
+import { councilFigures } from "./councilFigures";
 const role = v.union(v.literal("owner"), v.literal("coordinator"), v.literal("member"));
 const language = v.union(v.literal("en"), v.literal("es"));
 /** Money is stored as whole cents, always positive; the entry kind says which way it moves. */
@@ -28,6 +29,8 @@ export default defineSchema({
   councilMembers: defineTable({ councilId: v.id("councils"), userId: v.id("users"), role: v.literal("owner") }).index("by_user", ["userId"]).index("by_council_user", ["councilId", "userId"]),
   /** A council's invitation to a conference, accepted by that conference's owner. Either side may end it. */
   councilLinks: defineTable({ councilId: v.id("councils"), churchId: v.id("churches"), status: v.union(v.literal("pending"), v.literal("accepted")), createdAt: v.number() }).index("by_council", ["councilId"]).index("by_church", ["churchId"]).index("by_council_church", ["councilId", "churchId"]),
+  /** One conference's fiscal year, added up for its councils (convex/rollups.ts). Dirty once a record under it changed, until recomputed. */
+  yearRollups: defineTable({ churchId: v.id("churches"), year: v.number(), figures: councilFigures, computedAt: v.number(), dirty: v.boolean() }).index("by_church_year", ["churchId", "year"]).index("by_dirty", ["dirty"]),
   teams: defineTable({ churchId: v.id("churches"), name: v.string(), description: v.string() }).index("by_church", ["churchId"]),
   teamMembers: defineTable({ churchId: v.id("churches"), teamId: v.id("teams"), memberId: v.id("memberships"), teamRole: v.union(v.literal("coordinator"),v.literal("member")), approved:v.boolean(), status: v.union(v.literal("invited"), v.literal("active")) }).index("by_church", ["churchId"]).index("by_team_member", ["teamId", "memberId"]).index("by_member", ["memberId"]),
   series: defineTable({ churchId: v.id("churches"), teamId: v.id("teams"), intervalWeeks:v.number(), count:v.number() }).index("by_church", ["churchId"]),
