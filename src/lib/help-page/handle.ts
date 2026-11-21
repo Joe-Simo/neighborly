@@ -10,9 +10,9 @@ import type { IntakeLanguage, NeedKind } from "../intake/intake-words";
  * The backend (convex/intakeHttp.ts) is reached only from here, with INTAKE_SERVER_SECRET, and is told the sender's
  * address as Vercel saw it. It checks Turnstile before anything is kept or any code is sent.
  */
-export const SVDP_FINDER = "https://www.svdpusa.org/find-help/";
+const SVDP_FINDER = "https://www.svdpusa.org/find-help/";
 /** National Runaway Safeline: free, any hour, for young people. */
-export const YOUTH_LINE = "1-800-786-2929";
+const YOUTH_LINE = "1-800-786-2929";
 const DEVICE = "kh_device", REQUEST = "kh_request", TO = "kh_to";
 const paths = { en: { form: "/help", status: "/help/status" }, es: { form: "/ayuda", status: "/ayuda/estado" } } as const;
 

@@ -2,15 +2,14 @@
  * What the public "Ask for help" form accepts. The page checks it to help the person; the server checks it again
  * (convex/intakeHttp.ts) and trusts only its own check. Plain module: no imports, so both sides load it.
  */
-export const HELP_KINDS = ["rent", "utility", "food", "voucher", "other"] as const;
-export type HelpKind = (typeof HELP_KINDS)[number];
-export const NEED_MIN = 3;
-export const NEED_MAX = 500;
+const HELP_KINDS = ["rent", "utility", "food", "voucher", "other"] as const;
+type HelpKind = (typeof HELP_KINDS)[number];
+const NEED_MAX = 500;
 
 /** The page's words for the kinds (src/lib/intake/intake-words.ts) and the record's (convex/schema.ts helpKind). */
 export const PAGE_KINDS = { rent: "rent", utilities: "utility", food: "food", vouchers: "voucher", other: "other" } as const satisfies Record<string, HelpKind>;
 
-export type Submission = {
+type Submission = {
   kinds: HelpKind[];
   /** The person's own words, links taken out; may be empty when the kinds say it. */
   need: string;
@@ -32,7 +31,7 @@ const isKind = (value: unknown): value is HelpKind => typeof value === "string" 
 const str = (value: unknown) => (typeof value === "string" ? value : "");
 const line = (value: unknown, max: number) => str(value).replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
 /** Digits only, without a leading US 1; empty when none was given. */
-export const phoneDigits = (phone: string) => phone.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "");
+const phoneDigits = (phone: string) => phone.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "");
 
 /** Reads untrusted input into a submission, or names every field that needs a look. */
 export function readSubmission(input: unknown): { ok: true; value: Submission } | { ok: false; problems: Problem[] } {
@@ -83,7 +82,7 @@ export function hasLink(text: string) {
   return /(?:https?|hxxps?)\s*:\s*\/\/|\bwww\s*\./.test(plain) || new RegExp(`${tight}|${loose}`).test(plain);
 }
 /** The words with every word that reads as a link taken out. */
-export function stripLinks(text: string) {
+function stripLinks(text: string) {
   if (!hasLink(text)) return text;
   const kept: string[] = [];
   const words = text.split(/\s+/);
