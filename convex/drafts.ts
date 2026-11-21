@@ -968,10 +968,10 @@ async function spentOn(key: string, lines: { memo: string; category: string }[],
 
 export const measureLedger = internalAction({
   args: { churchId: v.id("churches") },
-  returns: v.object({ status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance"), v.literal("no answer")), model: v.string(), all: referralTally, heldOut: referralTally, trial: v.object({ all: referralTally, heldOut: referralTally }), rows: v.array(v.object({ id: v.string(), score: v.number(), flagged: v.boolean(), pick: v.optional(v.string()), pickConfidence: v.optional(v.number()), trialFlagged: v.optional(v.boolean()) })) }),
+  returns: v.object({ status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance"), v.literal("no answer")), model: v.string(), all: referralTally, heldOut: referralTally, trial: v.object({ all: referralTally, heldOut: referralTally }), fresh: v.object({ live: referralTally, trial: referralTally }), rows: v.array(v.object({ id: v.string(), score: v.number(), flagged: v.boolean(), pick: v.optional(v.string()), pickConfidence: v.optional(v.number()), trialFlagged: v.optional(v.boolean()) })) }),
   handler: async (ctx, { churchId }) => {
     const zero = { right: 0, missed: 0, wrong: 0 };
-    const none = { model, all: zero, heldOut: zero, trial: { all: zero, heldOut: zero }, rows: [] };
+    const none = { model, all: zero, heldOut: zero, trial: { all: zero, heldOut: zero }, fresh: { live: zero, trial: zero }, rows: [] };
     const key = env.TYPESAFE_API_KEY;
     if (!key) return { status: "no key" as const, ...none };
     if (!await ctx.runMutation(internal.drafts.reserveMany, { churchId, count: 2 })) return { status: "no allowance" as const, ...none };
@@ -985,11 +985,11 @@ export const measureLedger = internalAction({
       // else (0.95) and a yes-or-no score of at least 0.5. Either alone is too loose (run 2: three wrong); below, it abstains.
       const trialFlagged = flagged || (!!pick?.elsewhere && pick.confidence >= 0.95 && sure[index] >= 0.5);
       const trialMark = trialFlagged === item.off ? "right" as const : trialFlagged ? "wrong" as const : "missed" as const;
-      return { id: item.id, score: Math.round(sure[index] * 100) / 100, flagged, mark, trialMark, heldOut: !!item.heldOut, ...(pick && { pick: pick.pick, pickConfidence: Math.round(pick.confidence * 100) / 100, trialFlagged }) };
+      return { id: item.id, score: Math.round(sure[index] * 100) / 100, flagged, mark, trialMark, heldOut: !!item.heldOut, fresh: !!item.fresh, ...(pick && { pick: pick.pick, pickConfidence: Math.round(pick.confidence * 100) / 100, trialFlagged }) };
     });
-    const add = (only: boolean, arm: "mark" | "trialMark") => rows.filter(row => !only || row.heldOut).reduce((sum, row) => ({ ...sum, [row[arm]]: sum[row[arm]] + 1 }), { ...zero });
+    const add = (only: boolean | "fresh", arm: "mark" | "trialMark") => rows.filter(row => (only === "fresh" ? row.fresh : !only || row.heldOut)).reduce((sum, row) => ({ ...sum, [row[arm]]: sum[row[arm]] + 1 }), { ...zero });
     return {
-      status: "done" as const, model, all: add(false, "mark"), heldOut: add(true, "mark"), trial: { all: add(false, "trialMark"), heldOut: add(true, "trialMark") },
+      status: "done" as const, model, all: add(false, "mark"), heldOut: add(true, "mark"), trial: { all: add(false, "trialMark"), heldOut: add(true, "trialMark") }, fresh: { live: add("fresh", "mark"), trial: add("fresh", "trialMark") },
       rows: rows.map(({ id, score, flagged, pick, pickConfidence, trialFlagged }) => ({ id, score, flagged, ...(pick !== undefined && { pick, pickConfidence, trialFlagged }) })),
     };
   },

@@ -4,7 +4,8 @@
  * nothing here is real. The answers were written from the memos alone before any run. Memos marked `heldOut` must never
  * be used to set a line or a wording: their marks are the honest figure.
  */
-interface LedgerMemo { id: string; memo: string; category: string; off: boolean; heldOut?: true }
+/** `fresh`: written after run 2, when the held-out rows had been seen. Never looked at to set a rule; only these are quoted. */
+interface LedgerMemo { id: string; memo: string; category: string; off: boolean; heldOut?: true; fresh?: true }
 
 export const ledgerSet: LedgerMemo[] = [
   { id: "rent-fits", memo: "October rent for the family on 3rd Street, check to landlord.", category: "rent", off: false },
@@ -21,4 +22,11 @@ export const ledgerSet: LedgerMemo[] = [
   { id: "ho-es-food", memo: "Comida para la despensa, compra del mes.", category: "food", off: false, heldOut: true },
   { id: "ho-es-food-medicine", memo: "Medicinas de la farmacia para la abuela.", category: "food", off: true, heldOut: true },
   { id: "ho-voucher-fits", memo: "Winter coats for three children.", category: "voucher", off: false, heldOut: true },
+  { id: "fr-utility-water", memo: "Water bill, two months behind.", category: "utility", off: false, fresh: true },
+  { id: "fr-food-gas", memo: "Gas for the car to get to dialysis.", category: "food", off: true, fresh: true },
+  { id: "fr-rent-latefee", memo: "Late fee and November balance owed to the landlord.", category: "rent", off: false, fresh: true },
+  { id: "fr-voucher-rent", memo: "Half of December rent, check to the property manager.", category: "voucher", off: true, fresh: true },
+  { id: "fr-es-luz", memo: "Pago de la luz para evitar el corte.", category: "utility", off: false, fresh: true },
+  { id: "fr-es-food-bus", memo: "Pases de autobús para ir al trabajo.", category: "food", off: true, fresh: true },
+  { id: "fr-voucher-dresser", memo: "Dresser and kitchen table from the thrift store.", category: "voucher", off: false, fresh: true },
 ];
