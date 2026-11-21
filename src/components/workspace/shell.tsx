@@ -61,10 +61,7 @@ import type {
   LiveConfirmation,
   LiveWorkspaceData,
 } from "@/components/workspace/types";
-import { CommitmentDetail } from "@/components/workspace/volunteer/commitment-detail";
-import { LiveCommitmentEditor } from "@/components/workspace/volunteer/commitment-editor";
-import { LiveCreateForm } from "@/components/workspace/volunteer/create-form";
-import { LiveTimeOffForm } from "@/components/workspace/volunteer/time-off-form";
+import { CommitmentDetail, fetchSheetsAhead, LiveCommitmentEditor, LiveCreateForm, LiveTimeOffForm } from "@/components/workspace/sheet-code";
 import { formatDate, words as wordsFor } from "@/lib/words";
 
 // One empty list for every draw, so a workspace with no requests stays the same workspace.
@@ -383,7 +380,7 @@ export function LiveWorkspace({
   const [rested, setRested] = useState(false);
   useEffect(() => void roomsOpened.add(area), [area]);
   // Once the first room is in, the others are fetched while nothing else is happening.
-  useEffect(() => fetchRoomsAhead(fetchMonthAhead), []);
+  useEffect(() => fetchRoomsAhead(() => Promise.all([fetchMonthAhead(), fetchSheetsAhead()])), []);
   // The first room after the door is drawn finished under the sweep's paper (door.css). The next room arrives as rooms do.
   const firstArea = useRef(area);
   useLayoutEffect(() => {
