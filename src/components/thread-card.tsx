@@ -105,7 +105,10 @@ export function ThreadCard() {
         // Nor does it cross the draft sheet's words on its way out to the year: where the straight way runs over the sheet, it is lifted off and set down instead.
         const sheet = at.dataset.station === "ledger" ? world.querySelector<HTMLElement>(".home-yes-sheet")?.getBoundingClientRect() : null;
         const overSheet = !!sheet && Array.from({ length: 11 }, (_, i) => i / 10).some(t => { const x = mix(last.x, to.x, t), y = mix(last.y, to.y, t); return x > sheet.left - 24 && x < sheet.right + 24 && y > sheet.top - 24 && y < sheet.bottom + 24; });
-        const hops = across || overSheet;
+        // Nor, leaving "The call.", does it cross that chapter's own heading and sentence on its way down: where they lie across its way, it is lifted off and set down.
+        const left = before?.at.dataset.station === "call" ? before.panel.querySelector<HTMLElement>(".relief-words")?.getBoundingClientRect() : null, reach = Math.max(last.w, to.w) / 2 + 24;
+        const overWords = !!left && Math.min(last.x, to.x) - reach < left.right && Math.max(last.x, to.x) + reach > left.left;
+        const hops = across || overSheet || overWords;
         // In one column there is less clear paper round a tucked place, so the card goes in over a shorter way.
         stop.short = hops;
         const ready = drawn(to, stop);
