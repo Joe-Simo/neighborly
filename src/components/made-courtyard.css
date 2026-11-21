@@ -33,11 +33,11 @@
   .made-courtyard-stack img{transform:perspective(1400px) var(--lean) translateZ(calc(var(--open) * (var(--sheet) - 3) * var(--gap)))}
 }
 
-/* With Reduce Motion nothing is drawn apart: the courtyard lies whole in the page, with the line that says what it is made of. */
+/* With Reduce Motion the courtyard lies whole in the page, with the line that says what it is made of; the scroll never draws it apart, and a hand
+   draws it apart only in cuts (made-courtyard.tsx), inside its own stage. */
 @media(prefers-reduced-motion:reduce){
   .made-courtyard{height:auto;padding-block:clamp(48px,8vh,96px)}
-  .made-courtyard-stage{position:static;height:auto;overflow:visible}
-  .made-courtyard-stack,.made-courtyard-stack img{transform:none}
+  .made-courtyard-stage{position:static;height:auto;overflow:hidden;padding-block:24px}
   .made-courtyard-said span{position:static}
   .made-courtyard[data-whole] .made-courtyard-said span:first-child{visibility:visible}
   .made-courtyard[data-whole] .made-courtyard-said span:last-child{display:none}
