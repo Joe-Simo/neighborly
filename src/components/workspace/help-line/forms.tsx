@@ -83,6 +83,8 @@ const onShelf = (shelf: Shelf, item: string) =>
 const itemOf = (voucher: { item: string }) =>
   voucher.item.toLowerCase().replace(/\s+vouchers?$/, "");
 
+const phoneDigits = (phone: string) => phone.replace(/\D/g, "").length;
+
 export function CallForm({
   churchId,
   neighbor,
@@ -104,6 +106,13 @@ export function CallForm({
   const [said, setSaid] = useState(false);
   const [owed, setOwed] = useState(true);
   const lead = draftable && said && owed;
+  // Households on file the typed name or phone already matches, asked when a box is left: one tap ties the call to one,
+  // so no record has to be added or looked up after. A call from a record is already tied.
+  const [typed, setTyped] = useState({ name: "", phone: "" });
+  const [chosen, setChosen] = useState<{ id: Neighbor["id"]; name: string } | null>(null);
+  const asks = !neighbor && (phoneDigits(typed.phone) >= 7 || typed.name.trim().split(/\s+/).length >= 2);
+  const onFile = useQuery(api.neighbors.matches, asks ? { churchId, ...typed } : "skip");
+  const leave = (field: "name" | "phone") => (event: { target: { value: string } }) => setTyped((now) => ({ ...now, [field]: event.target.value }));
   return (
     <form
       className="live-form help-form"
@@ -119,7 +128,7 @@ export function CallForm({
         const outcome = await save(() =>
           record({
             churchId,
-            neighborId: neighbor?.id,
+            neighborId: neighbor?.id ?? chosen?.id,
             callerName: value("callerName"),
             phone: value("phone"),
             note: value("note"),
@@ -142,6 +151,7 @@ export function CallForm({
             name="callerName"
             defaultValue={neighbor?.name}
             autoComplete="off"
+            onBlur={leave("name")}
           />
         </LiveField>
         <LiveField label={w.phone}>
@@ -150,9 +160,34 @@ export function CallForm({
             type="tel"
             defaultValue={neighbor?.phone}
             autoComplete="off"
+            onBlur={leave("phone")}
           />
         </LiveField>
       </div>
+      {chosen ? (
+        <p className="help-form-note" role="status">
+          {w.linked(chosen.name)}{" "}
+          <Button type="button" variant="link" className="help-text-action" onClick={() => setChosen(null)}>
+            {w.unlink}
+          </Button>
+        </p>
+      ) : (
+        !!onFile?.length && asks && (
+          <div className="help-matches" role="group" aria-label={w.onFile}>
+            {onFile.slice(0, 3).map((match) => (
+              <div className="live-row" key={match.id}>
+                <div>
+                  <h3>{keepTitle(match.name)}</h3>
+                  {match.address && <p>{match.address}</p>}
+                </div>
+                <Button type="button" variant="outline" size="sm" aria-label={w.useThis(match.name)} onClick={() => setChosen({ id: match.id, name: match.name })}>
+                  {w.use}
+                </Button>
+              </div>
+            ))}
+          </div>
+        )
+      )}
       <LiveField label={w.said}>
         <Textarea
           name="note"
