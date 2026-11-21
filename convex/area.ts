@@ -85,16 +85,25 @@ export function bbox(area: Area) {
 }
 const inBox = (box: number[] | undefined, point: Point) => !box || box.length !== 4 || (point.lng >= box[0] && point.lat >= box[1] && point.lng <= box[2] && point.lat <= box[3]);
 
-export type Team<Id> = { id: Id; area: Area; center: Point; bbox?: number[] };
-/** The team whose area holds the point, the nearest church first where areas overlap; null when no team serves it yet. */
+export type Team<Id> = { id: Id; area: Area; center: Point; bbox?: number[]; /** Lower wins where areas overlap, before distance. */ order?: number; /** The circle radius in miles, when the area is a circle. */ miles?: number };
+/**
+ * Every team that serves a point, best first: a set overlap order first (a council placing its conferences), then the
+ * nearest church. `reachMiles` is the radius of the sender's zip's own land: when no area holds the zip's centre but a
+ * circle comes within that reach, the team still serves it, marked to check (big rural zips whose centre is far off).
+ */
+export function covering<Id>(teams: Team<Id>[], point: Point, reachMiles = 0) {
+  const rank = (team: Team<Id>) => ({ id: team.id, miles: distanceMiles(team.center, point), order: team.order ?? Number.MAX_SAFE_INTEGER });
+  const sort = (a: ReturnType<typeof rank>, b: ReturnType<typeof rank>) => a.order - b.order || a.miles - b.miles;
+  const inside = teams.filter((team) => inBox(team.bbox, point) && covers(team.area, point)).map(rank).sort(sort);
+  if (inside.length || reachMiles <= 0) return inside.map((team) => ({ id: team.id, checkArea: false }));
+  const near = teams.filter((team) => team.miles !== undefined && distanceMiles(team.center, point) <= (team.miles ?? 0) + reachMiles).map(rank).sort(sort);
+  return near.map((team) => ({ id: team.id, checkArea: true }));
+}
+/** The radius of a circle with a zip's land area: how far its people may live from its centre. */
+export const reachOf = (sqmi: number | undefined) => (sqmi && sqmi > 0 ? Math.sqrt(sqmi / Math.PI) : 0);
+/** The one team that gets a point, or null: then no team serves that place yet. */
 export function nearestCovering<Id>(teams: Team<Id>[], point: Point): Id | null {
-  let best: { id: Id; miles: number } | null = null;
-  for (const team of teams) {
-    if (!inBox(team.bbox, point) || !covers(team.area, point)) continue;
-    const miles = distanceMiles(team.center, point);
-    if (!best || miles < best.miles) best = { id: team.id, miles };
-  }
-  return best?.id ?? null;
+  return covering(teams, point)[0]?.id ?? null;
 }
 /** Other teams by distance from a point, nearest first: where a request may be passed on. */
 export function byDistance<Id>(teams: Team<Id>[], point: Point) {

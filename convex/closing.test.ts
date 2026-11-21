@@ -61,6 +61,8 @@ async function setup() {
       councilLinks: async () => ctx.db.insert("councilLinks", { councilId: await ctx.db.insert("councils", { name: "Sample District Council", timeZone: "UTC", createdAt: now }), churchId, status: "accepted", createdAt: now }),
       yearRollups: () => ctx.db.insert("yearRollups", { churchId, year: 2027, figures: sum([]), computedAt: now, dirty: false }),
       webRequests: () => ctx.db.insert("webRequests", { churchId, kind: "food", need: "Groceries.", phone: "", email: "a@example.org", zip: "48201", language: "en", stage: "received", statusKeyHash: "k", codeHash: "", codeTries: 0, contactHash: "c", ipHash: "i", createdAt: now }),
+      webFlags: () => ctx.db.insert("webFlags", { churchId, contactHash: "c", at: now }),
+      webPartners: () => ctx.db.insert("webPartners", { churchId, name: "Example Shelter", email: "desk@example.org", linkHash: "l", active: true, createdBy: owner._id, createdAt: now }),
       webBlocks: () => ctx.db.insert("webBlocks", { churchId, hash: "c", by: owner._id, at: now }),
       availability: () => ctx.db.insert("availability", { churchId, memberId: member._id, start: "2026-11-01", end: "2026-11-02" }),
     };

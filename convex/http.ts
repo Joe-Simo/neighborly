@@ -3,7 +3,7 @@ import { httpAction } from "./_generated/server";
 import { resend } from "./notifications";
 import { feed } from "./calendar";
 import { preflight, read } from "./files";
-import { confirm, remove, resendCode, submit } from "./intakeHttp";
+import { confirm, partnerFinish, partnerStart, remove, resendCode, submit } from "./intakeHttp";
 
 const http = httpRouter();
 http.route({ path: "/resend-webhook", method: "POST", handler: httpAction(async (ctx, request) => resend.handleResendEventWebhook(ctx, request)) });
@@ -17,4 +17,6 @@ http.route({ path: "/intake/submit", method: "POST", handler: submit });
 http.route({ path: "/intake/confirm", method: "POST", handler: confirm });
 http.route({ path: "/intake/resend", method: "POST", handler: resendCode });
 http.route({ path: "/intake/remove", method: "POST", handler: remove });
+http.route({ path: "/intake/partner/start", method: "POST", handler: partnerStart });
+http.route({ path: "/intake/partner/finish", method: "POST", handler: partnerFinish });
 export default http;

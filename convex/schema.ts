@@ -32,7 +32,18 @@ export default defineSchema({
   aiUsageByChurch: defineTable({ churchId: v.id("churches"), month: v.string(), count: v.number() }).index("by_church_month", ["churchId", "month"]),
   churches: defineTable({ name: v.string(), timeZone: v.string(), sample: v.optional(v.boolean()), wordSet: v.optional(v.union(v.literal("general"), v.literal("vincentian"))), /** What the group means to approve in help each month, in cents; unset until someone sets it. */ monthlyBudget: v.optional(v.number()), /** The most the group means to approve for one household in twelve months, in cents; unset until someone sets it. */ householdYearCap: v.optional(v.number()), /** Running figures kept by convex/counts.ts. */ householdCount: v.optional(v.number()), waitingCount: v.optional(v.number()), waitingHouseholdIds: v.optional(v.array(v.id("neighbors"))),
     /** The public web form (convex/intake.ts): the zip and miles chosen in settings, the church's centre (that zip's Census centroid; nearest wins on overlap) and the area routed by. */
-    intake: v.optional(v.object({ enabled: v.boolean(), /** As typed in settings; its zip places the centre for now (Census address lookup is still to come). */ address: v.optional(v.string()), zip: v.string(), miles: v.number(), area: serviceArea, /** [west, south, east, north] of area, so routing reads only shapes whose box holds the point. */ bbox: v.array(v.number()), center: v.object({ lat: v.number(), lng: v.number() }) })) }).index("by_intake_enabled", ["intake.enabled"]),
+    intake: v.optional(v.object({ enabled: v.boolean(), /** As typed in settings; its zip places the centre for now (Census address lookup is still to come). */ address: v.optional(v.string()), zip: v.string(), miles: v.number(), area: serviceArea,
+      /** Requests a week this team takes; past it, the next covering team gets them. None: no limit. */
+      weeklyLimit: v.optional(v.number()),
+      /** Where areas overlap, a lower order wins before distance (a council placing its conferences). None: distance alone. */
+      order: v.optional(v.number()),
+      /** Days ("yyyy-MM-dd") the team is closed: skipped when counting business days. */
+      holidays: v.optional(v.array(v.string())),
+      /** Last time an owner or coordinator opened the Help line; 30 days without one pauses the form. */
+      seenAt: v.optional(v.number()),
+      /** Why the form is off when it was turned off for the team, not by it. */
+      pausedBy: v.optional(v.literal("auto")),
+      /** [west, south, east, north] of area, so routing reads only shapes whose box holds the point. */ bbox: v.array(v.number()), center: v.object({ lat: v.number(), lng: v.number() }) })) }).index("by_intake_enabled", ["intake.enabled"]),
   memberships: defineTable({ churchId: v.id("churches"), userId: v.id("users"), name: v.string(), email: v.string(), role, active: v.boolean(), approved: v.boolean(), coverOptIn: v.boolean(), language: v.optional(language), /** Wants the week for deciders by email on Monday morning (convex/digest.ts). */ digestEmail: v.optional(v.boolean()), /** Set when the owner removed this person for good: the row stays, nameless, so their logged work still counts. */ removedAt: v.optional(v.number()) }).index("by_user", ["userId"]).index("by_church_user", ["churchId", "userId"]).index("by_church", ["churchId"]),
   /**
    * A district or particular council: a group of conferences that adds up their yearly counts together. Only counts
@@ -58,7 +69,7 @@ export default defineSchema({
   meetingResponses: defineTable({ churchId: v.id("churches"), meetingId: v.id("meetings"), memberId: v.id("memberships"), response: v.union(v.literal("accepted"),v.literal("declined")) }).index("by_church", ["churchId"]).index("by_meeting_member", ["meetingId", "memberId"]).index("by_meeting", ["meetingId"]),
   announcements: defineTable({ churchId: v.id("churches"), title: v.string(), body: v.string(), authorId: v.id("memberships"), createdAt: v.number() }).index("by_church", ["churchId"]),
   invitations: defineTable({ churchId: v.id("churches"), email: v.string(), role: v.union(v.literal("coordinator"),v.literal("member")), tokenHash: v.string(), expiresAt: v.number(), status: v.union(v.literal("pending"),v.literal("accepted"),v.literal("revoked")), createdBy: v.id("memberships"), acceptedBy: v.optional(v.id("users")), createdAt: v.number(), requestId: v.string() }).index("by_church", ["churchId"]).index("by_token", ["tokenHash"]).index("by_church_request", ["churchId", "requestId"]),
-  outbox: defineTable({ churchId: v.id("churches"), invitationId: v.optional(v.id("invitations")), requestId: v.optional(v.id("requests")), meetingId: v.optional(v.id("meetings")), announcementId: v.optional(v.id("announcements")), memberId: v.optional(v.id("memberships")), eventKey: v.optional(v.string()), webRequestId: v.optional(v.id("webRequests")), kind: v.union(v.literal("invitation"), v.literal("cover_request"), v.literal("meeting"), v.literal("announcement"), v.literal("help_code")), recipient: v.string(), state: v.union(v.literal("awaiting_configuration"), v.literal("queued"), v.literal("cancelled")), providerId: v.optional(v.string()), createdAt: v.number() }).index("by_church", ["churchId"]).index("by_invitation", ["invitationId"]).index("by_church_event", ["churchId", "eventKey"]).index("by_church_state", ["churchId", "state"]).index("by_church_kind_state", ["churchId", "kind", "state"]),
+  outbox: defineTable({ churchId: v.id("churches"), invitationId: v.optional(v.id("invitations")), requestId: v.optional(v.id("requests")), meetingId: v.optional(v.id("meetings")), announcementId: v.optional(v.id("announcements")), memberId: v.optional(v.id("memberships")), eventKey: v.optional(v.string()), webRequestId: v.optional(v.id("webRequests")), kind: v.union(v.literal("invitation"), v.literal("cover_request"), v.literal("meeting"), v.literal("announcement"), v.literal("help_code"), v.literal("intake_notice")), recipient: v.string(), state: v.union(v.literal("awaiting_configuration"), v.literal("queued"), v.literal("cancelled")), providerId: v.optional(v.string()), createdAt: v.number() }).index("by_church", ["churchId"]).index("by_invitation", ["invitationId"]).index("by_church_event", ["churchId", "eventKey"]).index("by_church_state", ["churchId", "state"]).index("by_church_kind_state", ["churchId", "kind", "state"]),
   auditEvents: defineTable({ churchId: v.id("churches"), actorId: v.id("users"), action: v.string(), invitationId: v.optional(v.id("invitations")), commitmentId: v.optional(v.id("commitments")), targetId: v.optional(v.string()), at: v.number() }).index("by_church", ["churchId"]).index("by_church_action_target", ["churchId", "action", "targetId"]),
   // One row per member: the private address of their calendar feed.
   calendarFeeds: defineTable({ churchId: v.id("churches"), memberId: v.id("memberships"), token: v.string(), createdAt: v.number() }).index("by_token", ["token"]).index("by_member", ["memberId"]).index("by_church", ["churchId"]),
@@ -246,7 +257,20 @@ export default defineSchema({
   // A pair of members, or a phone shared by several households, that a person looked at and said is fine. `key` is the sorted ids, or the phone's digits.
   duplicateDismissals: defineTable({ churchId: v.id("churches"), kind: v.union(v.literal("person"), v.literal("phone")), key: v.string(), by: v.id("memberships"), at: v.number() }).index("by_church", ["churchId", "kind", "key"]),
   // The public web form ("Ask for help", convex/intake.ts). Census ZCTA centre points, seeded by scripts/zip-centroids.mts.
-  zipCentroids: defineTable({ zip: v.string(), lat: v.number(), lng: v.number() }).index("by_zip", ["zip"]),
+  zipCentroids: defineTable({ zip: v.string(), lat: v.number(), lng: v.number(), /** Land area, square miles (Census ALAND_SQMI). */ sqmi: v.optional(v.number()) }).index("by_zip", ["zip"]),
+  /** Census geocoder answers, by a hash of the normalized address, so one address is looked up once. */
+  geocodes: defineTable({ key: v.string(), lat: v.optional(v.number()), lng: v.optional(v.number()), at: v.number() }).index("by_key", ["key"]),
+  /** A team's partners (a shelter, a parish office). The link names the partner; the partner signs in with a code to its confirmed email. */
+  webPartners: defineTable({ churchId: v.id("churches"), name: v.string(), email: v.string(), linkHash: v.string(), active: v.boolean(), createdBy: v.id("memberships"), createdAt: v.number() }).index("by_church", ["churchId"]).index("by_link", ["linkHash"]),
+  /** A partner's signed-in device, 30 days. Only a hash of the cookie is kept. */
+  webPartnerSessions: defineTable({ partnerId: v.id("webPartners"), sessionHash: v.string(), expiresAt: v.number() }).index("by_session", ["sessionHash"]).index("by_partner", ["partnerId"]),
+  /** A partner's sign-in code, waiting. */
+  webPartnerCodes: defineTable({ partnerId: v.id("webPartners"), codeHash: v.string(), tries: v.number(), expiresAt: v.number() }).index("by_partner", ["partnerId"]),
+  /** "Not genuine" marks, one per team per contact. Two teams on one contact puts it in the admin review queue, never in front of other teams. */
+  webFlags: defineTable({ churchId: v.id("churches"), contactHash: v.string(), at: v.number() }).index("by_contact", ["contactHash", "churchId"]).index("by_church", ["churchId"]),
+  webReviews: defineTable({ contactHash: v.string(), teams: v.number(), at: v.number(), settled: v.optional(v.boolean()) }).index("by_contact", ["contactHash"]).index("by_settled", ["settled", "at"]),
+  /** A delete asked from the status page, waiting for the code sent to the request's own email. */
+  webDeletes: defineTable({ requestId: v.id("webRequests"), codeHash: v.string(), tries: v.number(), expiresAt: v.number() }).index("by_request", ["requestId"]),
   /**
    * One request from the web form. "pending" until its sender types the emailed code (deleted after 24 hours if never),
    * "held" when its team had a flood of requests that hour (a coordinator releases it), "received" once a call exists for it,
@@ -288,6 +312,15 @@ export default defineSchema({
     callId: v.optional(v.id("calls")),
     /** The most recent pass from another team, shown at the top of this team's Help line. */
     passedFrom: v.optional(v.object({ churchId: v.id("churches"), reason: v.string(), at: v.number() })),
+    /** A passed request waits for its new team to accept or return it within one business day; past that it is theirs. */
+    acceptBy: v.optional(v.number()),
+    /** The zip's centre was outside every area but the zip's own land reached one: the team should check it is theirs. */
+    checkArea: v.optional(v.boolean()),
+    /** The partner (shelter, parish office) who sent it, signed in by their confirmed email. */
+    partnerId: v.optional(v.id("webPartners")),
+    closedAt: v.optional(v.number()),
+    /** Set once the one-year erasure has removed the person's words and contact. */
+    erased: v.optional(v.boolean()),
     /** How many times it was passed on; at 3 it stays with its team to settle by phone. */
     passes: v.optional(v.number()),
   }).index("by_church_stage", ["churchId", "stage", "createdAt"]).index("by_status_key", ["statusKeyHash"]).index("by_contact", ["contactHash", "createdAt"]).index("by_stage_created", ["stage", "createdAt"]).index("by_call", ["callId"]),

@@ -1,6 +1,8 @@
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { statusKeyHash } from "./intake";
+import { hashPartnerLink } from "./intakeActions";
+import { placeAddress } from "./geocode";
 import { readCode, readKey, readSubmission } from "../src/lib/intake-rules";
 
 /**
@@ -83,8 +85,15 @@ export const submit = httpAction(async (ctx, request) => {
   const read = readSubmission(input);
   if (!read.ok) return reply(400, { result: "invalid" });
   const ip = address(input.ip);
-  // The bot check comes before anything is kept or any code is sent.
-  if (!(await turnstile(input.token, ip))) return reply(403, { result: "check" });
+  // A signed-in partner (its link and its device's session, both from the site's cookies) needs no bot check.
+  const partnerLink = readKey(input.partnerLink), partnerSession = readKey(input.partnerSession);
+  const partnerId = partnerLink && partnerSession ? await ctx.runQuery(internal.intakePartners.signedIn, { linkHash: await hashPartnerLink(partnerLink), sessionHash: await keyed(`session:${partnerSession}`) }) : null;
+  if (partnerLink && !partnerId) return reply(403, { result: "partner" });
+  // Everyone else: the bot check comes before anything is kept, looked up or sent.
+  if (!partnerId && !(await turnstile(input.token, ip))) return reply(403, { result: "check" });
+  // A street address is placed with the Census geocoder (the address alone is sent); without it, the zip's centre.
+  const street = typeof input.street === "string" ? input.street.replace(/\s+/g, " ").trim().slice(0, 120) : "";
+  const at = street && /^\d{5}$/.test(read.value.zip) ? await placeAddress(ctx, `${street}, ${read.value.zip}`) : null;
   const device = typeof input.device === "string" && /^[\w-]{8,64}$/.test(input.device) ? input.device : `none:${ip}`;
   const { value } = read;
   const statusKey = hex(random(16));
@@ -97,6 +106,7 @@ export const submit = httpAction(async (ctx, request) => {
     ipHash: await keyed(`ip:${ip}`), deviceHash: await keyed(`device:${device}`), contactHash: await keyed(email ? `email:${email}` : `phone:${phone}`),
     ...(phone ? { phoneHash: await keyed(`phone:${phone}`) } : {}),
     statusKeyHash: await statusKeyHash(statusKey), codeHash: await keyed(`code:${statusKey}:${code}`), code, statusLink: link,
+    ...(at ? { at } : {}), ...(partnerId ? { partnerId } : {}),
   });
   if (answer.result === "sent") return reply(200, { result: "sent", key: statusKey });
   if (answer.result === "landed") return reply(200, { result: "landed", key: statusKey, team: answer.team ?? "", by: String(answer.by ?? ""), timeZone: answer.timeZone ?? "" });
@@ -125,10 +135,43 @@ export const resendCode = httpAction(async (ctx, request) => {
   return reply(200, { result: "sent" });
 });
 
+/** Deleting from the status page: without a code, sends one to the request's own email ("code"); with it, deletes. */
 export const remove = httpAction(async (ctx, request) => {
   if (!(await fromSite(request))) return reply(403, { result: "refused" });
   const input = await body(request);
   const key = readKey(input?.key);
-  if (key) await ctx.runMutation(internal.intake.remove, { statusKeyHash: await statusKeyHash(key) });
-  return reply(200, { result: "removed" });
+  if (!key) return reply(400, { result: "gone" });
+  const code = readCode(input?.code);
+  if (code) {
+    const done = await ctx.runMutation(internal.intake.removeWithCode, { statusKeyHash: await statusKeyHash(key), codeHash: await keyed(`delete:${key}:${code}`) });
+    return reply(200, { result: done ? "removed" : "wrong" });
+  }
+  const language = input?.language === "es" ? "es" : "en";
+  const link = statusLink(language, key);
+  if (!link) return reply(503, { result: "closed" });
+  const fresh = sixDigits();
+  const result = await ctx.runMutation(internal.intake.askToRemove, { statusKeyHash: await statusKeyHash(key), codeHash: await keyed(`delete:${key}:${fresh}`), code: fresh, statusLink: link, ipHash: await keyed(`ip:${address(input?.ip)}`) });
+  return reply(200, { result });
+});
+
+/** A partner opened its link: a code goes to the partner's own email. Answers the masked address, or "gone". */
+export const partnerStart = httpAction(async (ctx, request) => {
+  if (!(await fromSite(request))) return reply(403, { result: "refused" });
+  const input = await body(request);
+  const link = readKey(input?.link);
+  const site = siteOrigin();
+  if (!link || !site) return reply(200, { result: "gone" });
+  const code = sixDigits();
+  const to = await ctx.runMutation(internal.intakePartners.startSignIn, { linkHash: await hashPartnerLink(link), codeHash: await keyed(`partner:${link}:${code}`), code, link: `${site}/help?p=${link}` });
+  return reply(200, to ? { result: "code", to } : { result: "gone" });
+});
+/** The partner's code: a session for this device (30 days), returned once to the site's server for its cookie. */
+export const partnerFinish = httpAction(async (ctx, request) => {
+  if (!(await fromSite(request))) return reply(403, { result: "refused" });
+  const input = await body(request);
+  const link = readKey(input?.link), code = readCode(input?.code);
+  if (!link || !code) return reply(200, { result: "wrong" });
+  const session = hex(random(16));
+  const ok = await ctx.runMutation(internal.intakePartners.finishSignIn, { linkHash: await hashPartnerLink(link), codeHash: await keyed(`partner:${link}:${code}`), sessionHash: await keyed(`session:${session}`) });
+  return reply(200, ok ? { result: "signed_in", session } : { result: "wrong" });
 });

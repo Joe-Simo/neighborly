@@ -6,7 +6,7 @@ import type { Language, WordSet } from "../words/sets";
  * meaning here, so the sheet is ink on paper; the one link is ink too. Nothing is an image, so a mail app that
  * blocks pictures shows the whole email. Each comes with a plain-text twin that says the same thing.
  */
-type EmailKind = "invitation" | "cover_request" | "meeting" | "digest" | "announcement" | "help_code";
+type EmailKind = "invitation" | "cover_request" | "meeting" | "digest" | "announcement" | "help_code" | "intake_late" | "intake_late_owner" | "intake_paused";
 /** The week's counts for the Monday email: numbers only, never a name, so nothing about a household leaves in a mailbox. */
 type WeekCounts = { waiting: number; overdue: number; approved: number; budget: number | null };
 /** An announcement carries its own words: its title becomes the head and its message the body. */
@@ -22,6 +22,28 @@ function said(kind: EmailKind, language: Language, set: WordSet, place: string, 
   if (kind === "digest") return weekSaid(language, place, week ?? { waiting: 0, overdue: 0, approved: 0, budget: null });
   if (language === "es") {
     switch (kind) {
+      // For the intake notices, place is the team's name. Counts only: no name, contact or need leaves in a mailbox.
+      case "intake_late": return {
+        subject: `Peticiones web esperando en ${place}`,
+        head: "Alguien espera una llamada.",
+        body: `Hay peticiones del formulario web en ${place} que pasaron su día hábil sin contacto. Ábrelas en la línea de ayuda.`,
+        action: "Abrir la línea de ayuda",
+        foot: "Recibes este recordatorio cada día mientras haya peticiones atrasadas.",
+      };
+      case "intake_late_owner": return {
+        subject: `Peticiones web sin respuesta en ${place}`,
+        head: "Llevan tres días hábiles esperando.",
+        body: `Hay peticiones del formulario web en ${place} que llevan tres días hábiles o más sin contacto. Nada se cierra solo: alguien del equipo tiene que llamar.`,
+        action: "Abrir la línea de ayuda",
+        foot: "Recibes este correo porque eres responsable del grupo en Kind Helps.",
+      };
+      case "intake_paused": return {
+        subject: `El formulario web de ${place} está en pausa`,
+        head: "Pausamos el formulario web.",
+        body: `Nadie que coordina en ${place} ha abierto la línea de ayuda en 30 días, así que las peticiones nuevas van al equipo más cercano y las abiertas se pasaron. Puedes volver a activarlo en la línea de ayuda.`,
+        action: "Abrir la línea de ayuda",
+        foot: "Recibes este correo porque eres responsable del grupo en Kind Helps.",
+      };
       // For help_code, place is the six-digit code: the person asked for help on the web form and confirms with it.
       case "help_code": return {
         subject: `Tu código de Kind Helps: ${place}`,
@@ -61,6 +83,27 @@ function said(kind: EmailKind, language: Language, set: WordSet, place: string, 
     }
   }
   switch (kind) {
+    case "intake_late": return {
+      subject: `Web requests waiting at ${place}`,
+      head: "Someone is waiting for a call.",
+      body: `There are requests from the web form at ${place} past their business day with no contact. Open them on the Help line.`,
+      action: "Open the Help line",
+      foot: "You get this reminder each day while requests are late.",
+    };
+    case "intake_late_owner": return {
+      subject: `Web requests unanswered at ${place}`,
+      head: "Three business days waiting.",
+      body: `There are requests from the web form at ${place} waiting three business days or more with no contact. Nothing closes on its own: someone on the team needs to call.`,
+      action: "Open the Help line",
+      foot: "You get this email because you’re responsible for the group on Kind Helps.",
+    };
+    case "intake_paused": return {
+      subject: `The web form for ${place} is paused`,
+      head: "We paused your web form.",
+      body: `No one who coordinates at ${place} has opened the Help line in 30 days, so new requests go to the nearest other team and the open ones were passed on. You can turn it back on from the Help line.`,
+      action: "Open the Help line",
+      foot: "You get this email because you’re responsible for the group on Kind Helps.",
+    };
     case "help_code": return {
       subject: `Your Kind Helps code: ${place}`,
       head: `Your Kind Helps code is ${place}.`,

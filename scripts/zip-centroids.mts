@@ -1,4 +1,4 @@
-// Loads the Census ZCTA centre points (public domain) into the zipCentroids table, 500 rows a call. Run once per deployment.
+// Loads the Census ZCTA centre points and land areas (public domain) into the zipCentroids table, 500 rows a call. Run once per deployment.
 // Usage: bun scripts/zip-centroids.mts [path/to/YYYY_Gaz_zcta_national.txt|.zip] [--prod]
 // With no path it downloads the latest Gazetteer from www2.census.gov. About 33,800 rows, under 3 MB in the database.
 import { spawnSync } from "node:child_process";
@@ -36,12 +36,12 @@ const at = (name: string) => {
   if (index < 0) throw new Error(`No ${name} column in the Gazetteer header.`);
   return index;
 };
-const [zip, lat, lng] = [at("GEOID"), at("INTPTLAT"), at("INTPTLONG")];
-const rows = lines.map((line) => line.split("\t")).map((cells) => ({ zip: cells[zip].trim(), lat: Number(cells[lat]), lng: Number(cells[lng]) }))
+const [zip, lat, lng, land] = [at("GEOID"), at("INTPTLAT"), at("INTPTLONG"), at("ALAND_SQMI")];
+const rows = lines.map((line) => line.split("\t")).map((cells) => ({ zip: cells[zip].trim(), lat: Number(cells[lat]), lng: Number(cells[lng]), sqmi: Number(cells[land]) }))
   .filter((row) => /^\d{5}$/.test(row.zip) && Number.isFinite(row.lat) && Number.isFinite(row.lng));
 console.log(`${rows.length} zip codes read.`);
 for (let start = 0; start < rows.length; start += 500) {
-  const batch = JSON.stringify({ rows: rows.slice(start, start + 500).map((row) => ({ ...row, lat: Number(row.lat.toFixed(6)), lng: Number(row.lng.toFixed(6)) })) });
+  const batch = JSON.stringify({ rows: rows.slice(start, start + 500).map((row) => ({ zip: row.zip, lat: Number(row.lat.toFixed(6)), lng: Number(row.lng.toFixed(6)), ...(Number.isFinite(row.sqmi) && row.sqmi > 0 ? { sqmi: Number(row.sqmi.toFixed(2)) } : {}) })) });
   const run = spawnSync("bunx", ["convex", "run", ...(prod ? ["--prod"] : []), "intake:seedZips", batch], { stdio: ["ignore", "ignore", "inherit"] });
   if (run.status !== 0) throw new Error(`Stopped at row ${start}; running it again picks up safely (rows already kept are moved, not doubled).`);
   process.stdout.write(`\r${Math.min(start + 500, rows.length)} of ${rows.length}`);

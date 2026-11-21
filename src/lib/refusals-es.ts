@@ -12,6 +12,13 @@ export const serverRefusalsEs: Record<string, string> = {
   "That conference is already invited.": "Esa conferencia ya está invitada.",
   "Choose a time zone.": "Elige una zona horaria.",
   // The web form's settings and its requests on the Help line (convex/intake.ts).
+  "A weekly limit is a whole number from 1 to 1000.": "Un límite semanal es un número entero de 1 a 1000.",
+  "An overlap order is a whole number from 0 to 1000.": "Un orden de prioridad es un número entero de 0 a 1000.",
+  "Check the email address.": "Revisa el correo electrónico.",
+  "Give the partner a name.": "Dale un nombre a la organización.",
+  "Holidays are days like 2026-12-25, at most 60.": "Los feriados son días como 2026-12-25, hasta 60.",
+  "Partner not found.": "No se encontró la organización.",
+  "This request can no longer be returned. Pass it on instead.": "Esta petición ya no se puede devolver. Pásala a otro equipo.",
   "Add the church's five-digit zip code to the address.": "Agrega a la dirección el código postal de cinco dígitos de la iglesia.",
   "Choose a distance from 1 to 100 miles.": "Elige una distancia de 1 a 100 millas.",
   "Keep the reason to one line.": "Escribe el motivo en una sola línea.",

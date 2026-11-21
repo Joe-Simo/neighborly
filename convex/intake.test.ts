@@ -5,8 +5,9 @@ import schema from "./schema";
 import { signedIn } from "./clerk.testing";
 import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
-import { LIMITS, nextBusinessDay, statusKeyHash } from "./intake";
-import { circlePolygon, covers, distanceMiles, nearestCovering, validArea } from "./area";
+import { LIMITS, businessDaysBetween, nextBusinessDay, statusKeyHash } from "./intake";
+import { firstMatch } from "./geocode";
+import { circlePolygon, covering, covers, distanceMiles, nearestCovering, reachOf, validArea } from "./area";
 import { hasLink, readCode, readSubmission } from "../src/lib/intake-rules";
 
 const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
@@ -270,5 +271,153 @@ describe("what the form accepts", () => {
   test("a code is six digits", () => {
     expect(readCode("123 456")).toBe("123456");
     expect(readCode("12345")).toBe(null);
+  });
+});
+
+describe("the second round: geocoding, order, rural reach, weekly limits, holidays", () => {
+  test("the Census answer's first match is read; anything else is no point", () => {
+    expect(firstMatch({ result: { addressMatches: [{ coordinates: { x: -83.05, y: 42.33 } }] } })).toEqual({ lat: 42.33, lng: -83.05 });
+    expect(firstMatch({ result: { addressMatches: [] } })).toBe(null);
+    expect(firstMatch("nope")).toBe(null);
+  });
+  test("an overlap order wins before distance; a big zip reaches a circle near it, marked to check", () => {
+    const teams = [
+      { id: "near", area: circlePolygon(zips[0], 25), center: zips[0], miles: 25 },
+      { id: "council", area: circlePolygon(zips[1], 25), center: zips[1], miles: 25, order: 1 },
+    ];
+    expect(covering(teams, { lat: 42.35, lng: -83.07 })[0]).toEqual({ id: "council", checkArea: false });
+    const far = { lat: 42.347, lng: -83.06 + 0.6 }; // about 31 miles east of Detroit's centre
+    expect(covering([teams[0]], far)).toEqual([]);
+    expect(covering([teams[0]], far, reachOf(200))).toEqual([{ id: "near", checkArea: true }]);
+  });
+  test("a full team's requests go to the next team that serves the zip, or the person hears it is full", async () => {
+    const { t, ids, as } = await setup();
+    await as(ids.dearborn.userId).mutation(api.intake.saveSettings, { churchId: ids.dearborn.churchId, enabled: true, address: "48124", miles: 25, weeklyLimit: 1 });
+    await as(ids.detroit.userId).mutation(api.intake.saveSettings, { churchId: ids.detroit.churchId, enabled: true, address: "48201", miles: 25, weeklyLimit: 1 });
+    const land = async () => {
+      const one = { ...ask({ zip: "48124" }), email: "", phone: "3135550100" };
+      const answer = await t.mutation(internal.intake.receive, one);
+      return "team" in answer ? answer.team : answer.result;
+    };
+    expect(await land()).toBe("St. Sample Dearborn");
+    expect(await land()).toBe("St. Example Detroit");
+    expect((await t.mutation(internal.intake.receive, { ...ask({ zip: "48124" }), email: "", phone: "3135550100" })).result).toBe("full");
+  });
+  test("a geocoded street address routes by its own point", async () => {
+    const { t } = await setup();
+    const one = { ...ask({ zip: "94103" }), email: "", phone: "3135550100", at: { lat: 42.35, lng: -83.06 } };
+    expect(await t.mutation(internal.intake.receive, one)).toMatchObject({ result: "landed", team: "St. Example Detroit" });
+  });
+  test("holidays are skipped when counting business days", () => {
+    const wednesday = Date.UTC(2026, 11, 23, 15);
+    expect(new Date(nextBusinessDay(wednesday, "America/Detroit", ["2026-12-24", "2026-12-25"])).getUTCDate()).toBe(28);
+    expect(businessDaysBetween(wednesday, Date.UTC(2026, 11, 30, 16), "America/Detroit", ["2026-12-24", "2026-12-25"])).toBe(3);
+  });
+});
+
+describe("passing, marking, deleting", () => {
+  async function landed() {
+    const ready = await setup();
+    await ready.t.mutation(internal.intake.receive, { ...ask(), email: "", phone: "3135550100" });
+    const row = await ready.t.run((ctx) => ctx.db.query("webRequests").first());
+    return { ...ready, requestId: row!._id as Id<"webRequests"> };
+  }
+  test("the team it was passed to can return it within a business day, with a reason", async () => {
+    const { t, ids, as, requestId } = await landed();
+    await as(ids.detroit.userId).mutation(api.intake.passOn, { churchId: ids.detroit.churchId, requestId, toChurchId: ids.dearborn.churchId, reason: "Closer to you." });
+    const there = await as(ids.dearborn.userId).query(api.intake.forTeam, { churchId: ids.dearborn.churchId, at: NOW_HOUR });
+    expect(there.waiting[0].acceptBy).not.toBe(null);
+    await as(ids.dearborn.userId).mutation(api.intake.giveBack, { churchId: ids.dearborn.churchId, requestId, reason: "Outside our parish." });
+    const row = await t.run((ctx) => ctx.db.get("webRequests", requestId));
+    expect(row).toMatchObject({ churchId: ids.detroit.churchId, passes: 1, passedFrom: { reason: "Outside our parish." } });
+    await expect(as(ids.detroit.userId).mutation(api.intake.giveBack, { churchId: ids.detroit.churchId, requestId, reason: "No." })).rejects.toThrow("no longer be returned");
+  });
+  test("two teams marking one contact 'not genuine' puts it in the admin queue, with no details", async () => {
+    const { t, ids, as } = await setup();
+    for (const zip of ["48201", "48124"]) {
+      await t.mutation(internal.intake.receive, { ...ask({ zip, contactHash: "same-person", ipHash: zip, deviceHash: zip }), email: "", phone: "3135550100" });
+    }
+    const rows = await t.run((ctx) => ctx.db.query("webRequests").collect());
+    expect(rows).toHaveLength(2);
+    for (const row of rows) {
+      const owner = row.churchId === ids.detroit.churchId ? ids.detroit.userId : ids.dearborn.userId;
+      await as(owner).mutation(api.intake.notGenuine, { churchId: row.churchId, requestId: row._id });
+    }
+    const queue = await t.query(internal.intakeCare.reviews, {});
+    expect(queue).toEqual([expect.objectContaining({ teams: 2 })]);
+  });
+  test("deleting from the status page needs the code sent to the request's own email", async () => {
+    const { t } = await setup();
+    const one = ask();
+    await t.mutation(internal.intake.receive, one);
+    await t.mutation(internal.intake.confirm, { statusKeyHash: one.statusKeyHash, codeHash: one.codeHash, ipHash: "d" });
+    expect(await t.mutation(internal.intake.askToRemove, { statusKeyHash: one.statusKeyHash, codeHash: "delete-code", code: "654321", statusLink: "https://example.org/help/status?k=x", ipHash: "d" })).toBe("code");
+    expect(await t.mutation(internal.intake.removeWithCode, { statusKeyHash: one.statusKeyHash, codeHash: "wrong" })).toBe(false);
+    expect(await t.mutation(internal.intake.removeWithCode, { statusKeyHash: one.statusKeyHash, codeHash: "delete-code" })).toBe(true);
+    expect(await t.run((ctx) => ctx.db.query("webRequests").collect())).toHaveLength(0);
+    expect(await t.run((ctx) => ctx.db.query("calls").collect())).toHaveLength(0);
+  });
+});
+
+describe("partners", () => {
+  test("a partner signs in with a code to its own email, sends without a bot check, and stops when revoked", async () => {
+    const { t, ids, as } = await setup();
+    const partnerId = await as(ids.detroit.userId).mutation(internal.intakePartners.add, { churchId: ids.detroit.churchId, name: "Example Shelter", email: "Desk@Example.org", linkHash: "link" });
+    expect(await t.mutation(internal.intakePartners.startSignIn, { linkHash: "link", codeHash: "pc", code: "111111", link: "https://example.org/help?p=x" })).toBe("d•••@example.org");
+    expect(await t.mutation(internal.intakePartners.startSignIn, { linkHash: "other", codeHash: "pc", code: "111111", link: "x" })).toBe(null);
+    expect(await t.mutation(internal.intakePartners.finishSignIn, { linkHash: "link", codeHash: "pc", sessionHash: "s" })).toBe(true);
+    expect(await t.query(internal.intakePartners.signedIn, { linkHash: "link", sessionHash: "s" })).toBe(partnerId);
+    const sent = await t.mutation(internal.intake.receive, { ...ask({ zip: "94103" }), partnerId });
+    expect(sent).toMatchObject({ result: "landed", team: "St. Example Detroit" });
+    const row = await t.run((ctx) => ctx.db.query("webRequests").first());
+    expect(row).toMatchObject({ partnerId, referredBy: "Example Shelter", stage: "received" });
+    await as(ids.detroit.userId).mutation(api.intakePartners.revoke, { churchId: ids.detroit.churchId, partnerId });
+    expect(await t.query(internal.intakePartners.signedIn, { linkHash: "link", sessionHash: "s" })).toBe(null);
+    expect((await t.mutation(internal.intake.receive, { ...ask(), partnerId })).result).toBe("slow");
+  });
+  test("a partner sends at most ten a day", async () => {
+    const { t, ids, as } = await setup();
+    const partnerId = await as(ids.detroit.userId).mutation(internal.intakePartners.add, { churchId: ids.detroit.churchId, name: "Example Shelter", email: "desk@example.org", linkHash: "link" });
+    for (let i = 0; i < LIMITS.partnerPerDay; i++) expect((await t.mutation(internal.intake.receive, { ...ask(), partnerId })).result).toBe("landed");
+    expect((await t.mutation(internal.intake.receive, { ...ask(), partnerId })).result).toBe("slow");
+  });
+  test("another team cannot revoke a team's partner", async () => {
+    const { ids, as } = await setup();
+    const partnerId = await as(ids.detroit.userId).mutation(internal.intakePartners.add, { churchId: ids.detroit.churchId, name: "Example Shelter", email: "desk@example.org", linkHash: "link" });
+    await expect(as(ids.dearborn.userId).mutation(api.intakePartners.revoke, { churchId: ids.dearborn.churchId, partnerId })).rejects.toThrow("Partner not found");
+  });
+});
+
+describe("daily care", () => {
+  test("a team silent for 30 days is paused, its open requests passed on, its owner told", async () => {
+    const { t, ids } = await setup();
+    await t.mutation(internal.intake.receive, { ...ask({ zip: "48124" }), email: "", phone: "3135550100" });
+    await t.run(async (ctx) => {
+      const church = await ctx.db.get("churches", ids.dearborn.churchId);
+      await ctx.db.patch("churches", ids.dearborn.churchId, { intake: { ...church!.intake!, seenAt: 0 } });
+      const detroit = await ctx.db.get("churches", ids.detroit.churchId);
+      await ctx.db.patch("churches", ids.detroit.churchId, { intake: { ...detroit!.intake!, area: circlePolygon(zips[0], 25), miles: 25, bbox: [-180, -90, 180, 90], seenAt: Date.now() } });
+    });
+    await t.mutation(internal.intakeCare.daily, {});
+    const church = await t.run((ctx) => ctx.db.get("churches", ids.dearborn.churchId));
+    expect(church?.intake).toMatchObject({ enabled: false, pausedBy: "auto" });
+    const row = await t.run((ctx) => ctx.db.query("webRequests").first());
+    expect(row?.churchId).toBe(ids.detroit.churchId);
+    const told = await t.run((ctx) => ctx.db.query("outbox").collect());
+    expect(told.filter((one) => one.kind === "intake_notice")).toHaveLength(1);
+  });
+  test("closed requests are erased after a year; the row stays for counts", async () => {
+    const { t } = await setup();
+    await t.mutation(internal.intake.receive, { ...ask(), email: "", phone: "3135550100" });
+    await t.run(async (ctx) => {
+      const row = await ctx.db.query("webRequests").first();
+      await ctx.db.patch("webRequests", row!._id, { stage: "closed", closedAt: 0, createdAt: 0 });
+      await ctx.db.patch("calls", row!.callId!, { callback: "done" });
+    });
+    await t.mutation(internal.intakeCare.daily, {});
+    const row = await t.run((ctx) => ctx.db.query("webRequests").first());
+    expect(row).toMatchObject({ erased: true, need: "", phone: "", email: "" });
+    const call = await t.run((ctx) => ctx.db.query("calls").first());
+    expect(call).toMatchObject({ callerName: "", phone: "", note: "" });
   });
 });
