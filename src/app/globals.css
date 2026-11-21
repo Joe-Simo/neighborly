@@ -1192,3 +1192,7 @@ nav.week-figures a:focus-visible { box-shadow: 0 0 0 1px var(--relief-edge), var
 /* The display serif is tracked tight (down to -.06em), and the space between words was tightened with it until
    "How we" read "Howwe". Word spacing gives the tracking back, so each heading keeps a true word space at every size. */
 :where(h1, h2, h3) { word-spacing: 0.04em; }
+
+/* Large screens: one step for every page's words, so a 2560 window reads as designed rather than small (1.25x from 1800x1000, 1.5x from 2400x1300). */
+@media(min-width:1800px) and (min-height:1000px){:root{--big:1.25}}
+@media(min-width:2400px) and (min-height:1300px){:root{--big:1.5}}

@@ -928,24 +928,63 @@ export const checkMonth = action({
  * Measures the month check's memo question on the made-up set (src/lib/ledger-set.ts), with the same wording and the
  * same 0.9 line checkMonth uses, in one request. Run by hand from the Convex command line; it reads and saves no record.
  */
+/**
+ * Trial wording, measured beside the live one before it may replace it: instead of "is this other than its category",
+ * Jev picks what the memo is spent on from the group's own categories (sent as data, scrubbed), "something else", or
+ * "unclear". A line is flagged when the pick is another category or "something else", at `agreed` or more. Run 1 missed
+ * plain cases (a car repair under rent scored 0.84; a deposit under utility 0.60), which a pick should see more steadily.
+ */
+function spentOnQuestion(line: string, categories: number): Question {
+  return {
+    type: "choice",
+    instructions: `What does ${line}.memo describe spending on?`,
+    criteria: {
+      ...Object.fromEntries(Array.from({ length: categories }, (_, index) => [`c${index}`, `Spending that fits categories.c${index}`])),
+      elsewhere: "Spending on something that fits none of the categories",
+      unclear: "The memo says too little to tell, or does not describe spending",
+    },
+  };
+}
+async function spentOn(key: string, lines: { memo: string; category: string }[], known?: Known) {
+  const categories = [...new Set(lines.map(line => line.category))];
+  const answers = await decide(key,
+    { categories: Object.fromEntries(categories.map((name, index) => [`c${index}`, name])), lines: Object.fromEntries(lines.map((line, index) => [`l${index}`, { memo: line.memo.slice(0, 500) }])) },
+    Object.fromEntries(lines.map((_, index) => [`l${index}`, spentOnQuestion(`lines.l${index}`, categories.length)])),
+    known,
+  );
+  if (!answers) return null;
+  return lines.map((line, index) => {
+    const answer = answers[`l${index}`];
+    if (!answer || typeof answer !== "object" || !("choice" in answer) || !("confidence" in answer) || typeof answer.confidence !== "number" || typeof answer.choice !== "string") return null;
+    const own = `c${categories.indexOf(line.category)}`;
+    return { pick: answer.choice, confidence: answer.confidence, off: answer.choice !== own && answer.choice !== "unclear" && answer.confidence >= agreed };
+  });
+}
+
 export const measureLedger = internalAction({
   args: { churchId: v.id("churches") },
-  returns: v.object({ status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance"), v.literal("no answer")), model: v.string(), all: referralTally, heldOut: referralTally, rows: v.array(v.object({ id: v.string(), score: v.number(), flagged: v.boolean() })) }),
+  returns: v.object({ status: v.union(v.literal("done"), v.literal("no key"), v.literal("no allowance"), v.literal("no answer")), model: v.string(), all: referralTally, heldOut: referralTally, trial: v.object({ all: referralTally, heldOut: referralTally }), rows: v.array(v.object({ id: v.string(), score: v.number(), flagged: v.boolean(), pick: v.optional(v.string()), pickConfidence: v.optional(v.number()), trialFlagged: v.optional(v.boolean()) })) }),
   handler: async (ctx, { churchId }) => {
     const zero = { right: 0, missed: 0, wrong: 0 };
-    const none = { model, all: zero, heldOut: zero, rows: [] };
+    const none = { model, all: zero, heldOut: zero, trial: { all: zero, heldOut: zero }, rows: [] };
     const key = env.TYPESAFE_API_KEY;
     if (!key) return { status: "no key" as const, ...none };
-    if (!await ctx.runMutation(internal.drafts.reserveMany, { churchId, count: 1 })) return { status: "no allowance" as const, ...none };
-    const sure = await offCategory(key, ledgerSet);
+    if (!await ctx.runMutation(internal.drafts.reserveMany, { churchId, count: 2 })) return { status: "no allowance" as const, ...none };
+    const [sure, picks] = await Promise.all([offCategory(key, ledgerSet), spentOn(key, ledgerSet)]);
     if (!sure) return { status: "no answer" as const, ...none };
     const rows = ledgerSet.map((item, index) => {
       const flagged = sure[index] >= sureEnough;
       const mark = flagged === item.off ? "right" as const : flagged ? "wrong" as const : "missed" as const;
-      return { id: item.id, score: Math.round(sure[index] * 100) / 100, flagged, mark, heldOut: !!item.heldOut };
+      const pick = picks?.[index] ?? null;
+      const trialFlagged = !!pick?.off;
+      const trialMark = trialFlagged === item.off ? "right" as const : trialFlagged ? "wrong" as const : "missed" as const;
+      return { id: item.id, score: Math.round(sure[index] * 100) / 100, flagged, mark, trialMark, heldOut: !!item.heldOut, ...(pick && { pick: pick.pick, pickConfidence: Math.round(pick.confidence * 100) / 100, trialFlagged }) };
     });
-    const add = (only: boolean) => rows.filter(row => !only || row.heldOut).reduce((sum, row) => ({ ...sum, [row.mark]: sum[row.mark] + 1 }), { ...zero });
-    return { status: "done" as const, model, all: add(false), heldOut: add(true), rows: rows.map(({ id, score, flagged }) => ({ id, score, flagged })) };
+    const add = (only: boolean, arm: "mark" | "trialMark") => rows.filter(row => !only || row.heldOut).reduce((sum, row) => ({ ...sum, [row[arm]]: sum[row[arm]] + 1 }), { ...zero });
+    return {
+      status: "done" as const, model, all: add(false, "mark"), heldOut: add(true, "mark"), trial: { all: add(false, "trialMark"), heldOut: add(true, "trialMark") },
+      rows: rows.map(({ id, score, flagged, pick, pickConfidence, trialFlagged }) => ({ id, score, flagged, ...(pick !== undefined && { pick, pickConfidence, trialFlagged }) })),
+    };
   },
 });
 
