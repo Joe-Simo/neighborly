@@ -152,6 +152,8 @@ export function CallForm({
             name="callerName"
             defaultValue={neighbor?.name}
             autoComplete="off"
+            // A new call starts at the caller's name, so the first word typed needs no tap first.
+            autoFocus={!neighbor}
             onBlur={leave("name")}
           />
         </LiveField>
