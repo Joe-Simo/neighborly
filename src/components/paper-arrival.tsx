@@ -42,7 +42,9 @@ export function PaperArrival() {
       // Until a room is drawn, the door sweeps, or the sheet with the sample's refusal on it is shown.
       // Without a first look the room under the sheet is only the signed-out page, taken down the moment the session
       // lands, so the sheet never lifts off it by itself: the sweep takes it. A first look is waited on until whole.
-      const coming = toSample && waited < NO_DOOR && !document.querySelector(".live-app .entry") && !(document.documentElement.hasAttribute("data-first-look") && wholeUnderneath());
+      // The sign-in sheet counts only once it says the sample would not open: the copy the server drew of it, there
+      // for a moment before the page knows where it is going, is not somewhere to lift onto.
+      const coming = toSample && waited < NO_DOOR && !document.querySelector(".live-app .entry .live-failure") && !(document.documentElement.hasAttribute("data-first-look") && wholeUnderneath());
       if (sweeping || coming) {
         frame = requestAnimationFrame(look);
         return;
