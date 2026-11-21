@@ -71,8 +71,9 @@ export function WeekSection() {
       <CardGreeting />
       {/* Sewn onto the head's own rule, before the first thing to do. */}
       <WeekQuilt />
-      {choiceFirst && choices}
+      {/* A visitor's first step comes before anything else to do, so it is on the first screen of a phone. */}
       <StartHere />
+      {choiceFirst && choices}
       <FirstWeekSlips />
       <WeekNote brief={briefed || incoming.length > 0} />
       {!choiceFirst && choices}
