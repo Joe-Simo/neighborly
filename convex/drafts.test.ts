@@ -3,6 +3,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { convexTest } from "convex-test";
 import schema from "./schema";
 import { api, internal } from "./_generated/api";
+import { personalDailyAllowance, sampleDailyAllowance } from "./drafts";
 
 const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
 const description = "Our Welcome team serves every other Sunday. We need two people from 9am to 10am.";
@@ -64,6 +65,22 @@ describe("reviewable team drafting", () => {
     expect(draft.verification).toBe("checked");
     expect(await t.run(ctx => ctx.db.query("teams").collect())).toEqual([]);
     expect(await t.run(ctx => ctx.db.query("memberships").collect())).toEqual([]);
+  });
+
+  test("a team draft, which names no group, is held to the person's own day", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
+    const fetch = vi.fn(async () => Response.json({ answers: {} }));
+    vi.stubGlobal("fetch", fetch);
+    const { t, signed } = await setup();
+    const userId = (await t.run(ctx => ctx.db.query("users").first()))!._id;
+    vi.useFakeTimers({ now: (Math.floor(Date.now() / 86_400_000) + 1) * 86_400_000 + 43_200_000 });
+    const day = new Date().toISOString().slice(0, 10);
+    await t.run(ctx => ctx.db.insert("aiUsageBySession", { session: `*user:${userId}`, day, windowStart: 0, minute: 0, count: personalDailyAllowance - 1 }));
+    expect((await signed.action(api.drafts.suggestTeam, { description })).verification).toBe("review");
+    vi.advanceTimersByTime(60_000);
+    await expect(signed.action(api.drafts.suggestTeam, { description })).rejects.toThrow("wait a minute");
+    expect(fetch).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
   });
 
   test("limits provider requests and fails safely on malformed answers", async () => {
@@ -166,6 +183,8 @@ describe("a call note drafted into a request", () => {
     expect(await coordinator.action(api.drafts.readUrgency, args)).toEqual({ signs: [{ reason: "shutoff", day: 21 }], verification: "checked" });
     expect(await mark()).toEqual({ reasons: ["shutoff"], day: 21, by: "assistant" });
     expect(fetch.mock.calls[0][1].body).not.toMatch(/rosa|delgado/i);
+    // Who was paid is taken out too, even where the sentence opens with it.
+    expect(fetch.mock.calls[0][1].body).not.toMatch(/Property/);
     await expect(member.action(api.drafts.readUrgency, args)).rejects.toThrow("coordinators and owners only");
     // The model away: the fixed rules alone, and saved as theirs.
     vi.stubEnv("TYPESAFE_API_KEY", "");
@@ -285,7 +304,7 @@ describe("a call note drafted into a request", () => {
       return {
         paidNoPayment: await request("paid", ""), approvedNotPaid: await request("approved", "Approved at the meeting.", now - 35 * day),
         fresh: await request("approved", "Approved.", now - 2 * day),
-        noteSaysPaid: await request("approved", "Rosa Delgado's landlord was paid by check on Friday.", now - 3 * day),
+        noteSaysPaid: await request("approved", "Rosa Delgado's landlord was paid by check on Friday. Property cashed it.", now - 3 * day),
         doubtful: await request("open", "Ask whether the rent was paid."),
         visitNoHours: await visit("completed", "", 0), fine: await visit("completed", "", 1.5),
       };
@@ -300,6 +319,8 @@ describe("a call note drafted into a request", () => {
       { kind: "noteSaysPaid", record: { table: "assistanceRequests", id: made.noteSaysPaid }, source: "assistant" },
     ]);
     expect(fetch.mock.calls[0][1].body).not.toMatch(/rosa|delgado/i);
+    // Who was paid is taken out too, even where the sentence opens with it.
+    expect(fetch.mock.calls[0][1].body).not.toMatch(/Property/);
     expect(JSON.stringify(result)).not.toMatch(/rosa|delgado/i);
     await expect(member.action(api.drafts.checkYear, args)).rejects.toThrow("coordinators and owners only");
     // With no key a person reads the picked notes themselves; it is never an error.
@@ -550,6 +571,26 @@ describe("the sample's allowance is each visitor's own", () => {
     expect(answers.at(-1)).toBe("month");
     // A second visitor is not held by the first one's use.
     expect(await ask("sess_b")).toBe("ok");
+    vi.useRealTimers();
+  });
+
+  test("many sessions together cannot spend more than the sample's day", async () => {
+    vi.stubEnv("DEMO_CLERK_USER_ID", "clerk|visitor");
+    const t = convexTest(schema, modules);
+    const { userId, churchId } = await t.run(async ctx => ({
+      userId: await ctx.db.insert("users", { clerkId: "clerk|visitor" }),
+      churchId: await ctx.db.insert("churches", { name: "Sample", timeZone: "UTC", sample: true }),
+    }));
+    vi.useFakeTimers({ now: (Math.floor(Date.now() / 86_400_000) + 1) * 86_400_000 + 43_200_000 });
+    const day = new Date().toISOString().slice(0, 10);
+    await t.run(ctx => ctx.db.insert("aiUsageBySession", { session: "*sample", day, windowStart: 0, minute: 0, count: sampleDailyAllowance - 1 }));
+    const ask = (sid: string) => t.withIdentity({ subject: "clerk|visitor", sid }).mutation(internal.drafts.reserve, { userId, churchId });
+    // One fresh session after another, as one address may open thirty a minute: the shared day still runs out.
+    expect(await ask("sess_fresh_1")).toBe("ok");
+    expect(await ask("sess_fresh_2")).toBe("month");
+    // A read scheduled after a visitor's save counts against the same day.
+    expect(await t.mutation(internal.drafts.reserve, { userId, churchId, session: "sess_fresh_3" })).toBe("month");
+    expect((await t.run(ctx => ctx.db.query("aiUsageByChurch").collect()))[0].count).toBe(1);
     vi.useRealTimers();
   });
 

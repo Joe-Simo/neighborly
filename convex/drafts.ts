@@ -34,6 +34,18 @@ export const identity = internalQuery({
 
 /** What one visitor's session in the sample may ask the model for in a day; the sample's monthly allowance stays the ceiling. */
 export const sampleSessionAllowance = 12;
+/**
+ * What every sample visitor together may ask for in a day. One address can open thirty sessions a minute, so the
+ * per-session allowance alone would let one visitor spend the sample's whole month in minutes; this keeps it to a day.
+ */
+export const sampleDailyAllowance = 200;
+/**
+ * What one person may ask for in a day when no group is named (the team draft), where no monthly allowance applies.
+ * Without it, five a minute was the only bound, all day, every day.
+ */
+export const personalDailyAllowance = 30;
+/** The day's row every sample session shares in aiUsageBySession; a Clerk session id never starts with "*". */
+const sampleDay = "*sample";
 
 /**
  * Counts one request to the model, or says why it may not be made: the person's five a minute, or
@@ -52,21 +64,32 @@ export const reserve = internalMutation({
     // Clerk names the session in `sid`; a token without one counts as a single session, so it is held tightest.
     const session = visitor ? scheduledFor ?? `${typeof identity?.sid === "string" ? identity.sid : "unnamed"}` : null;
     const day = new Date().toISOString().slice(0, 10);
-    const own = session ? await ctx.db.query("aiUsageBySession").withIndex("by_session_day", q => q.eq("session", session).eq("day", day)).unique() : null;
+    const daily = (key: string) => ctx.db.query("aiUsageBySession").withIndex("by_session_day", q => q.eq("session", key).eq("day", day)).unique();
+    const own = session ? await daily(session) : null;
+    const everyone = session ? await daily(sampleDay) : null;
+    // With no group named, the person's own day is the ceiling a group's month would otherwise be.
+    const personal = session || churchId ? null : `*user:${userId}`;
+    const today = personal ? await daily(personal) : null;
     const previous = session ? null : await ctx.db.query("aiUsage").withIndex("by_user", q => q.eq("userId", userId)).unique();
     if (own && own.windowStart === windowStart && own.minute >= 5) return "minute" as const;
     if (own && own.count >= sampleSessionAllowance) return "month" as const;
+    if (everyone && everyone.count >= sampleDailyAllowance) return "month" as const;
     if (previous?.windowStart === windowStart && previous.count >= 5) return "minute" as const;
+    if (today && today.count >= personalDailyAllowance) return "month" as const;
     const month = new Date().toISOString().slice(0, 7);
     const used = churchId ? await ctx.db.query("aiUsageByChurch").withIndex("by_church_month", q => q.eq("churchId", churchId).eq("month", month)).unique() : null;
     if (used && used.count >= monthlyAllowance) return "month" as const;
     if (session) {
       if (own) await ctx.db.patch("aiUsageBySession", own._id, { windowStart, minute: own.windowStart === windowStart ? own.minute + 1 : 1, count: own.count + 1 });
       else await ctx.db.insert("aiUsageBySession", { session, day, windowStart, minute: 1, count: 1 });
+      if (everyone) await ctx.db.patch("aiUsageBySession", everyone._id, { windowStart, count: everyone.count + 1 });
+      else await ctx.db.insert("aiUsageBySession", { session: sampleDay, day, windowStart, minute: 0, count: 1 });
     } else if (previous) await ctx.db.patch("aiUsage", previous._id, {
       windowStart, count: previous.windowStart === windowStart ? previous.count + 1 : 1,
     });
     else await ctx.db.insert("aiUsage", { userId, windowStart, count: 1 });
+    if (today) await ctx.db.patch("aiUsageBySession", today._id, { windowStart, count: today.count + 1 });
+    else if (personal) await ctx.db.insert("aiUsageBySession", { session: personal, day, windowStart, minute: 0, count: 1 });
     if (used) await ctx.db.patch("aiUsageByChurch", used._id, { count: used.count + 1 });
     else if (churchId) await ctx.db.insert("aiUsageByChurch", { churchId, month, count: 1 });
     return "ok" as const;
@@ -436,7 +459,7 @@ const yearFlag = v.object({
   /** "rule" was found by counting alone; "assistant" means the model read a note. */
   source: v.union(v.literal("rule"), v.literal("assistant")),
 });
-const toRead = v.object({ kind: v.union(v.literal("noteSaysPaid"), v.literal("visitNotMarked")), record: yearFlag.fields.record, note: v.string(), names: v.array(v.string()), addresses: v.array(v.string()) });
+const toRead = v.object({ kind: v.union(v.literal("noteSaysPaid"), v.literal("visitNotMarked")), record: yearFlag.fields.record, note: v.string(), names: v.array(v.string()), addresses: v.array(v.string()), /** Who a request was paid to: written with a capital, it is taken out like any name. */ payee: v.optional(v.string()) });
 const paidWords = /\b(?:paid|sent (?:a |the )?check|check (?:was )?(?:sent|mailed)|covered the|pagad[oa]|pagamos)\b/i;
 const visitedWords = /\b(?:visited|we met|met with|went to see|stopped by|visitamos)\b/i;
 
@@ -471,7 +494,7 @@ export const yearRecords = internalQuery({
       const payment = await ctx.db.query("ledgerEntries").withIndex("by_request", q => q.eq("requestId", request._id)).first();
       if (payment) continue;
       if (request.status === "paid") flags.push({ kind: "paidNoPayment", record, source: "rule" });
-      else if (paidWords.test(request.decisionNote) && reading.length < 20) reading.push({ kind: "noteSaysPaid", record, note: request.decisionNote, ...(await identity(request.neighborId)) });
+      else if (paidWords.test(request.decisionNote) && reading.length < 20) reading.push({ kind: "noteSaysPaid", record, note: request.decisionNote, ...(await identity(request.neighborId)), payee: request.payeeName });
       else if (request.status === "approved" && (request.decidedAt ?? request.createdAt) < now - 30 * 86_400_000) flags.push({ kind: "approvedNotPaid", record, source: "rule" });
     }
     for (const visit of visits) {
@@ -503,7 +526,7 @@ export const checkYear = action({
     const sure = await confidence(env.TYPESAFE_API_KEY,
       { notes: Object.fromEntries(reading.map((item, index) => [`n${index}`, item.note.slice(0, 1000)])) },
       Object.fromEntries(reading.map((item, index) => [`n${index}`, `Does notes.n${index} say ${asked[item.kind]}? ${plainly}`])),
-      { names: reading.flatMap(item => item.names), addresses: reading.flatMap(item => item.addresses), others },
+      { names: reading.flatMap(item => item.names), addresses: reading.flatMap(item => item.addresses), others: [...others, ...reading.flatMap(item => (item.payee ? [item.payee] : []))] },
     );
     if (!sure) return unread;
     return { flags: [...flags, ...reading.flatMap(({ kind, record }, index) => (sure[`n${index}`] >= sureEnough ? [{ kind, record, source: "assistant" as const }] : []))], verification: "checked" };
