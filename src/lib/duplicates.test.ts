@@ -24,3 +24,13 @@ describe("duplicate households, by what code compares", () => {
     expect(sameBy(a, { name: "Marcus Bellamy", phone: "", address: "" })).toEqual([]);
   });
 });
+
+describe("the notes rule, against run 1", () => {
+  test("the line set on the pairs not held out gets them all right, and the held-out figure is what run 1 says", async () => {
+    const run = (await import("../../eval/duplicates/run-1.json")).default;
+    const { duplicateSet, heldOutFigure, notesSayOne } = await import("./duplicate-set");
+    for (const item of duplicateSet.filter((pair) => !pair.heldOut))
+      expect(notesSayOne(run.rows.find((row) => row.id === item.id)?.same ?? 0, item.a, item.b), item.id).toBe(item.same);
+    expect(heldOutFigure(run)).toEqual({ pairs: 5, right: 4, missed: 1, wrong: 0 });
+  });
+});

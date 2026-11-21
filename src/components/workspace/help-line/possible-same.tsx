@@ -12,7 +12,13 @@ import { LiveDialog, SheetCancel } from "@/components/workspace/live-dialog";
 import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
 import { useSave } from "@/components/workspace/help-line/use-save";
 import { recordHref } from "@/components/workspace/help-line/format";
+import { heldOutFigure } from "@/lib/duplicate-set";
+import run1 from "../../../../eval/duplicates/run-1.json";
 
+/** What the record quotes: the held-out pairs of the last run, by the rule the record uses. */
+const figure = heldOutFigure(run1);
+
+type Figure = ReturnType<typeof heldOutFigure>;
 type Moved = { calls: number; requests: number; visits: number; ledger: number; notes: number };
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
@@ -23,6 +29,7 @@ const said = {
     count: (n: number) => (n === 1 ? "1 record" : `${n} records`),
     by: { phone: "Same phone", address: "Same address", name: "Similar name" },
     notes: "The assistant reads both records' notes as one household.",
+    measured: (f: Figure) => `Measured on ${f.pairs} made-up pairs kept apart from the ones its line was set on: ${f.right} right, ${f.missed} missed, ${f.wrong} wrong. A missed pair is still listed when two things match.`,
     people: (adults: number, children: number) => `${adults} ${adults === 1 ? "adult" : "adults"}, ${children} ${children === 1 ? "child" : "children"}`,
     merge: "Merge into this record",
     mergeThis: (name: string) => `Merge ${name} into this record`,
@@ -47,6 +54,7 @@ const said = {
     count: (n: number) => (n === 1 ? "1 registro" : `${n} registros`),
     by: { phone: "Mismo teléfono", address: "Misma dirección", name: "Nombre parecido" },
     notes: "El asistente lee las notas de ambos registros como un solo hogar.",
+    measured: (f: Figure) => `Medido con ${f.pairs} pares inventados, apartados de los que se usaron para fijar su línea: ${f.right} bien, ${f.missed} sin detectar, ${f.wrong} mal. Un par sin detectar se muestra igual cuando coinciden dos datos.`,
     people: (adults: number, children: number) => `${adults} ${adults === 1 ? "adulto" : "adultos"}, ${children} ${children === 1 ? "niño" : "niños"}`,
     merge: "Unir a este registro",
     mergeThis: (name: string) => `Unir ${name} a este registro`,
@@ -165,6 +173,7 @@ function Candidates({ found, w, neighborId, onMerged }: { found: Candidate[]; w:
           </div>
         ))}
       </div>
+      {found.some((row) => row.notesAgree) && <p className="help-form-note">{w.measured(figure)}</p>}
       {merging && (
         <LiveDialog title={w.sheet(sampleSaid(merging.name))} onClose={() => setMerging(null)}>
           <MergeForm
