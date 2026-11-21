@@ -251,7 +251,7 @@ function Partners({ churchId }: { churchId: Id<"churches"> }) {
       <p className="live-muted">{w.partnersHelp}</p>
       {partners?.map((partner) => (
         <div key={partner.id} className="web-partner">
-          <span>{partner.name} · {partner.email}{partner.active ? "" : ` · ${w.revoked}`}</span>
+          <span>{partner.name} · {partner.email} · {partner.language === "es" ? "Español" : "English"}{partner.active ? "" : ` · ${w.revoked}`}</span>
           <Button type="button" variant="ghost" disabled={pending} onClick={() => void save(() => relink({ churchId, partnerId: partner.id })).then((done) => done.saved && show(done.result))}>{w.newLink}</Button>
           {partner.active && <Button type="button" variant="ghost" disabled={pending} onClick={() => void save(() => revoke({ churchId, partnerId: partner.id }))}>{w.revoke}</Button>}
         </div>
@@ -261,7 +261,7 @@ function Partners({ churchId }: { churchId: Id<"churches"> }) {
         event.preventDefault();
         const target = event.currentTarget;
         const form = new FormData(target);
-        void save(() => create({ churchId, name: String(form.get("name") ?? ""), email: String(form.get("email") ?? "") })).then((done) => {
+        void save(() => create({ churchId, name: String(form.get("name") ?? ""), email: String(form.get("email") ?? ""), language: form.get("language") === "es" ? "es" : "en" })).then((done) => {
           if (!done.saved) return;
           show(done.result);
           target.reset();
@@ -269,6 +269,11 @@ function Partners({ churchId }: { churchId: Id<"churches"> }) {
       }}>
         <LiveField label={w.partnerName}><Input name="name" maxLength={80} required /></LiveField>
         <LiveField label={w.partnerEmail}><Input name="email" type="email" maxLength={254} required /></LiveField>
+        <fieldset className="web-language">
+          <legend>{w.partnerLanguage}</legend>
+          <label className="web-choice"><input type="radio" name="language" value="en" defaultChecked={words.locale === "en"} /> <span lang="en">English</span></label>
+          <label className="web-choice"><input type="radio" name="language" value="es" defaultChecked={words.locale === "es"} /> <span lang="es">Español</span></label>
+        </fieldset>
         {error && <LiveFailure message={error} />}
         <Button type="submit" disabled={pending}>{w.addPartner}</Button>
       </form>
