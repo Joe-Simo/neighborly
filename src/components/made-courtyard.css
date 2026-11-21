@@ -19,7 +19,7 @@
 .made-courtyard[data-live=true] .made-courtyard-stack:focus-visible{outline:none;clip-path:inset(var(--ring))}
 .made-courtyard-stack:focus-visible::after{visibility:visible}
 /* The sheet above lays its cut foot over the courtyard's top; while the ring shows, the courtyard is laid over that foot so the ring is drawn whole. */
-.made-courtyard:has(.made-courtyard-stack:focus-visible){z-index:11}
+.made-courtyard:has(.made-courtyard-stack:focus-visible){z-index:15}
 .made-courtyard-stack img{-webkit-user-drag:none;pointer-events:none}
 /* The hint: the caption's type, one step quieter. */
 .made-courtyard-hint{margin:0;padding-inline:20px;width:min(34em,100%);box-sizing:border-box;text-align:center;font:400 clamp(15px,1.15vw,19px)/1.45 'Newsreader','Newsreader Fallback',Georgia,serif;color:#3d4f43;text-wrap:balance}
@@ -47,7 +47,8 @@
 
 .public-made-figure{margin:28px 0 0}
 /* Never drawn past its 960px source, so the depth map stays sharp at 1920. */
-.public-made-figure img{display:block;width:100%;max-width:960px;height:auto;box-shadow:0 1px 2px #3b2a1230,0 10px 20px -10px #3b2a1240}
+/* The real map, never recoloured, laid on card paper with the card's relief like the page's other tiles. */
+.public-made-figure img{display:block;box-sizing:border-box;width:100%;max-width:960px;height:auto;padding:var(--space-12);border-radius:2px;background:var(--relief-paper);box-shadow:var(--relief-card)}
 .public-made-figure figcaption{margin-top:10px;font-size:15px;line-height:1.5;color:#3d4f43}
 /* On a wide screen the stage sits a little lower, so the ring keeps 24px of air below the paper of the section before it. */
 @media(min-width:701px) and (prefers-reduced-motion:no-preference){.made-courtyard-stage{padding-top:72px;padding-bottom:64px;box-sizing:border-box}}
