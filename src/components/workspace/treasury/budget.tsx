@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation } from "convex/react";
 import { useQuery } from "@/components/workspace/query";
 import { api } from "../../../../convex/_generated/api";
@@ -38,13 +38,20 @@ export default function BudgetLine({ churchId, today }: { churchId: Id<"churches
   const found = useQuery(api.treasury.budget, { churchId, month });
   const setBudget = useMutation(api.treasury.setBudget);
   const [editing, setEditing] = useState(false);
+  // The button gives way to the form and comes back for it: focus goes with each, so it is never left on nothing.
+  const opener = useRef<HTMLButtonElement>(null);
+  const was = useRef(editing);
+  useEffect(() => {
+    if (was.current && !editing) opener.current?.focus();
+    was.current = editing;
+  }, [editing]);
   const { pending, error, save } = useSave();
   if (!found) return null;
   const money = (cents: number) => formatMoney(cents / 100, locale, cents % 100 === 0);
   const title = monthTitle(locale, month, today);
   return (
     <section className="treasury-budget" aria-label={w.label}>
-      <p>{found.budget ? w.line(title, money(found.approved), money(found.budget)) : w.none(title, money(found.approved))}</p>
+      <p aria-live="polite">{found.budget ? w.line(title, money(found.approved), money(found.budget)) : w.none(title, money(found.approved))}</p>
       {editing ? (
         <form
           className="live-form"
@@ -63,7 +70,7 @@ export default function BudgetLine({ churchId, today }: { churchId: Id<"churches
           }}
         >
           <LiveField label={w.label} help={w.help}>
-            <Input name="budget" inputMode="numeric" defaultValue={found.budget ? String(found.budget / 100) : ""} onInput={(event) => event.currentTarget.setCustomValidity("")} />
+            <Input name="budget" inputMode="numeric" autoFocus defaultValue={found.budget ? String(found.budget / 100) : ""} onInput={(event) => event.currentTarget.setCustomValidity("")} />
           </LiveField>
           {error && <LiveFailure message={error} />}
           <div className="live-form-actions">
@@ -73,7 +80,7 @@ export default function BudgetLine({ churchId, today }: { churchId: Id<"churches
           </div>
         </form>
       ) : (
-        <Button type="button" variant="ghost" onClick={() => setEditing(true)}>{found.budget ? w.change : w.set}</Button>
+        <Button ref={opener} type="button" variant="ghost" onClick={() => setEditing(true)}>{found.budget ? w.change : w.set}</Button>
       )}
     </section>
   );
