@@ -7,7 +7,7 @@ import type { Language } from "@/lib/words";
  * Helps does not keep is marked as not tracked, never estimated. Ledger categories map by the label the ledger stores.
  */
 export type FormLine = { code: string; line: string; value: { cents: number } | { count: number } | null; note?: string };
-export type FormSection = { title: string; lines: FormLine[] };
+type FormSection = { title: string; lines: FormLine[] };
 
 const said = {
   en: {
