@@ -51,7 +51,7 @@ import {
   dropSheetWords,
   letSheetWordsGo,
   readSealedSheet,
-  HelpEmpty,
+  EmptyLine,
   HelpLoading,
   HelpRoom,
 } from "@/components/workspace/help-line/room";
@@ -832,7 +832,7 @@ function HelpLineView({
       </DateLeaf>
     );
   };
-  // No call waiting and none returned: the room says what belongs here, once, and the head carries "Log a call".
+  // No call waiting and none returned: one line; the head carries "Log a call".
   const none = calls.waiting.length === 0 && calls.returned.length === 0;
   return (
     <div className="help-lists" ref={lists}>
@@ -840,9 +840,7 @@ function HelpLineView({
       {/* Requests from the public web form (kindhelps.com/help): where the team helps, and the web-only actions. */}
       <WebRequests />
       {none ? (
-        <HelpEmpty first title={text.noneTitle}>
-          {text.none}
-        </HelpEmpty>
+        <EmptyLine first line={text.noneTitle} />
       ) : (
       <section>
         <div className="live-section-head">
@@ -991,10 +989,7 @@ function HelpLineView({
             ))}
           </div>
         ) : (
-          // The head carries "Log a call": the quiet state does not ask twice.
-          <HelpEmpty title={text.quietTitle}>
-            {text.quiet}
-          </HelpEmpty>
+          <EmptyLine line={text.quietTitle} />
         )}
       </section>
       )}

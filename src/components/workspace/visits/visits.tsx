@@ -27,7 +27,7 @@ import { nameKeeper } from "@/components/workspace/keep-names";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { initials, whyFirst } from "@/components/workspace/help-line/format";
 import {
-  HelpEmpty,
+  EmptyLine,
   HelpLoading,
   HelpRoom,
 } from "@/components/workspace/help-line/room";
@@ -570,9 +570,7 @@ function VisitsView({
         </RoomAside>
       )}
       {nothing ? (
-        <HelpEmpty first title={text.empty.title}>
-          {text.empty.body}
-        </HelpEmpty>
+        <EmptyLine first line={text.empty.title} />
       ) : (
         <section>
           <div className="live-section-head">

@@ -65,7 +65,6 @@ export const en = (t: Terms, place: string) => ({
   aside: "Going out this week",
   empty: {
     title: "No one is waiting on a visit.",
-    body: "A request from the help line that needs a visit waits here, with two home visitors who are free that week.",
   },
   coming: {
     title: "Coming up",
@@ -258,7 +257,6 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     aside: "Salen esta semana",
     empty: {
       title: "Nadie está esperando una visita.",
-      body: "Una petición de la línea de ayuda que necesita visita espera aquí, con dos personas del equipo de visitas que están libres esa semana.",
     },
     coming: {
       title: "Próximas visitas",

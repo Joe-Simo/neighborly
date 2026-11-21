@@ -245,6 +245,10 @@ td.help-money[data-balance] { color: var(--live-muted); }
 }
 .help-empty :is(h2, h3) { font: 400 30px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; margin: 0 0 var(--space-8); }
 .help-empty p { margin: 0 0 var(--space-16); color: var(--live-muted); font-size: 19px; line-height: 1.5; max-width: 44ch; }
+/* An empty list says one line across the whole column: no picture, and the room's own rule above and below. */
+.help-empty-line { padding: var(--space-24) 0; border-top: 1px solid var(--live-line); border-bottom: 1px solid var(--live-line); }
+.help-empty-line[data-first] { border-top: 0; padding-top: var(--space-8); }
+.help-empty-line :is(h2, h3) { margin: 0; font: 400 24px/1.25 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.01em; color: var(--live-ink); }
 .help-done { display: flex; gap: var(--space-16) 14px; align-items: center; }
 .help-done svg { color: #3f6a45; flex-shrink: 0; }
 .help-state-label { font-size: 13px; font-weight: 650; letter-spacing: var(--caps-track); text-transform: uppercase; color: #52644f; margin: var(--space-56) 0 var(--space-16); }

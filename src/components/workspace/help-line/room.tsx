@@ -56,6 +56,16 @@ export function HelpEmpty({
   );
 }
 
+/** An empty list: one line of words under the room's rule, with no picture. The room's head keeps the step. */
+export function EmptyLine({ line, first }: { line: string; first?: boolean }) {
+  const named = useId();
+  return (
+    <div className="help-empty-line" data-first={first ? "" : undefined} role="group" aria-labelledby={named}>
+      <FollowingHeading id={named}>{line}</FollowingHeading>
+    </div>
+  );
+}
+
 /** The door: what a member sees instead of a neighbor screen. */
 function KeptPrivate() {
   const { words } = useWorkspace();

@@ -1,5 +1,6 @@
 "use client";
 
+import { EmptyLine } from "@/components/workspace/help-line/room";
 import { useRef, useState, type ChangeEvent } from "react";
 import { useAction, useMutation } from "convex/react";
 import { FileText } from "lucide-react";
@@ -123,7 +124,7 @@ export default function UploadedFiles(place: Place) {
       {rows === undefined ? (
         <LiveLoading label={text.loading} />
       ) : rows.length === 0 ? (
-        <p className="tools-small">{text.empty}</p>
+        <EmptyLine line={text.empty} />
       ) : (
         <ul className="tools-files paper-rows">
           {rows.map((row) => (

@@ -4,7 +4,9 @@ import type { Language } from "@/lib/words";
 type MadeBlock = string | { lead: string; rest: string; tone?: "waiting" | "wrong" | "done" }[];
 
 /** A section of the page; one may carry a picture from the painting's own working files, with what it shows. */
-type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string }; table?: "eval" | "frames" | "anatomy" | "process" | "trace" };
+type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string };
+  /** Four stills of the courtyard's sheets, from whole to drawn apart, in order (/assets/made/courtyard-apart-{1..4}-{640,1200}.webp). */
+  stills?: { label: string; items: [string, string][] }; table?: "eval" | "frames" | "anatomy" | "process" | "trace" };
 
 /** Every word of the page on how Kind Helps was made. English is the source; Spanish says the same, section for section. */
 const en = {
@@ -75,6 +77,16 @@ const en = {
     /** {day}, {commit} and {machine} come from the recorder's file. */
     source: "Source: the Mac run of {day}, build {commit}, {machine}. Each mark is one frame, at the height of its time; its raw times are eval/frames/made-scroll.json in the code.",
   },
+  lighthouse: {
+    caption: "Lighthouse on the home page at the freeze, every run",
+    head: ["Run", "Performance", "Accessibility", "Best practices", "SEO", "Largest paint"] as [string, string, string, string, string, string],
+    forms: { mobile: "Phone", desktop: "Desk" },
+    /** {form} is phone or desk, {n} the run's number. */
+    run: "{form}, run {n}",
+    seconds: "{s} s",
+    /** {day}, {commit}, {version} and {url} come from Lighthouse's own reports. */
+    source: "Source: Lighthouse {version} on {url}, {day}, build {commit}: the phone runs with its default slow phone and network, the desk runs with its desktop preset. Each run is shown as it came; the reports are summed up in eval/lighthouse/freeze.json in the code.",
+  },
   evalTable: {
     caption: "The 12 held-out notes, field by field",
     head: ["Field", "Right", "Blank", "Wrong"] as [string, string, string, string],
@@ -96,8 +108,13 @@ const en = {
       "The painted artwork was made with Codex’s image generator from written direction, and chosen by the author. The page adds nothing to it. On the home page it moves by its own depth: the near stone and the far hills part around the table as you walk in, the light follows a sun that sets at dusk, and the people, each painted three times, turn from one of their paintings to the next. Around it, the paper moves.",
     ] },
     { title: "Cut along its own depth", blocks: [
-      "The courtyard was painted whole. To let it move without painting anything new, it was cut along its own depth into six sheets, with the people at the table on a seventh. Every cut edge is the painting’s, so laid together the sheets are the painting again.",
-    ], figure: { src: "/assets/made/courtyard-depth-1774.webp", alt: "The courtyard in shades of gray: the sky black, the far cloister dark, the paving and pillars nearly white.", caption: "The depth map: lighter is nearer." } },
+      "The courtyard was painted whole. Its own depth cuts it into sheets without painting anything new: drawn apart here as six sheets with the people at the table on a seventh, and on the home page laid into four planes that move as you walk in. Every cut edge is the painting’s, so laid together the sheets are the painting again.",
+    ], figure: { src: "/assets/made/courtyard-depth-1774.webp", alt: "The courtyard in shades of gray: the sky black, the far cloister dark, the paving and pillars nearly white.", caption: "The depth map: lighter is nearer." }, stills: { label: "The courtyard’s sheets, from whole to drawn apart", items: [
+      ["Whole, as the doors open on it.", "The courtyard painting, whole, seen straight on."],
+      ["Turned, still one sheet.", "The same painting turned a little to the side, still lying as one sheet."],
+      ["Drawn apart.", "The sheets parting: the sky and far cloister behind, the floor in front, paper showing between the cut edges."],
+      ["Seven sheets, each at its own depth.", "The seven sheets drawn fully apart, back to front: sky, tower and far cloister, people, table and arcade, garden bench, floor, doorway."],
+    ] } },
     { title: "The rules the paper keeps", table: "anatomy", blocks: [
       "A ministry’s software is read by tired people at the end of a long day. So every screen follows a few rules that do not bend.",
       [
@@ -221,6 +238,14 @@ const es: typeof en = {
     line: "33 ms",
     source: "Fuente: la medición en la Mac del {day}, versión {commit}, {machine}. Cada marca es un cuadro, a la altura de su tiempo; sus tiempos sin tocar están en eval/frames/made-scroll.json, en el código.",
   },
+  lighthouse: {
+    caption: "Lighthouse en la portada al cierre, cada pasada",
+    head: ["Pasada", "Rendimiento", "Accesibilidad", "Buenas prácticas", "SEO", "Mayor dibujo"],
+    forms: { mobile: "Teléfono", desktop: "Escritorio" },
+    run: "{form}, pasada {n}",
+    seconds: "{s} s",
+    source: "Fuente: Lighthouse {version} en {url}, {day}, versión {commit}: las pasadas de teléfono con su teléfono y red lentos de siempre, las de escritorio con su ajuste de escritorio. Cada pasada se muestra tal como salió; los informes se resumen en eval/lighthouse/freeze.json, en el código.",
+  },
   evalTable: {
     caption: "Las 12 notas apartadas, campo por campo",
     head: ["Campo", "Bien", "En blanco", "Mal"],
@@ -242,8 +267,13 @@ const es: typeof en = {
       "La obra pintada se hizo con el generador de imágenes de Codex a partir de indicaciones escritas, y elegida por quien lo creó. La página no le añade nada. En la página de inicio se mueve según su propia profundidad: la piedra cercana y las colinas lejanas se separan alrededor de la mesa al entrar, la luz sigue a un sol que se pone al atardecer, y las personas, pintadas tres veces cada una, pasan de una de sus pinturas a la siguiente. Alrededor, se mueve el papel.",
     ] },
     { title: "Cortado según su propia profundidad", blocks: [
-      "El patio se pintó entero. Para que pudiera moverse sin pintar nada nuevo, se cortó según su propia profundidad en seis hojas, con las personas de la mesa en una séptima. Cada borde cortado es de la pintura, así que juntas las hojas vuelven a ser la pintura.",
-    ], figure: { src: "/assets/made/courtyard-depth-1774.webp", alt: "El patio en tonos de gris: el cielo negro, el claustro del fondo oscuro, el empedrado y los pilares casi blancos.", caption: "El mapa de profundidad: lo claro está más cerca." } },
+      "El patio se pintó entero. Su propia profundidad lo corta en hojas sin pintar nada nuevo: aquí se separa en seis hojas, con las personas de la mesa en una séptima, y en la página de inicio se reúne en cuatro planos que se mueven al entrar. Cada borde cortado es de la pintura, así que juntas las hojas vuelven a ser la pintura.",
+    ], figure: { src: "/assets/made/courtyard-depth-1774.webp", alt: "El patio en tonos de gris: el cielo negro, el claustro del fondo oscuro, el empedrado y los pilares casi blancos.", caption: "El mapa de profundidad: lo claro está más cerca." }, stills: { label: "Las hojas del patio, de enteras a separadas", items: [
+      ["Entero, como lo muestran las puertas al abrirse.", "La pintura del patio, entera, vista de frente."],
+      ["Girado, todavía una sola hoja.", "La misma pintura girada un poco hacia un lado, todavía como una sola hoja."],
+      ["Separándose.", "Las hojas se separan: el cielo y el claustro del fondo detrás, el suelo delante, y el papel visible entre los bordes cortados."],
+      ["Siete hojas, cada una a su profundidad.", "Las siete hojas del todo separadas, del fondo al frente: cielo, torre y claustro del fondo, personas, mesa y arcada, banco del jardín, suelo, portal."],
+    ] } },
     { title: "Las reglas que guarda el papel", table: "anatomy", blocks: [
       "El programa de un ministerio lo leen personas cansadas al final de un día largo. Por eso cada pantalla sigue unas pocas reglas que no se doblan.",
       [
