@@ -386,8 +386,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       q3: (year) => `Año fiscal ${year}, tercer trimestre`,
       q4: (year) => `Año fiscal ${year}, cuarto trimestre`,
       span: "{from} a {to}",
-      longSpan: "Del {from} al {to}",
-      longSpanSoFar: "Del {from} al {to}, hasta ahora",
+      longSpan: "del {from} al {to}",
+      longSpanSoFar: "del {from} al {to}, hasta ahora",
     },
     actions: {
       printYear: "Imprimir este año",

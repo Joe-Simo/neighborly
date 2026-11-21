@@ -1,0 +1,80 @@
+"use client";
+
+import { useState } from "react";
+import { useMutation } from "convex/react";
+import { useQuery } from "@/components/workspace/query";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { LiveField } from "@/components/workspace/primitives";
+import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
+import { useWorkspace } from "@/components/workspace/context";
+import { useSave } from "@/components/workspace/use-save";
+import { monthTitle } from "@/components/workspace/treasury/labels";
+import { formatMoney, type Language } from "@/lib/words";
+
+/** Only the treasury carries these words, so no other room pays for them. */
+const said = {
+  en: {
+    line: (month: string, approved: string, budget: string) => `${month}: ${approved} approved of the ${budget} monthly budget.`,
+    none: (month: string, approved: string) => `${month}: ${approved} approved. No monthly budget is set.`,
+    set: "Set a monthly budget", change: "Change the budget", label: "Monthly budget",
+    help: "Leave it empty for no budget.", wrong: "Write the budget in dollars, such as 2000.", save: "Save budget", cancel: "Cancel",
+  },
+  es: {
+    line: (month: string, approved: string, budget: string) => `${month}: ${approved} aprobados del presupuesto mensual de ${budget}.`,
+    none: (month: string, approved: string) => `${month}: ${approved} aprobados. No hay presupuesto mensual.`,
+    set: "Fijar un presupuesto mensual", change: "Cambiar el presupuesto", label: "Presupuesto mensual",
+    help: "Déjalo vacío para no tener presupuesto.", wrong: "Escribe el presupuesto en dólares, como 2000.", save: "Guardar presupuesto", cancel: "Cancelar",
+  },
+} satisfies Record<Language, unknown>;
+
+/** The month's approved help against the group's monthly budget, and the one place the budget is set. */
+export default function BudgetLine({ churchId, today }: { churchId: Id<"churches">; today: string }) {
+  const locale = useWorkspace().words.locale;
+  const w = said[locale];
+  const month = today.slice(0, 7);
+  const found = useQuery(api.treasury.budget, { churchId, month });
+  const setBudget = useMutation(api.treasury.setBudget);
+  const [editing, setEditing] = useState(false);
+  const { pending, error, save } = useSave();
+  if (!found) return null;
+  const money = (cents: number) => formatMoney(cents / 100, locale, cents % 100 === 0);
+  const title = monthTitle(locale, month, today);
+  return (
+    <section className="treasury-budget" aria-label={w.label}>
+      <p>{found.budget ? w.line(title, money(found.approved), money(found.budget)) : w.none(title, money(found.approved))}</p>
+      {editing ? (
+        <form
+          className="live-form"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            const field = event.currentTarget.elements.namedItem("budget") as HTMLInputElement;
+            const typed = field.value.replace(/[$,\s]/g, "");
+            const dollars = typed ? Number(typed) : null;
+            if (dollars !== null && !(Number.isInteger(dollars) && dollars > 0)) {
+              field.setCustomValidity(w.wrong);
+              field.reportValidity();
+              return;
+            }
+            const outcome = await save(() => setBudget({ churchId, budget: dollars === null ? null : dollars * 100 }));
+            if (outcome.saved) setEditing(false);
+          }}
+        >
+          <LiveField label={w.label} help={w.help}>
+            <Input name="budget" inputMode="numeric" defaultValue={found.budget ? String(found.budget / 100) : ""} onInput={(event) => event.currentTarget.setCustomValidity("")} />
+          </LiveField>
+          {error && <LiveFailure message={error} />}
+          <div className="live-form-actions">
+            <LiveWaiting when={pending} />
+            <Button type="button" variant="ghost" disabled={pending} onClick={() => setEditing(false)}>{w.cancel}</Button>
+            <Button type="submit" disabled={pending}>{w.save}</Button>
+          </div>
+        </form>
+      ) : (
+        <Button type="button" variant="ghost" onClick={() => setEditing(true)}>{found.budget ? w.change : w.set}</Button>
+      )}
+    </section>
+  );
+}

@@ -806,3 +806,38 @@ export const recordOwnKind = mutation({
     return ctx.db.insert("ledgerEntries", { churchId: args.churchId, kind: kind.direction, amount: args.amount, date, category: kind.name, payee, memo, checkNumber: out ? check(args.checkNumber) : undefined, recordedBy: member._id, createdAt: Date.now() });
   },
 });
+
+/**
+ * Help approved between two moments, by decision date: what a month's budget is measured against. Requests are read by
+ * creation date with four months' margin, since a request is decided after it is made; vouchers carry no money.
+ */
+export async function approvedBetween(ctx: QueryCtx, churchId: Id<"churches">, from: number, to: number) {
+  const rows = await ctx.db.query("assistanceRequests").withIndex("by_church", q => q.eq("churchId", churchId).gte("createdAt", from - 120 * 86_400_000).lte("createdAt", to)).take(4000);
+  return rows.filter(one => (one.status === "approved" || one.status === "paid" || one.status === "closed") && (one.amountApproved ?? 0) > 0 && one.decidedAt !== undefined && one.decidedAt >= from && one.decidedAt < to);
+}
+export const sumApproved = (rows: { amountApproved?: number }[]) => rows.reduce((total, one) => total + (one.amountApproved ?? 0), 0);
+
+/** The month's budget and the help approved in it so far. `month` is "2026-11", in the group's time zone. */
+export const budget = query({
+  args: { churchId: v.id("churches"), month: v.string() },
+  returns: v.object({ budget: v.union(v.number(), v.null()), approved: v.number() }),
+  handler: async (ctx, { churchId, month }) => {
+    await neighborAccess(ctx, churchId);
+    const church = await ctx.db.get("churches", churchId);
+    const start = DateTime.fromISO(`${month}-01`, { zone: church?.timeZone ?? "America/New_York" });
+    if (!church || !start.isValid || !/^\d{4}-\d{2}$/.test(month)) throw new ConvexError("Ask for a month such as 2026-11.");
+    return { budget: church.monthlyBudget ?? null, approved: sumApproved(await approvedBetween(ctx, churchId, start.toMillis(), start.plus({ months: 1 }).toMillis())) };
+  },
+});
+
+/** Sets the monthly budget, or clears it with null. Whole dollars up to $1,000,000, kept in cents. */
+export const setBudget = mutation({
+  args: { churchId: v.id("churches"), budget: v.union(v.number(), v.null()) },
+  returns: v.null(),
+  handler: async (ctx, { churchId, budget }) => {
+    await neighborAccess(ctx, churchId);
+    if (budget !== null && (!Number.isInteger(budget) || budget < 100 || budget > 100_000_000)) throw new ConvexError("The budget must be between $1 and $1,000,000.");
+    await ctx.db.patch("churches", churchId, { monthlyBudget: budget ?? undefined });
+    return null;
+  },
+});

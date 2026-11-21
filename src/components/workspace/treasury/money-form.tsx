@@ -70,7 +70,8 @@ export function MoneyForm({
   onSubmit: (money: Money) => Promise<Refusal>;
   onCancel: () => void;
 }) {
-  const room = useWorkspace().words.rooms.treasury;
+  const { words, sampleSaid } = useWorkspace();
+  const room = words.rooms.treasury;
   const w = room.money;
   const [choice, setChoice] = useState<Choice>({
     direction: "in",
@@ -141,7 +142,7 @@ export function MoneyForm({
               ?.filter((kind) => kind.direction === "in")
               .map((kind) => (
                 <option key={kind.id} value={`own:${kind.id}`}>
-                  {kind.name}
+                  {sampleSaid(kind.name)}
                 </option>
               ))}
             {own && <option value="in:new">{w.anotherIn}</option>}
@@ -156,7 +157,7 @@ export function MoneyForm({
               ?.filter((kind) => kind.direction === "out")
               .map((kind) => (
                 <option key={kind.id} value={`own:${kind.id}`}>
-                  {kind.name}
+                  {sampleSaid(kind.name)}
                 </option>
               ))}
             {own && <option value="out:new">{w.anotherOut}</option>}

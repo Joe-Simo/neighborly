@@ -88,6 +88,8 @@ export const serverRefusalsEs: Record<string, string> = {
   "Record not found.": "No se encontró ese registro.",
   "Reload the page to see this room.": "Vuelve a cargar la página para ver esta sección.",
   "Request not found.": "No se encontró esa petición.",
+  "Ask for a month such as 2026-11.": "Pide un mes como 2026-11.",
+  "The budget must be between $1 and $1,000,000.": "El presupuesto debe estar entre $1 y $1,000,000.",
   "Say why the count is going down.": "Di por qué baja el conteo.",
   "Say why this entry is being reversed.": "Di por qué se anula este movimiento.",
   "Sign in to prepare a team draft.": "Inicia sesión para preparar un borrador del equipo.",

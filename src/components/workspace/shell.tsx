@@ -25,7 +25,7 @@ import type { LiveArea } from "@/components/workspace/areas";
 import { readFailure } from "@/components/workspace/failure";
 import { sayRefused } from "@/lib/refusals";
 import { LaunchMark, LiveLoading } from "@/components/workspace/primitives";
-import { LiveConnection, LiveState, LiveWaiting, RoomBoundary } from "@/components/workspace/states";
+import { LiveConnection, LiveWaiting, RoomBoundary } from "@/components/workspace/states";
 import { sayZoneLater, zoneName, ZoneSaid } from "@/components/workspace/zone";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { WorkspaceKeys } from "@/components/workspace/keys";
@@ -714,22 +714,14 @@ export function LiveWorkspace({
           lang={words.locale}
         >
           {keptNotice}
-          {/* The one way a room waits: a quiet line where its title will be, once the wait has lasted 400ms. */}
           {/* The one way a room waits: a quiet line where its title will be, once the wait has lasted 400ms. A room
-              held because the connection is down says that instead, in the family every other room state uses: its
-              picture's card, one serif line and one sentence, as a room that did not open does. */}
-          {opening &&
-            (lost ? (
-              <div className="live-opening" data-lost="">
-                <LiveState kind="offline" title={words.states.offlineTitle}>
-                  {words.states.offlineRoom}
-                </LiveState>
-              </div>
-            ) : (
-              <p className="live-opening" role="status">
-                <span className="text-balance">{words.states.opening}</span>
-              </p>
-            ))}
+              held because the connection is down is drawn as every room is while offline: its head, with the
+              connection's line under it (LiveConnection, below), and nothing else of it until it can open. */}
+          {opening && !lost && (
+            <p className="live-opening" role="status">
+              <span className="text-balance">{words.states.opening}</span>
+            </p>
+          )}
           <div className="live-page-head" data-rested={rested ? "" : undefined}>
             {heading.art && (
               <div className="live-head-art" data-area={area} data-ready={pictured === area ? "" : undefined}>

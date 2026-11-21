@@ -100,7 +100,8 @@ describe("repeat help before a decision", () => {
 
   test("recent same-kind help comes from the records; readings show only at 0.9; no names leave", async () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
-    const fetch = replying({ same0: yes(0.97), differs0: yes(0.2), same1: yes(0.1), differs1: yes(0.95), same2: yes(0.3), differs2: yes(0.89) });
+    const low = Object.fromEntries([0, 1, 2].flatMap(index => ["same", "differs", "home", "work", "paid"].map(field => [`${field}${index}`, yes(0.1)])));
+    const fetch = replying({ ...low, same0: yes(0.97), home1: yes(0.95), differs2: yes(0.89) });
     vi.stubGlobal("fetch", fetch);
     const { ids, signed } = await household();
     const found = await signed.action(api.drafts.checkRepeat, ids);
@@ -113,8 +114,8 @@ describe("repeat help before a decision", () => {
       { text: "The assistant reads the note from May 30 as saying otherwise. Read both before you decide.", assistant: true },
     ]);
     const body = JSON.parse(fetch.mock.calls[0][1].body) as Body;
-    // Three earlier records, newest first, two questions each; the declined rent request is asked about but not flagged.
-    expect(Object.keys(body.questions)).toHaveLength(6);
+    // Three earlier records, newest first, five questions each; the declined rent request is asked about but not flagged.
+    expect(Object.keys(body.questions)).toHaveLength(15);
     expect(fetch.mock.calls[0][1].body).not.toMatch(/Rosa|Delgado|14 Sample|Lee Power/);
   });
 
@@ -242,5 +243,51 @@ describe("a caller who needs Spanish", () => {
     const { waiting } = await signed.query(api.assistance.calls, { churchId: ids.churchId, at: at() });
     expect(waiting.find(call => call.id === unlinked)?.spanish).toBeNull();
     expect(waiting.find(call => call.id === linked)?.spanish).toBe("record");
+  });
+});
+
+describe("spending before a decision", () => {
+  test("the month's approved help and an amount above every earlier one come from the records, with no model", async () => {
+    vi.stubEnv("TYPESAFE_API_KEY", "");
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    const t = convexTest(schema, modules);
+    const ids = await t.run(async ctx => {
+      const churchId = await ctx.db.insert("churches", { name: "Sample Conference", timeZone: "America/New_York" });
+      const userId = await ctx.db.insert("users", { clerkId: "clerk|coordinator" });
+      const memberId = await ctx.db.insert("memberships", { churchId, userId, name: "Ana Visitor", email: "c@example.org", role: "coordinator", active: true, approved: true, coverOptIn: false });
+      const neighborId = await ctx.db.insert("neighbors", { churchId, name: "Rosa Delgado", nameKey: "rosa delgado", phone: "", phoneKey: "", email: "", address: "", adults: 1, children: 0, language: "en", notes: "", createdBy: memberId, createdAt: 0 });
+      const base = { churchId, neighborId, kind: "rent" as const, summary: "", decisionNote: "", payeeKind: "landlord" as const, payeeName: "", source: "person" as const, createdBy: memberId };
+      const now = Date.now();
+      for (let i = 0; i < 10; i++) await ctx.db.insert("assistanceRequests", { ...base, amountRequested: 30000, amountApproved: 30000, status: "paid", decidedAt: now - 1000 - i, createdAt: now - 2000 - i });
+      const requestId = await ctx.db.insert("assistanceRequests", { ...base, amountRequested: 90000, status: "open", createdAt: now });
+      return { churchId, requestId };
+    });
+    const signed = t.withIdentity({ subject: "clerk|coordinator", email: "c@example.org", emailVerified: true });
+    const found = await signed.action(api.drafts.checkRepeat, ids);
+    expect(found.lines.map(line => line.text)).toEqual(expect.arrayContaining([
+      expect.stringMatching(/^Approved so far in \w+: \$3,000\. \w+ last year: none\.$/),
+      "This amount is above every rent approval in the past year. The middle amount was $300.",
+    ]));
+    expect(fetch).not.toHaveBeenCalled();
+  });
+});
+
+describe("monthly budget", () => {
+  test("is set in whole cents, said with the month's approved help, cleared with null, and closed to signed-out callers", async () => {
+    const t = convexTest(schema, modules);
+    const churchId = await t.run(async ctx => {
+      const churchId = await ctx.db.insert("churches", { name: "Sample Conference", timeZone: "America/New_York" });
+      const userId = await ctx.db.insert("users", { clerkId: "clerk|coordinator" });
+      await ctx.db.insert("memberships", { churchId, userId, name: "Ana Visitor", email: "c@example.org", role: "coordinator", active: true, approved: true, coverOptIn: false });
+      return churchId;
+    });
+    const signed = t.withIdentity({ subject: "clerk|coordinator", email: "c@example.org", emailVerified: true });
+    await signed.mutation(api.treasury.setBudget, { churchId, budget: 200000 });
+    expect(await signed.query(api.treasury.budget, { churchId, month: "2026-11" })).toEqual({ budget: 200000, approved: 0 });
+    await expect(signed.mutation(api.treasury.setBudget, { churchId, budget: 12.5 })).rejects.toThrow("between $1");
+    await signed.mutation(api.treasury.setBudget, { churchId, budget: null });
+    expect((await signed.query(api.treasury.budget, { churchId, month: "2026-11" })).budget).toBeNull();
+    await expect(t.mutation(api.treasury.setBudget, { churchId, budget: 100 })).rejects.toThrow();
   });
 });
