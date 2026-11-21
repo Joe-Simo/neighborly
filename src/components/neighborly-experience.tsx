@@ -3,7 +3,6 @@
 import { viewport } from "@/lib/viewport";
 import { frameStep } from "@/lib/scroll-frame";
 import { whenIdle } from "@/lib/idle";
-import { preloadAppStyles } from "@/lib/app-styles";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -21,8 +20,6 @@ const NeighborlyContinuation = dynamic(() => import("./neighborly-continuation")
 export function NeighborlyExperience() {
   const [passed, setPassed] = useState(false);
   const transitionTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  // The workspace's styles are fetched once the first screen is drawn and the page is idle, so a door never waits on them.
-  useEffect(() => whenIdle(preloadAppStyles, 4000), []);
   useEffect(() => {
     const cancel = () => clearTimeout(transitionTimer.current);
     const key = (event: KeyboardEvent) => { if (["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End", "Escape"].includes(event.key)) cancel(); };

@@ -59,4 +59,3 @@ public/assets/painted-world/rooms/
 # keys and notes dropped into the folder by mistake
 *.rtf
 *.key
-/public/app-styles.json

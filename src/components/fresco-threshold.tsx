@@ -1,5 +1,4 @@
 "use client";
-import { warmAppStyles } from "@/lib/app-styles";
 
 import { type CSSProperties, type MouseEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -209,7 +208,7 @@ export function FrescoThreshold() {
   // and not left on a button that is gone.
   const entering = useRef<"key" | "pointer" | false>(false), caption = useRef<HTMLParagraphElement>(null);
   // Once the courtyard opens, the way in is fetched ahead, so no cold frame can land inside the turn.
-  useEffect(() => { if (open) { router.prefetch("/app"); warmAppStyles(); } }, [open, router]);
+  useEffect(() => { if (open) router.prefetch("/app"); }, [open, router]);
   useEffect(() => {
     if (!open || entering.current !== "pointer") return;
     entering.current = false;
@@ -272,7 +271,7 @@ export function FrescoThreshold() {
       {/* The same name and way in as the opening's bar, drawn again over the doors for the eye; a keyboard or a screen reader meets them once, above. Pressed, it goes in as the arch does: the stage is held and turned off the workspace. */}
       <header className="fresco-header" aria-hidden="true">
         <a href="#story-start" className="fresco-brand" tabIndex={-1}>kind helps</a>
-        <Link href="/app" tabIndex={-1} onClick={event => goInTurning(event, router.push, "Opening…")} onPointerEnter={() => { router.prefetch("/app"); warmAppStyles(); }} onTouchStart={warmAppStyles}>Enter Kind Helps<ArrowUpRight size={16} aria-hidden="true" /></Link>
+        <Link href="/app" tabIndex={-1} onClick={event => goInTurning(event, router.push, "Opening…")} onPointerEnter={() => router.prefetch("/app")}>Enter Kind Helps<ArrowUpRight size={16} aria-hidden="true" /></Link>
       </header>
       <div className="fresco-invitation" aria-hidden={open}>
         {/* Joe's line between the opening and the doors, set as the lead-in to the doors' one headline. */}
