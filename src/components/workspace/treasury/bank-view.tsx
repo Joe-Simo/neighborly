@@ -31,6 +31,11 @@ import {
 
 /** "$214.60 to Demo Power & Light", the way a statement line reads. */
 const line = (words: TreasuryWords, entry: BankEntry, typed?: (typed: string) => string) => amountLine(words, entry, formatFigure(entry.amount), typed);
+/** What "Mark not cleared" takes back: a gift's mark is its deposit's, so the whole deposit is named. */
+const undoing = (words: TreasuryWords, entry: Bank["lately"][number], day: (date: string) => string, typed?: (typed: string) => string) =>
+  entry.depositDate && entry.depositCount !== null && entry.depositTotal !== null
+    ? fill(words.bank.lately.deposit(entry.depositCount), { day: day(entry.depositDate), total: formatFigure(entry.depositTotal) })
+    : line(words, entry, typed);
 const under = (words: TreasuryWords, entry: BankEntry, typed?: (typed: string) => string) =>
   [
     entry.checkNumber && words.lines.check(entry.checkNumber),
@@ -78,7 +83,7 @@ function BankView({
   error: string;
   onAsOf: (day: string) => void;
   onClear: (entry: BankEntry) => void;
-  onUndo: (entry: BankEntry) => void;
+  onUndo: (entry: Bank["lately"][number]) => void;
   onClearAll: () => void;
 }) {
   const { words, sampleSaid } = useWorkspace();
@@ -305,14 +310,19 @@ function BankView({
                       {under(room, entry, sampleSaid)}
                     </p>
                   </div>
-                  <Button
-                    variant="outline"
-                    disabled={busy !== null}
-                    aria-label={w.waiting.markLabel(line(room, entry, sampleSaid))}
-                    onClick={() => onClear(entry)}
-                  >
-                    {busy === entry.id ? w.waiting.marking : w.waiting.mark}
-                  </Button>
+                  {entry.depositDate && entry.depositDate > bank.asOf ? (
+                    // The bank cannot show it before the deposit was made: no mark to offer, only the day.
+                    <p className="treasury-deposited">{w.waiting.deposited(day(entry.depositDate))}</p>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      disabled={busy !== null}
+                      aria-label={w.waiting.markLabel(line(room, entry, sampleSaid))}
+                      onClick={() => onClear(entry)}
+                    >
+                      {busy === entry.id ? w.waiting.marking : w.waiting.mark}
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>
@@ -353,7 +363,7 @@ function BankView({
                   variant="link"
                   className="treasury-take-back"
                   disabled={busy !== null}
-                  aria-label={w.lately.undoLabel(line(room, entry, sampleSaid))}
+                  aria-label={w.lately.undoLabel(undoing(room, entry, day, sampleSaid))}
                   onClick={() => onUndo(entry)}
                 >
                   {w.lately.undo}
@@ -476,7 +486,7 @@ export function BankRoom({
       onUndo={(entry) =>
         change(entry.id, async () => {
           await setCleared({ churchId, entryId: entry.id, clearedOn: null });
-          return w.done.undone(line(room, entry, sampleSaid));
+          return w.done.undone(undoing(room, entry, day, sampleSaid));
         })
       }
       onClearAll={() =>

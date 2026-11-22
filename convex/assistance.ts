@@ -326,7 +326,8 @@ export const undoDecision = mutation({
     const closing = existing.status === "closed";
     if (!closing && existing.status !== "approved" && existing.status !== "declined") throw new ConvexError("This can no longer be undone here.");
     mayUndo(closing ? { by: existing.closedBy, at: existing.closedAt } : { by: existing.decidedBy, at: existing.decidedAt }, member._id, Date.now());
-    if (existing.voucher) throw new ConvexError("This can no longer be undone here.");
+    // A voucher was given (and maybe taken back) only once it was approved; one closed or declined while open gave nothing.
+    if (existing.voucher && existing.amountApproved !== undefined) throw new ConvexError("This can no longer be undone here.");
     const paid = await ctx.db.query("ledgerEntries").withIndex("by_request", (q) => q.eq("requestId", requestId)).first();
     if (paid) throw new ConvexError("A payment is recorded on this request. Reverse it in the treasury first.");
     // A close keeps who approved; a request closed while open was never approved, so it carries no amount.

@@ -1,9 +1,9 @@
 /// <reference types="vite/client" />
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { convexTest } from "convex-test";
 import schema from "./schema";
 import { signedIn } from "./clerk.testing";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
 
@@ -61,6 +61,39 @@ describe("changing an announcement", () => {
     await expect(owner.mutation(api.announcements.edit, { churchId: ids.church, id: ids.announcement, title: "x", body: "y" })).rejects.toThrow("Announcement not found.");
     await owner.mutation(api.announcements.restore, { churchId: ids.church, id: ids.announcement });
     expect((await owner.query(api.workspace.dashboard, { churchId: ids.church })).announcements).toEqual([expect.objectContaining({ title: "Food drive" })]);
+  });
+});
+
+describe("removed announcements", () => {
+  test("a page is filled with announcements still up, not cut short by removed ones", async () => {
+    const { t, ids, as } = await setup();
+    const owner = as(ids.owner.userId);
+    await t.run(async ctx => {
+      for (let n = 0; n < 3; n++) await ctx.db.insert("announcements", { churchId: ids.church, title: `Removed ${n}`, body: "Gone.", authorId: ids.owner.memberId, createdAt: 10 + n, removedAt: 20 });
+    });
+    const first = await owner.query(api.pages.announcementsPage, { churchId: ids.church, paginationOpts: { numItems: 1, cursor: null } });
+    expect(first.page.map(a => a.title)).toEqual(["Food drive"]);
+  });
+
+  test("an email fan-out stops once the announcement is removed", async () => {
+    const { t, ids, as } = await setup();
+    await t.run(ctx => ctx.db.patch("announcements", ids.announcement, { createdAt: Date.now() + 60_000 }));
+    await as(ids.owner.userId).mutation(api.announcements.remove, { churchId: ids.church, id: ids.announcement });
+    await t.mutation(internal.announcementFanout.process, { announcementId: ids.announcement, cursor: null });
+    expect(await t.run(ctx => ctx.db.query("outbox").collect())).toHaveLength(0);
+  });
+
+  test("an email queued before the removal is not sent after it", async () => {
+    const { t, ids, as } = await setup();
+    await t.run(ctx => ctx.db.patch("announcements", ids.announcement, { createdAt: Date.now() + 60_000 }));
+    await t.mutation(internal.announcementFanout.process, { announcementId: ids.announcement, cursor: null });
+    await as(ids.owner.userId).mutation(api.announcements.remove, { churchId: ids.church, id: ids.announcement });
+    for (const [key, value] of Object.entries({ EMAIL_DELIVERY_ENABLED: "true", RESEND_API_KEY: "re_test_key", SENDER_EMAIL: "Kind Helps <test@example.org>", SITE_URL: "https://example.org" })) vi.stubEnv(key, value);
+    await as(ids.owner.userId).mutation(api.notificationEvents.queuePending, { churchId: ids.church });
+    vi.unstubAllEnvs();
+    const rows = await t.run(ctx => ctx.db.query("outbox").collect());
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.every(row => row.state === "cancelled")).toBe(true);
   });
 });
 

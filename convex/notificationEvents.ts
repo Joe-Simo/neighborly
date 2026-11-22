@@ -51,7 +51,7 @@ async function deliver(ctx: MutationCtx, row: Doc<"outbox">) {
     }
   } else if (row.kind === "announcement") {
     const announcement = row.announcementId ? await ctx.db.get("announcements", row.announcementId) : null;
-    if (!announcement || announcement.churchId !== row.churchId || !member.approved) {
+    if (!announcement || announcement.churchId !== row.churchId || announcement.removedAt || !member.approved) {
       await ctx.db.patch("outbox", row._id, { state: "cancelled" }); return;
     }
     content = { title: announcement.title, body: announcement.body };
