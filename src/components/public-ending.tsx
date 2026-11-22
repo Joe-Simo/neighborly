@@ -5,27 +5,16 @@ import { useCutHold } from "./cut-hold";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { CardOfferGrow } from "./card-offer-grow";
+import { Colophon } from "./public-foot";
 import "./neighborly-continuation.css";
 import "./thread-card.css";
 import "./public-touch.css";
 import "./cut-edges.css";
 import type { Language } from "@/lib/words";
+import { endingWords } from "./public-ending-words";
 import { CutHead } from "@/components/cut-heads";
 
-/** The closing band and the foot, in each language. The home page is English; a public page of words closes in its own. */
-export const endingWords = {
-  en: {
-    bring: ["Bring this to", "your people."], own: "Your own conference", start: "Start your conference", signIn: "Sign in",
-    free: ["Free.", "For every conference."], about: "About Kind Helps", privacy: "Privacy", privacyPath: "/privacy", access: "Accessibility", accessPath: "/accessibility", week: "A week at St. Example", weekPath: "/about/a-week", howMade: "How we made it", howMadePath: "/about/how-we-made-it", give: "Give a gift", newTab: "(opens in a new tab)",
-    card: { for: "For", opening: "Opening…", look: "Look around a sample conference", madeUp: "Every person in the sample is made up.", who: "Who this card is for (optional)", stays: "Stays in this tab." },
-  },
-  es: {
-    bring: ["Lleva esto a", "tu gente."], own: "Tu propia conferencia", start: "Empieza tu conferencia", signIn: "Iniciar sesión",
-    free: ["Gratis.", "Para toda conferencia."], about: "Acerca de Kind Helps", privacy: "Privacidad", privacyPath: "/privacidad", access: "Accesibilidad", accessPath: "/accesibilidad", week: "Una semana en San Ejemplo", weekPath: "/sobre/una-semana", howMade: "Cómo lo hicimos", howMadePath: "/sobre/como-lo-hicimos", give: "Hacer un donativo", newTab: "(se abre en una pestaña nueva)",
-    card: { for: "Para", opening: "Abriendo…", look: "Recorrer una muestra", madeUp: "Todos en la muestra son inventados.", who: "Para quién es esta tarjeta (opcional)", stays: "Se queda en esta pestaña." },
-  },
-} satisfies Record<Language, unknown>;
-export type CardWords = (typeof endingWords)[Language]["card"];
+export type { CardWords } from "./public-ending-words";
 
 /** The picture every public page closes on: the same two people, the open hand holding the card out as the way in. */
 export function ClosingBand({ language = "en" }: { language?: Language }) {
@@ -58,23 +47,6 @@ export function ClosingBand({ language = "en" }: { language?: Language }) {
     {/* After the words, as the eye and the keyboard meet them: the invitation, then the card that answers it. */}
     <CardOfferGrow said={said.card} />
   </div>;
-}
-
-/** The foot of every public page: the name set across the paper, and its quiet links. */
-export function Colophon({ home = "/", language = "en" }: { home?: string; language?: Language }) {
-  const said = endingWords[language];
-  return <footer className="neighborly-colophon">
-    <span><em>{said.free[0]}</em> {said.free[1]}</span>
-    <nav aria-label={said.about}>
-      <Link className="neighborly-give" href={said.weekPath}>{said.week}</Link>
-      <Link className="neighborly-give" href={said.howMadePath}>{said.howMade}</Link>
-      <Link className="neighborly-give" href={said.privacyPath}>{said.privacy}</Link>
-      <Link className="neighborly-give" href={said.accessPath}>{said.access}</Link>
-      <a className="neighborly-give" href="https://github.com/sponsors/Joe-Simo" target="_blank" rel="noopener noreferrer">{said.give}<span className="sr-only"> {said.newTab}</span></a>
-    </nav>
-    {/* Last, as it is set: the name is the page's final line for the eye, the keyboard and a screen reader alike. */}
-    <a href={home} lang="en">kind helps</a>
-  </footer>;
 }
 
 /** How a public page other than the home page ends: the closing band, then the foot. */

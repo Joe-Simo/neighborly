@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LostDoorBrand } from "@/components/edge-sheet";
+import { Colophon } from "@/components/public-foot";
 import { ReaderLanguage } from "@/components/reader-language";
 import { edgeWords } from "@/lib/edge-words";
 import { readersLanguage } from "@/lib/first-language";
@@ -24,7 +25,8 @@ export const metadata: Metadata = {
  * its ochre corner still waiting. Flat and still: it was never filed, so it never folds. One line on it, and the way back.
  */
 export default function NotFound() {
-  return <main className="lost-door" data-piece="slip">
+  return <>
+  <main className="lost-door" data-piece="slip">
     <script dangerouslySetInnerHTML={{ __html: readersLanguage }} />
     <LostDoorBrand />
     <ReaderLanguage tabs={{ en: edgeWords.en.lostTab, es: edgeWords.es.lostTab }} abouts={{ en: edgeWords.en.lostAbout, es: edgeWords.es.lostAbout }} />
@@ -36,5 +38,8 @@ export default function NotFound() {
       </div>
       <Link href="/#your-community">{edgeWords[language].courtyard}</Link>
     </div>)}
-  </main>;
+  </main>
+  {/* The same foot as every public page, in the reader's language. */}
+  {languages.map((language) => <div key={language} lang={language} className="neighborly-continuation lost-door-foot" suppressHydrationWarning><Colophon language={language} /></div>)}
+  </>;
 }

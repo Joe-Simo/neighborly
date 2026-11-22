@@ -48,3 +48,8 @@
   .lost-door-words :is(p,a,button){font-size:calc(17px * var(--big))}
   .lost-door[data-piece=bowl] .lost-door-piece{width:min(calc(440px * var(--big)),calc(46svh * 547 / 313))}
 }
+
+/* The public foot under the page, one per language, the reader's shown. */
+.lost-door-foot{padding:0 7%}
+@media(max-width:900px){.lost-door-foot{padding-inline:20px}}
+:root:lang(es) .lost-door-foot[lang="en"],:root:not(:lang(es)) .lost-door-foot[lang="es"]{display:none}
