@@ -275,7 +275,7 @@ const CSS = `@font-face{font-family:"Source Sans 3";src:url(/fonts/source-sans-3
 @font-face{font-family:"SS3 Fallback";src:local("Arial"),local("Helvetica Neue"),local("Roboto"),local("Liberation Sans");size-adjust:90.5%;ascent-override:113.1%;descent-override:44.2%;line-gap-override:0%}
 :root{--paper:#f7f4ed;--sheet:#fbfaf6;--ink:#283c32;--muted:#5d6657;--rule:#d9d4c6;--green:#365c46;--plum:#6f5f93;--ochre:#c8962e;--kraft:#e9dcc3;color-scheme:light}
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;scroll-padding:min(env(safe-area-inset-top) * 999, env(safe-area-inset-top) + 6px) min(env(safe-area-inset-right) * 999, env(safe-area-inset-right) + 6px) min(env(safe-area-inset-bottom) * 999, env(safe-area-inset-bottom) + 6px) min(env(safe-area-inset-left) * 999, env(safe-area-inset-left) + 6px)}
 body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.5 "Source Sans 3","SS3 Fallback",sans-serif}
 a{color:inherit;text-underline-offset:4px;text-decoration-thickness:1px}
 a:hover{text-decoration-thickness:2px}
@@ -360,7 +360,7 @@ form:has(#safe-yes:checked) .when{display:none}
 @media(max-width:560px){.colophon nav{display:grid;grid-template-columns:repeat(2,max-content)}}
 @media(max-width:900px){.colophon{background:#f5f3ec}}
 @media(max-width:600px){.colophon{padding-bottom:calc(82px + 22vw + env(safe-area-inset-bottom))}}
-@media(min-width:901px){.colophon{flex-wrap:nowrap;min-height:clamp(92px,7.4vw,140px);gap:0 clamp(24px,3vw,48px);padding:0 7% env(safe-area-inset-bottom)}.colophon>span{flex:none}.colophon nav{flex:1 1 0;min-width:0;justify-content:center;gap:0 clamp(16px,2vw,28px)}.colophon .name{flex:none;min-height:44px;margin:0;font-size:clamp(48px,4.6vw,88px)}}
+@media(min-width:901px){.colophon{flex-wrap:nowrap;min-height:clamp(92px,7.4vw,140px);gap:0 clamp(24px,3vw,48px);padding:0 max(7%,calc(env(safe-area-inset-right) + 6px)) min(env(safe-area-inset-bottom) * 999, env(safe-area-inset-bottom) + 6px) max(7%,calc(env(safe-area-inset-left) + 6px))}.colophon>span{flex:none}.colophon nav{flex:1 1 0;min-width:0;justify-content:center;gap:0 clamp(16px,2vw,28px)}.colophon .name{flex:none;min-height:44px;margin:0;font-size:clamp(48px,4.6vw,88px)}}
 @media(min-width:1600px){.colophon{font-size:16px}}
 @media(forced-colors:active){.colophon .name{text-shadow:none}}
 body{padding-top:env(safe-area-inset-top)}

@@ -81,6 +81,8 @@
 }
 html {
   background: var(--background);
+  /* A control brought into view by focus or a jump stops clear of the notch and home bar, its ring too; with no inset, nothing changes. */
+  scroll-padding: min(env(safe-area-inset-top) * 999, env(safe-area-inset-top) + 6px) min(env(safe-area-inset-right) * 999, env(safe-area-inset-right) + 6px) min(env(safe-area-inset-bottom) * 999, env(safe-area-inset-bottom) + 6px) min(env(safe-area-inset-left) * 999, env(safe-area-inset-left) + 6px);
 }
 body {
   margin: 0;
