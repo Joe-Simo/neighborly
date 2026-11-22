@@ -1025,11 +1025,16 @@ function HelpLineView({
                   {call.nextStep && (
                     <p className="help-assistant help-next-step">
                       <Sparkles size={16} aria-hidden="true" />
-                      <span>{lineWords(words.locale).nextStep[call.nextStep]}</span>
-                      {call.nextStep === "request" && call.neighborId && !call.openRequest && (
-                        <Button variant="link" className="help-text-action" onClick={() => onStep({ kind: "request", call })}>
-                          {words.rooms.helpLine.sheets.request.title}
-                        </Button>
+                      {call.nextStep === "request" && call.neighborId && !call.openRequest ? (
+                        <span>
+                          {lineWords(words.locale).nextStepLead}{" "}
+                          <Button variant="link" className="help-text-action" onClick={() => onStep({ kind: "request", call })}>
+                            {lineWords(words.locale).nextStepRequest}
+                          </Button>
+                          .
+                        </span>
+                      ) : (
+                        <span>{lineWords(words.locale).nextStep[call.nextStep]}</span>
                       )}
                     </p>
                   )}

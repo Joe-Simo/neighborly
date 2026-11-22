@@ -45,6 +45,9 @@ const books = {
       refer: "From the outcome, the assistant suggests: refer elsewhere.",
       callAgain: "From the outcome, the assistant suggests: call back later.",
     },
+    /** The request suggestion when a request can be started from it: the lead in muted ink, the step itself the link. */
+    nextStepLead: "From the outcome, the assistant suggests:",
+    nextStepRequest: "start a request",
   },
   es: {
     calls: {
@@ -76,6 +79,8 @@ const books = {
       refer: "Por el resultado, el asistente sugiere: derivar a otro lugar.",
       callAgain: "Por el resultado, el asistente sugiere: llamar más tarde.",
     },
+    nextStepLead: "Por el resultado, el asistente sugiere:",
+    nextStepRequest: "empezar una petición",
   },
 } satisfies Record<Language, unknown>;
 
