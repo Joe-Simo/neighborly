@@ -111,7 +111,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       againSaid: "Se están preparando las invitaciones otra vez.",
       show: "Ver respuestas",
       hide: "Ocultar respuestas",
-      none: "Aún no hay respuestas.",
+      none: "Todavía no hay respuestas.",
       more: "Cargar más respuestas",
       loading: "Cargando respuestas…",
       replied: { accepted: "Aceptó", declined: "No puede" },

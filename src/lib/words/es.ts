@@ -146,7 +146,7 @@ export function es(set: WordSet): Words {
       meeting: "Planear una reunión",
       timeOff: "Planear días libres",
       announcement: "Compartir un aviso",
-      commitment: "Agregar compromiso",
+      commitment: "Agregar un compromiso",
       commitmentTimes: (zone: string) => `Horario: ${zone}.`,
       commitmentForm: {
         title: "Título", team: "Equipo", chooseTeam: "Elige un equipo…", starts: "Empieza", ends: "Termina", where: "Dónde reunirse",
@@ -303,7 +303,7 @@ export function es(set: WordSet): Words {
       reopenTask: (title: string) => `Dejar pendiente: ${title}`,
       done: "Hecha",
       open: "Pendiente",
-      emptyTitle: "Sin tareas por ahora.",
+      emptyTitle: "Todavía no hay tareas.",
       emptyDetail: `Aquí aparece todo lo que ${set === "vincentian" ? "la conferencia" : "el grupo"} necesita hacer, con quién lo hace y para cuándo.`,
       meetings: "Reuniones",
       going: "Vas a ir",
