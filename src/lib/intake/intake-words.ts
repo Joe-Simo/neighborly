@@ -95,6 +95,14 @@ const en = {
     title: "We can't take another request from here today.",
     deck: (phone: string) => `Please call the team instead: ${phone}.`,
   },
+  closed: {
+    title: "We can't take requests online right now.",
+    deck: "Nothing you typed was kept. 211 is free, any hour, in English and Spanish, and knows the help near you.",
+  },
+  refused: {
+    title: "We couldn't send this from this browser.",
+    deck: "Nothing you typed was kept. Please call 211 instead: free, any hour, in English and Spanish.",
+  },
   young: {
     kicker: "Help for young people",
     title: "Let's get you to the right people.",
@@ -255,6 +263,14 @@ const es: IntakeWords = {
   limit: {
     title: "Hoy no podemos recibir otra petición desde aquí.",
     deck: (phone) => `Por favor, llama al equipo: ${phone}.`,
+  },
+  closed: {
+    title: "Ahora mismo no podemos recibir peticiones en línea.",
+    deck: "No se guardó nada de lo que escribiste. El 211 es gratis, a cualquier hora, en español y en inglés, y conoce la ayuda cerca de ti.",
+  },
+  refused: {
+    title: "No pudimos enviar esto desde este navegador.",
+    deck: "No se guardó nada de lo que escribiste. Por favor, llama al 211: gratis, a cualquier hora, en español y en inglés.",
   },
   young: {
     kicker: "Ayuda para jóvenes",

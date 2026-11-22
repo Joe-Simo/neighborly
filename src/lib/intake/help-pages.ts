@@ -32,6 +32,10 @@ export type HelpView =
   | { kind: "away"; finderHref: string }
   | { kind: "full" }
   | { kind: "limit"; phone: string }
+  /** Nothing can be taken right now (the site is not set up, or the backend failed): not about this person. */
+  | { kind: "closed" }
+  /** Vercel BotID said bot, or could not say: not about a limit. */
+  | { kind: "refused" }
   | { kind: "young"; youthLine: string }
   | { kind: "status"; step: "received" | "contact" | "closed"; sentOn: string; by: string; late?: boolean; askHref: string; removing?: boolean; removed?: boolean; phone?: string };
 
@@ -164,6 +168,10 @@ ${lines([view.statusHref, w.sent.status])}${view.phone ? `<p class="deck"><a hre
       return `${head(w.away.kicker, w.away.title, w.away.deck)}${lines(["tel:211", w.away.call211], [view.finderHref, w.away.finder, true])}${note(w.away.nothing)}`;
     case "full":
       return `${head(null, w.full.title, w.full.deck)}${lines(["tel:211", w.away.call211])}`;
+    case "closed":
+      return `${head(null, w.closed.title, w.closed.deck)}${lines(["tel:211", w.away.call211])}`;
+    case "refused":
+      return `${head(null, w.refused.title, w.refused.deck)}${lines(["tel:211", w.away.call211])}`;
     case "limit":
       return `${head(null, w.limit.title, w.limit.deck(view.phone))}${lines([tel(view.phone), view.phone])}`;
     case "young":
