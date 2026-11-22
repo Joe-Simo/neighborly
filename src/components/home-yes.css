@@ -12,7 +12,7 @@
   .home-yes .help-actions [data-slot=button]{flex:1 1 auto}
 }
 @media(max-width:1100px){
-  .home-yes{grid-template-columns:minmax(0,1fr);gap:44px;padding:48px 20px 72px}
+  .home-yes{grid-template-columns:minmax(0,1fr);gap:44px;padding:48px max(20px,calc(env(safe-area-inset-right) + 6px)) 72px max(20px,calc(env(safe-area-inset-left) + 6px))}
   .home-yes .home-yes-words{padding:0}
   /* Over the sheet the deck has the row to itself and takes a full reading measure. */
   .home-yes .home-yes-words p:last-child{max-width:28em;text-wrap:balance}

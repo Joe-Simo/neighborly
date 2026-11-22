@@ -198,6 +198,8 @@
     overflow-y: auto;
     padding-top: var(--space-40);
     padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    /* At the page's top the menu runs on below the screen by the header's height: a link reached by Tab stops above that and the home bar. */
+    scroll-padding-bottom: calc(100px + env(safe-area-inset-bottom));
   }
   .live-nav a { margin: 2px 0; }
 }
