@@ -34,7 +34,7 @@
 
 /* The wordmark stands where every public page has it; the sheet keeps its centre. */
 .lost-door{position:relative}
-.lost-door-brand{position:absolute;top:max(14px,env(safe-area-inset-top));left:max(20px,4%);display:inline-flex;align-items:center;min-height:44px;font:400 30px/1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;color:inherit;text-decoration:none;background:none!important}
+.lost-door-brand{position:absolute;top:max(14px,calc(env(safe-area-inset-top) + 6px));left:max(20px,4%,calc(env(safe-area-inset-left) + 6px));display:inline-flex;align-items:center;min-height:44px;font:400 30px/1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;color:inherit;text-decoration:none;background:none!important}
 .lost-door-words>p{margin:0;max-width:34ch;font-size:17px;line-height:1.5;text-align:center;text-wrap:pretty;color:#3d4f43}
 /* Try again is a press, so it looks like one: the paper button of the rooms. */
 .lost-door-words button{min-height:44px;padding:0 20px;border:1px solid #7d8874;border-radius:4px;background:#fffdf7;box-shadow:0 1px 0 rgb(40 60 50 / .18);text-decoration:none}

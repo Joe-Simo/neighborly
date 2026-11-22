@@ -136,7 +136,7 @@
 .live-app .live-main {
   --live-pad: clamp(24px, 5vw, 78px);
   --live-top: 48px;
-  padding: var(--live-top) max(var(--live-pad), env(safe-area-inset-right)) calc(100px + env(safe-area-inset-bottom)) max(var(--live-pad), env(safe-area-inset-left));
+  padding: var(--live-top) max(var(--live-pad), calc(env(safe-area-inset-right) + 6px)) calc(100px + env(safe-area-inset-bottom)) max(var(--live-pad), calc(env(safe-area-inset-left) + 6px));
 }
 /* On a wide screen the room is framed: head band, body and side column stop at 1600px, centred in the space beside the
    menu. The paper past it is the room's own margin, so the head's picture and its rule end at the frame. */
@@ -147,8 +147,8 @@
   }
 }
 .live-app .live-header {
-  padding-left: max(34px, env(safe-area-inset-left));
-  padding-right: max(var(--live-pad, clamp(24px, 5vw, 78px)), env(safe-area-inset-right));
+  padding-left: max(34px, calc(env(safe-area-inset-left) + 6px));
+  padding-right: max(var(--live-pad, clamp(24px, 5vw, 78px)), calc(env(safe-area-inset-right) + 6px));
 }
 /* In the app the page runs under the status bar. A band of the same paper is held there, so the
    clock and battery always sit on paper and never on a room scrolling beneath them. No inset, no band. */
@@ -279,7 +279,7 @@
 .live-head-art {
   position: relative;
   height: 132px;
-  margin: calc(-1 * var(--live-top)) calc(-1 * max(var(--live-pad), env(safe-area-inset-right))) 16px calc(-1 * var(--live-pad));
+  margin: calc(-1 * var(--live-top)) calc(-1 * max(var(--live-pad), calc(env(safe-area-inset-right) + 6px))) 16px calc(-1 * var(--live-pad));
 }
 .live-head-art > .relief {
   position: absolute;
@@ -1761,7 +1761,7 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
   background: #f5f3ec; border-top: 1px solid var(--live-line); box-shadow: none;
 }
 @media (max-width: 699px) {
-  .live-dialog.live-dialog-fixed .live-form-actions.live-form-actions { padding-bottom: max(var(--space-16), env(safe-area-inset-bottom)); }
+  .live-dialog.live-dialog-fixed .live-form-actions.live-form-actions { padding-bottom: max(var(--space-16), calc(env(safe-area-inset-bottom) + 6px)); }
   [data-live-keyboard] .live-dialog.live-dialog-fixed .live-form-actions.live-form-actions { padding-bottom: var(--space-16); }
 }
 [data-live-tight] .live-dialog.live-dialog-fixed .live-form-actions.live-form-actions { padding-block: var(--space-8); }

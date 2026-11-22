@@ -225,9 +225,9 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 
 /* A phone on its side: the wide layout, set smaller, with room for the caption under a lower fresco. */
 @media(max-height:500px) and (min-aspect-ratio:10/11){
-  .fresco-header{height:56px;padding:0 20px}
+  .fresco-header{height:56px;padding:0 max(20px,calc(env(safe-area-inset-right) + 6px)) 0 max(20px,calc(env(safe-area-inset-left) + 6px))}
   .fresco-brand{font-size:30px}
-  .fresco-invitation{left:max(20px,4%);width:30%}
+  .fresco-invitation{left:max(20px,4%,calc(env(safe-area-inset-left) + 6px));width:30%}
   .fresco-invitation h2{margin-bottom:18px;font-size:clamp(30px,4.4vw,40px)}
   .fresco-invitation p{display:none}
   .fresco-caption{top:0;translate:0 calc(var(--caption-top,70svh) + 12px);font-size:28px}
