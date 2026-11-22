@@ -17,7 +17,7 @@ export const sampleSentences: Readonly<Record<string, string>> = {
   "Called to thank the two visitors who came in October.": "Llamó para agradecer a las dos personas que fueron de visita en octubre.",
   "Outside our area, referred to 211.": "Fuera de nuestra zona; se le remitió al 211.",
   "Saturdays, 10 to noon.": "Los sábados, de 10 a mediodía.",
-  "No request needed.": "No hace falta una solicitud.",
+  "No request needed.": "No hace falta una petición.",
   "Passed his thanks on to the pair.": "Su agradecimiento se pasó a la pareja.",
   "Wrong number.": "Número equivocado.",
   "Asked for the pantry's hours.": "Preguntó el horario de la despensa.",
@@ -48,7 +48,7 @@ export const sampleSentences: Readonly<Record<string, string>> = {
   // A commitment's preparation
   "Check the callback list first.": "Revisa primero la lista de llamadas por devolver.",
   "Record every call, even a wrong number.": "Anota cada llamada, aunque sea un número equivocado.",
-  "Read the request before you go.": "Lee la solicitud antes de ir.",
+  "Read the request before you go.": "Lee la petición antes de ir.",
   "Bring the visit sheet.": "Lleva la hoja de visita.",
   "Always go as a pair.": "Ve siempre en pareja.",
   // A visit's write-up: how it went
@@ -92,7 +92,7 @@ export const sampleSentences: Readonly<Record<string, string>> = {
   "Asked for help with this one bill only.": "Pidió ayuda solo con este recibo.",
   // What happens next
   "Payment goes to the payee directly.": "El pago va directo a quien cobra.",
-  "The request goes to the conference on Tuesday.": "La solicitud va a la conferencia el martes.",
+  "The request goes to the conference on Tuesday.": "La petición va a la conferencia el martes.",
   "We prayed together before leaving.": "Hicimos una oración antes de irnos.",
   "Prefers a phone call before any visit.": "Prefiere una llamada antes de cualquier visita.",
   "Left the pantry hours and our number.": "Dejamos el horario de la despensa y nuestro número.",
