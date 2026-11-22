@@ -56,7 +56,8 @@
 .fresco-view .living-courtyard{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 .fresco-view .living-courtyard canvas{display:block;width:100%;height:100%;transform-origin:0 0}
 .fresco-stage:not([data-living=true]) .living-courtyard{visibility:hidden}
-.fresco-doors{position:absolute;inset:0;border-radius:inherit;perspective:1500px;opacity:clamp(0,calc(1 - var(--grow) * 1000),1);pointer-events:none}
+/* The leaves swing within the doorway: whatever part of a leaf the perspective carries past the jamb or above the arch is behind the wall, so the doorway clips it (Chrome and Safari both clip a transformed child to a rounded box this way). */
+.fresco-doors{position:absolute;inset:0;border-radius:inherit;overflow:hidden;isolation:isolate;perspective:1500px;opacity:clamp(0,calc(1 - var(--grow) * 1000),1);pointer-events:none}
 .fresco-doors i{position:absolute;top:0;bottom:0;width:50.15%;background-color:#8fa888;background-size:200% 100%;backface-visibility:hidden;box-shadow:inset 0 0 25px #17271c22}
 .fresco-stage[data-settled=true] .fresco-doors i{background-image:url(/assets/threshold/doors-1000.webp)}
 .fresco-doors i:first-child{left:0;transform-origin:left center;border-radius:100% 0 0 0/30% 0 0 0;background-position:left center;transform:rotateY(calc(var(--door) * 88deg + var(--inside) * 40deg))}
