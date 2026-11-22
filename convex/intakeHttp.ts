@@ -4,19 +4,13 @@ import { statusKeyHash } from "./intake";
 import { hashPartnerLink } from "./intakeActions";
 import { placeAddress } from "./geocode";
 import { readCode, readKey, readSubmission } from "../src/lib/intake-rules";
+import { hex, keyed } from "./intakeKeys";
 
 /**
  * The endpoints behind the "Ask for help" form: POST /intake/submit and POST /intake/confirm, called by the site's own
  * server (src/lib/help-page/), never by a browser. Here: the shared secret, the site's word that Vercel BotID judged
  * the sender human (the site checks it, since only it sees the browser's request), the input, and hashing. Then convex/intake.ts does the rest in one transaction.
  */
-const encode = (text: string) => new TextEncoder().encode(text);
-const hex = (bytes: ArrayBuffer | Uint8Array) => Array.from(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, "0")).join("");
-/** A keyed hash, so a list of hashed emails cannot be reversed by hashing guesses. INTAKE_HASH_SECRET keys it. */
-async function keyed(text: string) {
-  const key = await crypto.subtle.importKey("raw", encode(process.env.INTAKE_HASH_SECRET || "kind-helps-intake"), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-  return hex(await crypto.subtle.sign("HMAC", key, encode(text)));
-}
 const random = (bytes: number) => crypto.getRandomValues(new Uint8Array(bytes));
 function sixDigits() {
   // Rejection sampling keeps every code equally likely.

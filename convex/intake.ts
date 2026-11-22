@@ -234,6 +234,10 @@ const KIND_NOTE = { rent: "rent", utility: "utility bill", food: "food", voucher
 const LANGUAGE_NOTE = { en: "English", es: "Spanish" } as const;
 /** The call a confirmed web request becomes on its team's Help line. This is the one place a web request turns into work. */
 export async function createWebCall(ctx: MutationCtx, request: Doc<"webRequests">, now: number) {
+  return ctx.db.insert("calls", webCallDoc(request, now, await callbackOwner(ctx, request.churchId, now)));
+}
+/** The call row a confirmed web request becomes, without writing it: createWebCall writes it, and the sample lays it the same way. */
+export function webCallDoc(request: Pick<Doc<"webRequests">, "churchId" | "kind" | "kinds" | "need" | "phone" | "email" | "zip" | "language" | "referredBy" | "unverified" | "safe" | "callAt" | "meet" | "checkArea" | "urgent">, now: number, ownerId: Id<"memberships"> | undefined) {
   const kinds = (request.kinds ?? [request.kind]).map((kind) => KIND_NOTE[kind]).join(", ");
   const contact = [request.phone && `Phone: ${request.phone}`, request.email && `Email: ${request.email}`].filter(Boolean).join(" · ");
   const flags = [
@@ -243,11 +247,11 @@ export async function createWebCall(ctx: MutationCtx, request: Doc<"webRequests"
     request.checkArea && "Check area: the zip's centre is outside your area, but the zip reaches into it.",
   ].filter(Boolean).join(" ");
   const note = `${request.need || kinds}\n\nFrom the web form (${kinds}; zip ${request.zip}; ${LANGUAGE_NOTE[request.language]}${request.referredBy ? `; referred by ${request.referredBy}` : ""}). ${contact}${flags ? `\n${flags}` : ""}`;
-  return ctx.db.insert("calls", {
+  return {
     churchId: request.churchId, callerName: request.phone ? "Web request" : request.email, phone: request.phone, note: note.slice(0, 2000),
-    callback: "needed", fromWeb: true, takenAt: now, ownerId: await callbackOwner(ctx, request.churchId, now),
+    callback: "needed" as const, fromWeb: true, takenAt: now, ownerId,
     ...(request.language === "es" ? { spanish: true } : {}), ...(request.urgent ? { urgent: { reasons: ["marked"], by: "rules" as const } } : {}),
-  });
+  };
 }
 /**
  * Lays a received request on its team: a new call. One contact has one open request across all of Kind Helps: when the
@@ -484,6 +488,14 @@ export const forTeam = query({
   },
 });
 
+/**
+ * The sample conference's web requests are made up and reset each night: they can be read and closed, but never passed
+ * to a real team, given back, or turned into blocks and marks that would outlive the reset or reach the admin review.
+ */
+async function notSample(ctx: QueryCtx, churchId: Id<"churches">) {
+  if ((await ctx.db.get("churches", churchId))?.sample) throw new ConvexError("The sample's web requests can be closed, but not passed on, blocked or marked.");
+}
+
 async function ownRequest(ctx: QueryCtx, churchId: Id<"churches">, requestId: Id<"webRequests">) {
   const request = await ctx.db.get("webRequests", requestId);
   if (!request || request.churchId !== churchId || (request.stage !== "held" && request.stage !== "received")) throw new ConvexError("This request is no longer here.");
@@ -535,6 +547,7 @@ export const passOn = mutation({
   returns: v.null(),
   handler: async (ctx, { churchId, requestId, toChurchId, reason }) => {
     const member = await neighborAccess(ctx, churchId);
+    await notSample(ctx, churchId);
     const request = await ownRequest(ctx, churchId, requestId);
     const why = oneLine(reason);
     if ((request.passes ?? 0) >= 3) throw new ConvexError("This request has been passed on three times. Settle it by phone with your coordinators.");
@@ -565,6 +578,7 @@ export const giveBack = mutation({
   returns: v.null(),
   handler: async (ctx, { churchId, requestId, reason }) => {
     const member = await neighborAccess(ctx, churchId);
+    await notSample(ctx, churchId);
     const request = await ownRequest(ctx, churchId, requestId);
     const why = oneLine(reason);
     const now = Date.now();
@@ -632,6 +646,7 @@ export const block = mutation({
   returns: v.null(),
   handler: async (ctx, { churchId, requestId }) => {
     const member = await neighborAccess(ctx, churchId);
+    await notSample(ctx, churchId);
     const request = await ownRequest(ctx, churchId, requestId);
     const now = Date.now();
     for (const hash of [request.contactHash, request.phoneHash, request.ipHash]) {
@@ -652,6 +667,7 @@ export const notGenuine = mutation({
   returns: v.null(),
   handler: async (ctx, { churchId, requestId }) => {
     const member = await neighborAccess(ctx, churchId);
+    await notSample(ctx, churchId);
     const request = await ownRequest(ctx, churchId, requestId);
     const now = Date.now();
     for (const hash of [request.contactHash, request.phoneHash, request.ipHash]) if (hash) await ctx.db.insert("webBlocks", { churchId, hash, by: member._id, at: now });
