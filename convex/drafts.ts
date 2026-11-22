@@ -19,7 +19,7 @@ import { hour, hourAsked, neighborAccess, user } from "./access";
 import { isSampleVisitor } from "./demo";
 import { fiscalYear } from "./reports";
 import { namesFor } from "./knownNames";
-import { approvedBetween, paidTowardRequest, sumApproved } from "./treasury";
+import { approvedBetween, monthToDate, paidTowardRequest, sumApproved } from "./treasury";
 
 const draftResult = v.object({
   teamName: v.string(), recurrence: v.string(), peopleCount: v.string(),
@@ -1147,15 +1147,15 @@ export const spending = internalQuery({
     const decided = (from: number, to: number) => approvedBetween(ctx, churchId, from, to);
     const sum = sumApproved;
     const [thisMonth, lastYear, year] = await Promise.all([
-      decided(start.toMillis(), at),
+      monthToDate(ctx, church, at),
       decided(before.toMillis(), before.endOf("month").toMillis()),
       decided(at - repeatYear, at),
     ]);
     const amounts = year.filter(one => one.kind === request.kind && one._id !== requestId).map(one => one.amountApproved ?? 0).sort((a, b) => a - b);
     return {
-      month: start.month, thisMonth: sum(thisMonth), lastYear: sum(lastYear), budget: church.monthlyBudget ?? null,
+      month: thisMonth.month, thisMonth: thisMonth.approved, lastYear: sum(lastYear), budget: thisMonth.budget,
       // Approved to this household in the twelve months before, this request apart; and the group's limit, when set.
-      household: sum(year.filter(one => one.neighborId === request.neighborId && one._id !== requestId)), householdCap: church.householdYearCap ?? null,
+      household: sum(year.filter(one => one.neighborId === request.neighborId && one._id !== requestId)), householdCap: thisMonth.householdCap,
       kind: request.kind, asked: request.amountRequested, approvals: amounts.length,
       median: amounts.length ? amounts[Math.floor((amounts.length - 1) / 2)] : 0,
       // How many of the past year's approvals of this kind were below what is asked now.

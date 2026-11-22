@@ -823,6 +823,22 @@ export async function approvedBetween(ctx: QueryCtx, churchId: Id<"churches">, f
 }
 export const sumApproved = (rows: { amountApproved?: number }[]) => rows.reduce((total, one) => total + (one.amountApproved ?? 0), 0);
 
+/**
+ * The one reading of a month's help against the budget, for every room that shows it: the glance, the treasury and
+ * the approve sheet all ask here, so they can never disagree. Help counts by decision date (approved, paid or closed
+ * with money), over the whole month in the group's time zone: `at` only names the month. A decision is never dated
+ * ahead of now, so the whole month is the month to date, and the moment each room asked at cannot split the figure.
+ * The budget is the group's own setting, or null when none is set: no room invents one.
+ */
+export async function monthToDate(ctx: QueryCtx, church: Doc<"churches">, at: number, month?: string) {
+  const zone = church.timeZone;
+  const start = month ? DateTime.fromISO(`${month}-01`, { zone }) : DateTime.fromMillis(at, { zone }).startOf("month");
+  if (!start.isValid) throw new ConvexError("Ask for a month such as 2026-11.");
+  const from = start.toMillis();
+  const rows = await approvedBetween(ctx, church._id, from, start.plus({ months: 1 }).toMillis());
+  return { month: start.month, approved: sumApproved(rows), budget: church.monthlyBudget ?? null, householdCap: church.householdYearCap ?? null, rows };
+}
+
 /** The month's budget and the help approved in it so far. `month` is "2026-11", in the group's time zone. */
 export const budget = query({
   args: { churchId: v.id("churches"), month: v.string() },
@@ -830,9 +846,9 @@ export const budget = query({
   handler: async (ctx, { churchId, month }) => {
     await neighborAccess(ctx, churchId);
     const church = await ctx.db.get("churches", churchId);
-    const start = DateTime.fromISO(`${month}-01`, { zone: church?.timeZone ?? "America/New_York" });
-    if (!church || !start.isValid || !/^\d{4}-\d{2}$/.test(month)) throw new ConvexError("Ask for a month such as 2026-11.");
-    return { budget: church.monthlyBudget ?? null, householdCap: church.householdYearCap ?? null, approved: sumApproved(await approvedBetween(ctx, churchId, start.toMillis(), start.plus({ months: 1 }).toMillis())) };
+    if (!church || !/^\d{4}-\d{2}$/.test(month)) throw new ConvexError("Ask for a month such as 2026-11.");
+    const found = await monthToDate(ctx, church, 0, month);
+    return { budget: found.budget, approved: found.approved, householdCap: found.householdCap };
   },
 });
 
