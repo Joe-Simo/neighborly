@@ -1012,17 +1012,18 @@
 .housing-table td .housing-none { color: var(--live-muted); }
 .housing-table th, .housing-table td { padding: var(--space-8); border-bottom: 1px solid var(--live-line); text-align: right; white-space: nowrap; color: var(--live-ink); }
 /* The landlord column stays put on the room's paper; its 1px rule is an inset shadow, because a collapsed border is painted by the table and would scroll away from the sticky cell. */
-.housing-table th[scope="row"], .housing-table thead th:first-child { text-align: left; position: sticky; left: 0; z-index: 1; background: var(--paper, #f7f4ed); }
+.housing-table th[scope="row"], .housing-table thead th:first-child { text-align: left; position: sticky; left: 0; z-index: 1; background: var(--housing-surface); box-shadow: inset -1px 0 0 var(--live-line); }
 /* While more months wait to the right, the frame's right edge fades 24px into paper; at the end it does not. housing-providers.tsx sets data-more from an IntersectionObserver on the last column, so nothing runs in the scroll loop. */
-.housing-frame { position: relative; display: flow-root; min-width: 0; max-width: 100%; }
-.housing-frame::after { content: ""; position: absolute; top: calc(var(--space-16) + 1px); bottom: var(--space-16); right: 0; width: 24px; pointer-events: none; background: linear-gradient(to right, transparent, var(--paper, #f7f4ed)); visibility: hidden; }
+/* --housing-surface is the surface the table actually sits on. Both tables (housing, council) are laid straight in the room on its page paper (--live-paper); a container that sets them on a card or sheet sets this token to its own. */
+.housing-frame { --housing-surface: var(--live-paper, #f7f4ed); position: relative; display: flow-root; min-width: 0; max-width: 100%; }
+.housing-frame::after { content: ""; position: absolute; top: calc(var(--space-16) + 1px); bottom: var(--space-16); right: 0; width: 24px; pointer-events: none; background: linear-gradient(to right, color-mix(in srgb, var(--housing-surface) 0%, transparent), var(--housing-surface)); visibility: hidden; }
 .housing-frame[data-more]::after { visibility: visible; }
 .housing-table th small { display: block; color: var(--live-muted); font-weight: 400; }
 .housing-table abbr { text-decoration: none; }
 .housing-table tfoot th, .housing-table tfoot td { font-weight: 600; }
 /* On a phone the landlord column stays narrow and its names wrap, so about three months show beside it. */
 @media (max-width: 640px) {
-  .housing-table th[scope="row"], .housing-table thead th:first-child { width: 7.5rem; min-width: 7.5rem; max-width: 7.5rem; white-space: normal; overflow-wrap: anywhere; hyphens: auto; box-shadow: inset -1px 0 0 var(--live-line); }
+  .housing-table th[scope="row"], .housing-table thead th:first-child { width: 7.5rem; min-width: 7.5rem; max-width: 7.5rem; white-space: normal; overflow-wrap: anywhere; hyphens: auto; }
   .housing-table th, .housing-table td { padding: var(--space-8) var(--space-4) var(--space-8) var(--space-12); }
   .housing-table th[scope="row"], .housing-table thead th:first-child { padding-left: 0; }
 }
