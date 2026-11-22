@@ -211,7 +211,9 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .relief-panel[data-chapter=call] .relief-picture{aspect-ratio:4/3}
   .relief-panel[data-chapter=call] .relief-layers{width:128%;height:124%;margin:-19% 0 0 -18%}
   .relief-panel[data-chapter=visit] .relief-picture{aspect-ratio:5/6}
-  .relief-panel[data-chapter=visit] .relief-layers{width:170%;height:112%;margin:-6% 0 0 -6%}
+  /* The door's frame stands a 16px gutter in from the window's edge, never a sliver cut by it: the plate's door is at 155/1536 of the
+     painting, which at this cover crop lands 4.55% of the picture's width right of the layers' edge. The sleeves still run off the edge, as meant. */
+  .relief-panel[data-chapter=visit] .relief-layers{width:170%;height:112%;margin:-6% 0 0 calc(16px - 4.55%)}
   .relief-panel[data-chapter=help] .relief-picture{aspect-ratio:1/1}
   .relief-panel[data-chapter=help] .relief-layers{width:180%;height:136%;margin:-24% 0 0 -66%}
   .relief-panel[data-chapter=year] .relief-picture{aspect-ratio:4/3}
