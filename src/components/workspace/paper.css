@@ -1584,6 +1584,22 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 .live-app .live-header-desk > button { position: relative; }
 .live-app .live-header-desk > button::after { content: ""; position: absolute; inset: min(0px, calc(50% - 22px)); }
 
+/* Under a finger (iPhone, iPad) every act set as words (Change request, Add a note, Edit, Remove, Decide, Show all, a
+   quiet ghost or link button, a name in a line) answers over at least 44px each way. The reach grows round the word,
+   centred on it; the word, its line and its focus ring stay exactly where they were. Only where the word is smaller
+   than 44px does the reach grow, so two acts 22px apart never reach into each other. Position is set in a low layer
+   so an act already placed (absolute, sticky) keeps its own; a control that draws its own ::after is left alone. */
+@layer base {
+  @media (pointer: coarse) {
+    :is(.live-app, .live-dialog) :is([data-slot="button"]:is([data-variant="ghost"], [data-variant="link"]):not([data-size^="icon"]), .help-text-action, a.meeting-decide) { position: relative; }
+  }
+}
+@media (pointer: coarse) {
+  :is(.live-app, .live-dialog) :is([data-slot="button"]:is([data-variant="ghost"], [data-variant="link"]):not([data-size^="icon"]), .help-text-action, a.meeting-decide):not(:is(.live-password-control, .entry-tabs) button, main button.min-h-11, .live-back)::after { content: ""; position: absolute; inset: min(0px, calc(50% - 22px)); }
+  /* A short name ("Al") reaches 44px across as well as up and down. */
+  .live-main a.live-link::after { inset: -10px min(-4px, calc(50% - 22px)); }
+}
+
 /* A short, wide window (an iPad on its side) keeps the room's head to under two fifths of the screen, so the first
    card shows below it: a smaller title and a tighter band, still one height in every room. */
 @media (min-width: 900px) and (max-height: 860px) {
