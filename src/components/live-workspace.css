@@ -665,13 +665,13 @@
 .live-skip {
   position: fixed;
   z-index: 100;
-  top: 12px;
-  left: max(16px, env(safe-area-inset-left));
+  top: calc(12px + env(safe-area-inset-top));
+  left: max(16px, calc(env(safe-area-inset-left) + 6px));
   max-width: calc(100vw - 32px);
   padding: var(--space-12) 18px;
   background: #283c32;
   color: #fffdf5;
-  transform: translateY(-180%);
+  transform: translateY(calc(-100% - 20px - env(safe-area-inset-top)));
   border-radius: 4px;
 }
 /*
@@ -822,25 +822,26 @@
 .live-menu-current{margin-left:auto;font-size:13px;color:#617357}
 .live-menu-current{color:#4b5f42}
 
-/* Keep clear of the notch, the rounded corners and the home bar on iPhone and iPad. */
+/* Keep clear of the notch, the rounded corners and the home bar on iPhone and iPad; at the sides, with room for a
+   control's focus ring (2px drawn 3px out) too. */
 .live-header {
   padding-top: calc(18px + env(safe-area-inset-top));
-  padding-left: max(4vw, env(safe-area-inset-left));
-  padding-right: max(4vw, env(safe-area-inset-right));
+  padding-left: max(4vw, calc(env(safe-area-inset-left) + 6px));
+  padding-right: max(4vw, calc(env(safe-area-inset-right) + 6px));
 }
-.live-nav { padding-left: max(22px, env(safe-area-inset-left)); }
+.live-nav { padding-left: max(22px, calc(env(safe-area-inset-left) + 6px)); }
 .live-main {
-  padding-right: max(clamp(24px, 5vw, 78px), env(safe-area-inset-right));
+  padding-right: max(clamp(24px, 5vw, 78px), calc(env(safe-area-inset-right) + 6px));
   padding-bottom: calc(100px + env(safe-area-inset-bottom));
 }
 @media (max-width: 850px) {
   .live-header {
     height: calc(74px + env(safe-area-inset-top));
-    padding: calc(12px + env(safe-area-inset-top)) max(22px, env(safe-area-inset-right)) 12px max(22px, env(safe-area-inset-left));
+    padding: calc(12px + env(safe-area-inset-top)) max(22px, calc(env(safe-area-inset-right) + 6px)) 12px max(22px, calc(env(safe-area-inset-left) + 6px));
   }
   .live-nav {
-    padding-left: max(20px, env(safe-area-inset-left));
-    padding-right: max(20px, env(safe-area-inset-right));
+    padding-left: max(20px, calc(env(safe-area-inset-left) + 6px));
+    padding-right: max(20px, calc(env(safe-area-inset-right) + 6px));
   }
   .live-main {
     padding-left: max(24px, env(safe-area-inset-left));
