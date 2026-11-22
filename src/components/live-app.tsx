@@ -28,6 +28,7 @@ import { canKeep, emptyNote, forgetKeptRoom, keepRoom, keptHelpLine, keptRoom } 
 import { DoorSweep, carryTheCard, useDoor } from "@/components/workspace/door";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
+import { randomId } from "@/lib/random-id";
 
 const noChange = () => () => {};
 
@@ -624,7 +625,7 @@ function LiveRooms({
         if (command.type === "invite") {
           const key = `${churchId}:${command.email}:${command.role}`;
           if (invitationRequest.current?.key !== key)
-            invitationRequest.current = { key, id: crypto.randomUUID() };
+            invitationRequest.current = { key, id: randomId() };
           const result = await invite({
             churchId,
             email: command.email,
