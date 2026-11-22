@@ -27,6 +27,7 @@ import {
   type ReportLine,
   type YearReport,
 } from "@/components/workspace/reports/lines";
+import { reportsWords } from "@/lib/words/rooms/reports";
 
 const share = (part: number, of: number): CSSProperties =>
   ({ "--share": `${of > 0 ? Math.max(0, Math.round((part / of) * 1000) / 10) : 0}%` }) as CSSProperties;
@@ -49,7 +50,7 @@ export function YearSwitch({
   year: number;
   onYear: (year: number) => void;
 }) {
-  const w = useWorkspace().words.rooms.reports.period;
+  const w = reportsWords(useWorkspace().words).period;
   if (years.length < 2) return null;
   return (
     <ToggleGroup
@@ -89,7 +90,7 @@ export function QuarterSwitch({
   onQuarter: (quarter: Quarter | undefined) => void;
 }) {
   const { words } = useWorkspace();
-  const w = words.rooms.reports.period;
+  const w = reportsWords(words).period;
   return (
     <ToggleGroup
       type="single"
@@ -143,7 +144,7 @@ export function ReportView({
   printNext?: boolean;
 }) {
   const { words, sampleSaid } = useWorkspace();
-  const w = words.rooms.reports;
+  const w = reportsWords(words);
   const kinds = kindLabels(words);
   const [everyLine, setEveryLine] = useState(false);
   // The sheets are laid once a visit: coming back to Reports in the same tab, the pile is already standing.

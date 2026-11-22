@@ -22,6 +22,7 @@ import {
   YearSwitch,
   type Quarter,
 } from "@/components/workspace/reports/report-view";
+import { reportsWords } from "@/lib/words/rooms/reports";
 
 /** Says what happened and what to do when the year cannot be read, and leaves the rest of the workspace standing. */
 class ReportBoundary extends Component<{ words: Words; children: ReactNode }, { failed: boolean; cause: unknown }> {
@@ -35,7 +36,7 @@ class ReportBoundary extends Component<{ words: Words; children: ReactNode }, { 
     return (
       <LiveState
         kind="error"
-        title={words.rooms.reports.failed.title}
+        title={reportsWords(words).failed.title}
         action={
           <Button variant="outline" onClick={() => this.setState({ failed: false, cause: undefined })}>
             {words.states.tryAgain}
@@ -43,7 +44,7 @@ class ReportBoundary extends Component<{ words: Words; children: ReactNode }, { 
         }
       >
         {/* The backend's own sentence when it refused (a year too large to add up), calm words otherwise. */}
-        {sayFailure(words.notices, this.state.cause, words.rooms.reports.failed.safe, words.states.offlineSave)}
+        {sayFailure(words.notices, this.state.cause, reportsWords(words).failed.safe, words.states.offlineSave)}
       </LiveState>
     );
   }
@@ -70,7 +71,7 @@ function useHousingSummary(year: number, asked: boolean) {
 
 function Report() {
   const { data, now, sampleSaid, setHeadAction, words } = useWorkspace();
-  const w = words.rooms.reports;
+  const w = reportsWords(words);
   const churchId = data.church.id;
   const at = useHour();
   const onRecord = useQuery(api.reports.years, at ? { churchId, at } : "skip");
@@ -244,7 +245,7 @@ function settledHour(at: number, year: number, quarter: Quarter | undefined, zon
 export function ReportsSection() {
   const { words } = useWorkspace();
   return (
-    <HelpRoom loading={words.rooms.reports.opening}>
+    <HelpRoom loading={reportsWords(words).opening}>
       <ReportBoundary words={words}>
         <Report />
       </ReportBoundary>

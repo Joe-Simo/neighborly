@@ -13,8 +13,9 @@ import { api } from "../../../../convex/_generated/api";
 import { words as wordsFor, type Language, type Words } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
 import { formatCount } from "@/lib/words/numbers";
+import { toolsWords } from "@/lib/words/rooms/tools";
 
-type ToolsWords = Words["rooms"]["tools"];
+type ToolsWords = ReturnType<typeof toolsWords>;
 
 export type LeftOut = { line: number; name: string; reason: string };
 export type SheetStep =
@@ -44,7 +45,7 @@ export const counted = (amount: number, language: Language) => formatCount(amoun
  * What a file itself has wrong is said by the readers (the *-rows files) in English. Here each is said in the
  * person's own language: the sentence is found by its English, and one this table does not know is shown as it came.
  */
-const englishFile = wordsFor("en").rooms.tools.file;
+const englishFile = toolsWords(wordsFor("en")).file;
 export function fileProblem(error: string, file: ToolsWords["file"]) {
   const known = (Object.keys(englishFile) as (keyof typeof englishFile)[]).find((key) => englishFile[key] === error);
   if (known) return file[known];
@@ -70,12 +71,12 @@ export async function inBatches<Row, Result>(rows: Row[], size: number, run: (ba
 }
 /** The first lines of a file, shown rising while the rest is checked. */
 export const readSoFar = (rows: { line: number; name: string }[], sheet: ToolsWords["sheet"]) => ({ names: rows.slice(0, 6).map((row) => row.name || sheet.lineNumber(row.line)), lines: rows.length });
-export const linesOf = (done: number, all: number, words: Words) => fill(words.rooms.tools.sheet.linesOf, { done: counted(done, words.locale), all: counted(all, words.locale) });
+export const linesOf = (done: number, all: number, words: Words) => fill(toolsWords(words).sheet.linesOf, { done: counted(done, words.locale), all: counted(all, words.locale) });
 /** Said when the connection drops partway through a long file: how far it came, and that the rest can be finished. */
-export const droppedAt = (done: number, all: number, words: Words) => fill(words.rooms.tools.sheet.dropped, { done: counted(done, words.locale), all: counted(all, words.locale) });
+export const droppedAt = (done: number, all: number, words: Words) => fill(toolsWords(words).sheet.dropped, { done: counted(done, words.locale), all: counted(all, words.locale) });
 
 function LeftOutRows({ rows, download }: { rows: LeftOut[]; download?: boolean }) {
-  const text = useWorkspace().words.rooms.tools.sheet;
+  const text = toolsWords(useWorkspace().words).sheet;
   if (!rows.length) return null;
   return (
     <div className="tools-problems">
@@ -122,7 +123,7 @@ export function useRecordsOffered() {
 
 export function SheetImportView({ words, state, icon, afterDone, onFile, onYes, onReset }: { words: SheetWords; state: SheetStep; icon: ReactNode; afterDone?: ReactNode; onFile: (file: File) => void; onYes: () => void; onReset: () => void }) {
   const { words: book } = useWorkspace();
-  const text = book.rooms.tools.sheet;
+  const text = toolsWords(book).sheet;
   const chooser = useRef<HTMLInputElement>(null);
   const fileHelpId = useId();
   // The sheet that waits for a yes stays the same sheet while the yes is being saved: still ochre, its buttons

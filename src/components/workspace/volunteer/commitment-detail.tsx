@@ -14,6 +14,7 @@ import type {
   LiveCommitment,
   LiveWorkspaceData,
 } from "@/components/workspace/types";
+import { peopleWords } from "@/lib/words/rooms/people";
 
 export function CommitmentDetail({
   selected,
@@ -30,7 +31,7 @@ export function CommitmentDetail({
 }) {
   const { data, pending, perform, when, personName, teamName, confirm, words, sampleSaid } =
     useWorkspace();
-  const text = words.rooms.peopleRoom.commitment;
+  const text = peopleWords(words).commitment;
   return (
     <>
       <p className="live-kicker">{selected && teamName(selected.teamId)}</p>
@@ -157,7 +158,7 @@ function LiveCoverChooser({
     { initialNumItems: 10 },
   );
   const [recipient, setRecipient] = useState<Id<"memberships"> | "">("");
-  const text = useWorkspace().words.rooms.peopleRoom.commitment;
+  const text = peopleWords(useWorkspace().words).commitment;
   return (
     <section>
       <h3>{text.askTitle}</h3>

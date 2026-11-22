@@ -17,6 +17,7 @@ import { LiveEmpty } from "@/components/workspace/primitives";
 import { LiveFailure } from "@/components/workspace/states";
 import type { LiveWorkspaceData } from "@/components/workspace/types";
 import { useWorkspace } from "@/components/workspace/context";
+import { peopleWords } from "@/lib/words/rooms/people";
 
 /** "Ana Lucía Prieto" as "AP": the first and last name, so two people with one first name still differ. */
 export const initials = (name: string) => {
@@ -39,7 +40,7 @@ function Address({ email, oneLine }: { email: string; oneLine?: boolean }) {
 function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceData["people"][number]; churchId: LiveWorkspaceData["church"]["id"]; onClose: () => void }) {
   const remove = useMutation(api.people.remove);
   const { words } = useWorkspace();
-  const text = words.rooms.peopleRoom.remove;
+  const text = peopleWords(words).remove;
   const [typed, setTyped] = useState("");
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState("");
@@ -90,7 +91,7 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
 export function PeopleSection() {
   const { data, pending, isOwner, confirm: setConfirmation, words, sampleSaid, now, openAction } = useWorkspace();
   const roles: Record<string, string> = words.people.roles;
-  const text = words.rooms.peopleRoom;
+  const text = peopleWords(words);
   const sheets = words.rooms.sheets;
   const invitedAs: Record<string, string> = text.invitations.invitedAs;
   const [managingId, setManagingId] = useState<string | null>(null);

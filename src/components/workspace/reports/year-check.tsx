@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { formatDate, type Words } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
 import { money } from "@/components/workspace/reports/lines";
+import { reportsWords } from "@/lib/words/rooms/reports";
 
 export type YearCheckResult = FunctionReturnType<typeof api.drafts.checkYear>;
 type FlaggedRecords = FunctionReturnType<typeof api.reports.flagged>;
@@ -17,7 +18,7 @@ type Flag = YearCheckResult["flags"][number];
 
 /** The sheet while the year is being read: it lies where the verdict will, so nothing moves when the verdict arrives. */
 export function YearChecking({ words, requests, visits }: { words: Words; requests: number; visits: number }) {
-  const text = { ...words.yearCheck, ...words.rooms.reports.check };
+  const text = { ...words.yearCheck, ...reportsWords(words).check };
   const sheet = useRef<HTMLElement>(null);
   // A wait is one still ochre ring after 400ms: nothing turns or pulses.
   const waited = useWaited(true);
@@ -58,7 +59,7 @@ export function YearCheck({
   const [open, setOpen] = useState<string[]>([]);
   const groups = new Map<string, Flag[]>();
   for (const flag of result.flags) groups.set(`${flag.kind}-${flag.source}`, [...(groups.get(`${flag.kind}-${flag.source}`) ?? []), flag]);
-  const text = { ...words.yearCheck, ...words.rooms.reports.check };
+  const text = { ...words.yearCheck, ...reportsWords(words).check };
   // One record said in a line, whole for each thing that can have happened to a request.
   const happened: Record<string, string> = text.requestOn;
   // The kinds of help in the reader's language.

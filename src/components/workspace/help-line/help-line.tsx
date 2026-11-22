@@ -58,6 +58,7 @@ import {
   HelpLoading,
   HelpRoom,
 } from "@/components/workspace/help-line/room";
+import { helpLineWords } from "@/lib/words/rooms/help-line";
 
 type Draft = FunctionReturnType<typeof api.drafts.draftRequest>;
 type Drafted = { call: Call; draft: Draft };
@@ -97,7 +98,7 @@ const nothingAsked = {};
 
 function HelpLine() {
   const { data, format, now, setHeadAction, words, sampleSaid } = useWorkspace();
-  const text = words.rooms.helpLine;
+  const text = helpLineWords(words);
   // The person's words as they stand now, for the saved line that is said after a wait (the sealed sheet's effect).
   const spoken = useRef(words);
   useEffect(() => {
@@ -218,7 +219,7 @@ function HelpLine() {
         // cut, so the line and the cut are one change.
         flushSync(() => {
           const words = spoken.current;
-          const said = words.rooms.helpLine.done;
+          const said = helpLineWords(words).done;
           setDone({
             message: asks ? fill(said.savedToDecide, { name: caller(sealed.call, words) }) : fill(said.savedOnRecord, { name: caller(sealed.call, words) }),
             record: sealed.neighborId,
@@ -703,7 +704,7 @@ function HelpLineView({
   late?: { title: string; back: ReactNode };
 }) {
   const { words, sampleSaid } = useWorkspace();
-  const text = { ...words.rooms.helpLine.calls, ...lineWords(words.locale).calls };
+  const text = { ...helpLineWords(words).calls, ...lineWords(words.locale).calls };
   const linkCall = useMutation(api.assistance.linkCall);
   const churchId = useWorkspace().data.church.id;
   const isFirst = (call: Call) => !!call.urgent?.reasons.length;
@@ -1054,7 +1055,7 @@ function HelpLineView({
 
 /** While the assistant reads: the sheet is already laid down with the caller's words on it, and the rest arrives. */
 function ReadingSheet({ note }: { note?: string }) {
-  const text = useWorkspace().words.rooms.helpLine.reading;
+  const text = helpLineWords(useWorkspace().words).reading;
   const sheet = useRef<HTMLElement>(null);
   useEffect(() => {
     sheet.current?.scrollIntoView({

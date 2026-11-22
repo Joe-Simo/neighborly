@@ -4,6 +4,7 @@ import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import { formatDate, type Words } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
 import { shortMoney } from "@/components/workspace/help-line/format";
+import { visitsWords } from "@/lib/words/rooms/visits";
 
 export type Board = FunctionReturnType<typeof api.visits.board>;
 export type Visit = Board["scheduled"][number];
@@ -14,11 +15,11 @@ export type Sheet = FunctionReturnType<typeof api.visits.sheet>;
 export type OwnVisit = FunctionReturnType<typeof api.visits.mine>[number];
 
 /** The room's own words, in the person's language: a helper cannot ask for them, so the component passes them. */
-type VisitWords = Words["rooms"]["visitsRoom"];
+type VisitWords = ReturnType<typeof visitsWords>;
 
 /** "Rent, $450": what the visit is about, in the words of the request. */
 export const need = (words: Words, kind: Waiting["kind"], cents: number) =>
-  fill(words.rooms.visitsRoom.need, { kind: words.kinds[kind], amount: shortMoney(cents) });
+  fill(visitsWords(words).need, { kind: words.kinds[kind], amount: shortMoney(cents) });
 export const firstName = (name: string) => name.split(/\s+/)[0];
 /** The people of a visit named together: "Renee Okafor and Jean-Luc Pierre". The names stay as they are written. */
 export const together = (text: VisitWords, names: string[]) =>

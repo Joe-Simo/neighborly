@@ -40,6 +40,7 @@ import {
   HelpEmpty,
   HelpLoading,
 } from "@/components/workspace/help-line/room";
+import { neighborsWords } from "@/lib/words/rooms/neighbors";
 
 /** Other records that may be this household: fetched with the record's own code only once the record is on the page. */
 const PossibleSame = lazy(() => import("@/components/workspace/help-line/possible-same").then((module) => ({ default: module.PossibleSame })));
@@ -56,7 +57,7 @@ function Back() {
   const { words } = useWorkspace();
   return (
     <Link className="help-back" href="/app/neighbors" scroll={false} data-step-own="">
-      <ArrowLeft size={16} aria-hidden="true" /> {words.rooms.neighbors.all}
+      <ArrowLeft size={16} aria-hidden="true" /> {neighborsWords(words).all}
     </Link>
   );
 }
@@ -66,7 +67,7 @@ function Back() {
  * component that has them passes them here.
  */
 function requestWords(words: Words) {
-  const text = words.rooms.neighbors.request;
+  const text = neighborsWords(words).request;
   const vouchers = (voucher: { item: string; quantity: number }) => {
     // The shelf may name its item "Clothing voucher" already; it is said once. The item stays as it was typed.
     const item = voucher.item.toLowerCase().replace(/\s+vouchers?$/, "");
@@ -141,7 +142,7 @@ export function NeighborRecord({
   requestId?: string | null;
 }) {
   const { data, format, now, setHeading, words, sampleSaid } = useWorkspace();
-  const text = words.rooms.neighbors.record;
+  const text = neighborsWords(words).record;
   const { title: requestTitle } = requestWords(words);
   const churchId = data.church.id;
   const open = useMutation(api.neighbors.open);
@@ -267,7 +268,7 @@ export function NeighborRecord({
         title={text.missing.title}
         action={
           <Button variant="outline" asChild>
-            <Link href="/app/neighbors" scroll={false} data-step-own="">{words.rooms.neighbors.all}</Link>
+            <Link href="/app/neighbors" scroll={false} data-step-own="">{neighborsWords(words).all}</Link>
           </Button>
         }
       >
@@ -281,7 +282,7 @@ export function NeighborRecord({
         title={text.removed.title}
         action={
           <Button variant="outline" asChild>
-            <Link href="/app/neighbors" scroll={false} data-step-own="">{words.rooms.neighbors.all}</Link>
+            <Link href="/app/neighbors" scroll={false} data-step-own="">{neighborsWords(words).all}</Link>
           </Button>
         }
       >
@@ -299,7 +300,7 @@ export function NeighborRecord({
             address: neighbor.address,
             phone: neighbor.phone,
             householdSize: neighbor.adults + neighbor.children,
-            speaks: neighbor.language === "other" ? neighbor.languageName || words.rooms.neighbors.languages.other : words.rooms.neighbors.languages[neighbor.language],
+            speaks: neighbor.language === "other" ? neighbor.languageName || neighborsWords(words).languages.other : neighborsWords(words).languages[neighbor.language],
             alert: neighbor.alert,
           }}
           rows={record.requests}
@@ -524,7 +525,7 @@ export function NeighborRecord({
 }
 
 function happened(event: Record["history"][number], now: number, words: Words) {
-  const text = words.rooms.neighbors.record.history;
+  const text = neighborsWords(words).record.history;
   const kinds: { [kind: string]: string | undefined } = words.kinds;
   switch (event.type) {
     case "payment":
@@ -630,7 +631,7 @@ function NeighborRecordView({
   files?: ReactNode;
 }) {
   const { words, sampleSaid } = useWorkspace();
-  const text = words.rooms.neighbors.record;
+  const text = neighborsWords(words).record;
   const { title: requestTitle } = requestWords(words);
   const { neighbor, open } = record;
   const [first, ...alsoOpen] = open;
@@ -680,7 +681,7 @@ function NeighborRecordView({
             {open.length}
             <small>
               {first
-                ? fill(words.rooms.neighbors.request.amount, {
+                ? fill(neighborsWords(words).request.amount, {
                     kind: words.kinds[first.kind],
                     amount: shortMoney(first.amountApproved ?? first.amountRequested),
                   })
@@ -927,7 +928,7 @@ function NeighborRecordView({
 }
 
 /** One line per person per day, ten at first: a record opened twenty times by one person is one fact, not twenty. */
-function Openings({ openings, text, format }: { openings: Record["openings"]; text: Words["rooms"]["neighbors"]["record"]["openings"]; format: Workspace["format"] }) {
+function Openings({ openings, text, format }: { openings: Record["openings"]; text: ReturnType<typeof neighborsWords>["record"]["openings"]; format: Workspace["format"] }) {
   const [all, setAll] = useState(false);
   const shown = all ? openings : openings.slice(0, 10);
   return (

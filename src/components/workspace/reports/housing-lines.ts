@@ -4,6 +4,7 @@ import type { api } from "../../../../convex/_generated/api";
 import type { Words } from "@/lib/words";
 import type { longSpanLabel, money, monthLabel } from "@/components/workspace/reports/lines";
 import { housingWords } from "@/components/workspace/reports/housing-words";
+import { reportsWords } from "@/lib/words/rooms/reports";
 
 export type HousingReport = FunctionReturnType<typeof api.reports.housingProviderSummary>;
 /**
@@ -19,7 +20,7 @@ export function housingCsv(report: HousingReport, groupName: string, sample: boo
   const w = housingWords(words.locale);
   return csvText([
     [groupName, w.fileTitle(report.year), lines.longSpanLabel(report, words)],
-    ...(sample ? [[words.rooms.reports.rows.csv.sample]] : []),
+    ...(sample ? [[reportsWords(words).rows.csv.sample]] : []),
     [],
     [w.landlord, ...report.months.map((month) => lines.monthLabel(month, false, words)), w.yearToDate],
     ...report.landlords.map((line) => [line.name, ...line.months.map(dollars), dollars(line.total)]),

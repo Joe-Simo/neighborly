@@ -15,6 +15,7 @@ import { counted, ToolsDone } from "@/components/workspace/tools/sheet-import";
 import { formatDate } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
 import { recordFiles, recordsCover, recordsCoverName, recordsCsv, recordsFileName, recordsZipName, type RecordFileKey } from "@/components/workspace/tools/records";
+import { toolsWords } from "@/lib/words/rooms/tools";
 
 type GatheredFile = { key: RecordFileKey; title: string; fileName: string; lines: number; csv: string };
 type RecordsStep =
@@ -28,7 +29,7 @@ type RecordsStep =
  */
 function FileRows({ files, onDownload }: { files: GatheredFile[]; onDownload?: (file: GatheredFile) => void }) {
   const { words } = useWorkspace();
-  const text = words.rooms.tools.records;
+  const text = toolsWords(words).records;
   const count = (amount: number) => counted(Math.round(amount), words.locale);
   return files.map((file) => (
     <div className="help-row" data-quiet={file.lines ? undefined : ""} key={file.key}>
@@ -57,7 +58,7 @@ function RecordsExportView({ state, onGather, onDownloadAll, onDownload, onReset
   // The one download always holds the whole set: a kind with nothing in it yet goes along with its headings only, so the folder, the cover and this list agree.
   const filled = state.step === "done" ? state.files.filter((file) => file.lines > 0) : [];
   const [lifted, setLifted] = useState(0);
-  const text = useWorkspace().words.rooms.tools.records;
+  const text = toolsWords(useWorkspace().words).records;
   return (
     <section className={`tools-leaf tools-leaf-wide paper-corner${state.step === "done" ? " paper-fold" : ""}`} data-open={state.step === "ready" ? undefined : ""} aria-labelledby="records-export-name">
       <h2 id="records-export-name">{text.title}</h2>
@@ -122,7 +123,7 @@ const face = (name: string) =>
 
 export function RecordsExport() {
   const { data, isOwner, words } = useWorkspace();
-  const text = words.rooms.tools.records;
+  const text = toolsWords(words).records;
   const convex = useConvex();
   const recordExport = useMutation(api.importExport.recordExport);
   const [state, setState] = useState<RecordsStep>({ step: "ready" });

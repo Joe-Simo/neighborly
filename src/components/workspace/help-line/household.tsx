@@ -23,6 +23,7 @@ import {
 } from "@/components/workspace/help-line/format";
 import { useSave } from "@/components/workspace/help-line/use-save";
 import type { Work } from "@/components/workspace/help-line/household-work";
+import { neighborsWords } from "@/lib/words/rooms/neighbors";
 
 // Work, its words and all, is its own chunk: fetched only where a household shows or asks it.
 const WorkRow = lazy(() => import("@/components/workspace/help-line/household-work").then((module) => ({ default: module.WorkRow })));
@@ -52,7 +53,7 @@ export function AtHome({
   onStep: (step: HomeStep) => void;
 }) {
   const { words, sampleSaid } = useWorkspace();
-  const text = words.rooms.neighbors;
+  const text = neighborsWords(words);
   const at = text.atHome;
   const { household, money, accounts } = record;
   const change = (step: HomeStep, empty: boolean, add: string) => (
@@ -230,7 +231,7 @@ export function PeopleForm({
 }) {
   const saveHousehold = useMutation(api.neighbors.saveHousehold);
   const { pending, error, save } = useSave();
-  const text = useWorkspace().words.rooms.neighbors.people;
+  const text = neighborsWords(useWorkspace().words).people;
   const [people, setPeople] = useState<{ relationship: string; child: boolean; born: string; work: Work | ""; employer: string }[]>(
     household.length
       ? household.map((person) => ({
@@ -339,7 +340,7 @@ export function MoneyForm({
 }) {
   const saveHousehold = useMutation(api.neighbors.saveHousehold);
   const { pending, error, save } = useSave();
-  const text = useWorkspace().words.rooms.neighbors.money;
+  const text = neighborsWords(useWorkspace().words).money;
   const [income, setIncome] = useState(
     money ? typed(money.income) : [{ label: text.starts.wages, amount: "" }],
   );
@@ -454,7 +455,7 @@ export function AccountsForm({
 }) {
   const saveHousehold = useMutation(api.neighbors.saveHousehold);
   const { pending, error, save } = useSave();
-  const text = useWorkspace().words.rooms.neighbors.accounts;
+  const text = neighborsWords(useWorkspace().words).accounts;
   type Line = { kind: keyof typeof accountKinds; name: string; phone: string; from?: number; typedNumber: string | null };
   const blank: Line = { kind: "utility", name: "", phone: "", typedNumber: "" };
   const [lines, setLines] = useState<Line[]>(
@@ -566,7 +567,7 @@ export function AccountsForm({
 export function NoteForm({ target, onSaved }: { target: Target; onSaved: (noteId: Id<"neighborNotes">) => void }) {
   const addNote = useMutation(api.neighbors.addNote);
   const { pending, error, save } = useSave();
-  const text = useWorkspace().words.rooms.neighbors.note;
+  const text = neighborsWords(useWorkspace().words).note;
   return (
     <form
       className="live-form help-form"

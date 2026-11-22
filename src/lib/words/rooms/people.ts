@@ -1,3 +1,4 @@
+import { roomBook } from "./book";
 import type { Terms } from "../sets";
 
 /**
@@ -299,3 +300,6 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     },
   };
 };
+
+/** This room's words for one reader's book: `peopleWords(words)`. */
+export const peopleWords = roomBook(en, es);

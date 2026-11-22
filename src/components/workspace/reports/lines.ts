@@ -6,6 +6,8 @@ import { fill } from "@/lib/words/fill";
 import { categoryLabel } from "@/components/workspace/treasury/labels";
 import { formatCount, formatMoney } from "@/lib/words/numbers";
 import type { Language } from "@/lib/words";
+import { reportsWords } from "@/lib/words/rooms/reports";
+import { treasuryWords } from "@/lib/words/rooms/treasury";
 
 export type YearReport = FunctionReturnType<typeof api.reports.year>;
 type Kind = YearReport["kinds"][number]["kind"];
@@ -14,7 +16,7 @@ type Kind = YearReport["kinds"][number]["kind"];
 const english = book();
 type Kinds = Record<Kind, string>;
 /** Plain labels. The Society's own line names take their place when the official form is on hand. */
-export const kindLabels = (words: Words = english): Kinds => words.rooms.reports.kindNames;
+export const kindLabels = (words: Words = english): Kinds => reportsWords(words).kindNames;
 
 /** A count, or hours and miles to one decimal: "1,282", "177.5". */
 export const count = (value: number, language: Language = "en") => formatCount(value, language);
@@ -32,7 +34,7 @@ export function monthLabel(month: string, short = false, words: Words = english)
 }
 /** "Oct 2025 to Sep 2026" */
 export const spanLabel = (report: Pick<YearReport, "firstDay" | "lastDay">, words: Words = english) =>
-  fill(words.rooms.reports.period.span, {
+  fill(reportsWords(words).period.span, {
     from: formatDate(words.locale, noon(report.firstDay), { timeZone: "UTC", month: "short", year: "numeric" }),
     to: formatDate(words.locale, noon(report.lastDay), { timeZone: "UTC", month: "short", year: "numeric" }),
   });
@@ -40,14 +42,14 @@ export const dayLabel = (day: string, words: Words = english) =>
   formatDate(words.locale, noon(day), { timeZone: "UTC", month: "long", day: "numeric", year: "numeric" });
 /** "October 1, 2025 to September 30, 2026"; a year still running can add ", so far". */
 export const longSpanLabel = (report: Pick<YearReport, "firstDay" | "lastDay">, words: Words = english, soFar = false) =>
-  fill(soFar ? words.rooms.reports.period.longSpanSoFar : words.rooms.reports.period.longSpan, {
+  fill(soFar ? reportsWords(words).period.longSpanSoFar : reportsWords(words).period.longSpan, {
     from: dayLabel(report.firstDay, words),
     to: dayLabel(report.lastDay, words),
   });
 
 /** "Fiscal year 2026" or "Fiscal year 2026, second quarter" */
 export const periodLabel = (report: Pick<YearReport, "year" | "quarter">, words: Words = english) => {
-  const period = words.rooms.reports.period;
+  const period = reportsWords(words).period;
   return (report.quarter ? [period.q1, period.q2, period.q3, period.q4][report.quarter - 1] : period.year)(report.year);
 };
 
@@ -73,7 +75,7 @@ export type ReportLine = {
 /** Every line of the year's report, in the order it is printed. The spreadsheet download is these rows. */
 /** `said` gives the sample's own names (its teams, its money's sources) in the reader's language, as the rooms do. */
 export function reportLines(report: YearReport, words: Words = english, said: (name: string) => string = (name) => name): ReportLine[] {
-  const w = words.rooms.reports.rows;
+  const w = reportsWords(words).rows;
   const kinds = kindLabels(words);
   const rows: ReportLine[] = [];
   const section = (name: string) => ({
@@ -160,10 +162,10 @@ export function reportLines(report: YearReport, words: Words = english, said: (n
 
   const funds = section(w.funds.section);
   funds.money(w.funds.beginning, report.money.beginningBalance);
-  for (const source of report.money.sources) funds.money(w.funds.received(categoryLabel(words.rooms.treasury, source.label, said)), source.amount);
+  for (const source of report.money.sources) funds.money(w.funds.received(categoryLabel(treasuryWords(words), source.label, said)), source.amount);
   funds.money(w.funds.allReceived, report.money.received);
   funds.money(w.funds.helpPaid, report.helpPaid);
-  for (const other of report.money.otherSpending) funds.money(w.funds.spent(categoryLabel(words.rooms.treasury, other.label, said)), other.amount);
+  for (const other of report.money.otherSpending) funds.money(w.funds.spent(categoryLabel(treasuryWords(words), other.label, said)), other.amount);
   funds.money(w.funds.allSpent, report.money.spent);
   funds.money(w.funds.ending, report.money.endingBalance, true);
   return rows;
@@ -174,7 +176,7 @@ const dollars = (cents: number) => (cents / 100).toFixed(2);
 
 /** The twelve months as spreadsheet rows, one column per count: the column names, then a row for each month. */
 function monthLines(report: YearReport, words: Words = english) {
-  const w = words.rooms.reports.rows.csv;
+  const w = reportsWords(words).rows.csv;
   return [
     [w.month, w.calls, w.requests, w.visits, w.households, w.paid, w.moneyIn],
     ...report.months.map((line) => [monthLabel(line.month, false, words), line.calls, line.requests, line.visits, line.households, dollars(line.paid), dollars(line.moneyIn)]),
@@ -183,7 +185,7 @@ function monthLines(report: YearReport, words: Words = english) {
 
 /** Each member who served as a spreadsheet row, under the column names. Members are volunteers; no neighbor appears here. */
 function memberLines(report: YearReport, words: Words = english) {
-  const w = words.rooms.reports.rows.csv;
+  const w = reportsWords(words).rows.csv;
   return [
     [w.member, w.visits, w.shifts, w.hours, w.miles],
     ...report.time.members.map((line) => [line.name, line.visits, line.shifts, line.hours, line.miles]),
@@ -192,7 +194,7 @@ function memberLines(report: YearReport, words: Words = english) {
 
 /** The year as one CSV file: every line, then the months, then the members. No neighbor is named anywhere in it. */
 export function reportCsv(report: YearReport, groupName: string, sample = false, words: Words = english, said?: (name: string) => string) {
-  const w = words.rooms.reports.rows.csv;
+  const w = reportsWords(words).rows.csv;
   const lines = reportLines(report, words, said).map(({ section, line, number, money }) => [section, line, money ? number.toFixed(2) : number]);
   const members = memberLines(report, words);
   return csvText([

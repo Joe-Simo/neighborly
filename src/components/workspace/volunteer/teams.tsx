@@ -14,11 +14,12 @@ import { LiveFailure, useConnectionLost } from "@/components/workspace/states";
 import { useWorkspace } from "@/components/workspace/context";
 import { initials } from "@/components/workspace/volunteer/people";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
+import { peopleWords } from "@/lib/words/rooms/people";
 
 export function TeamsSection() {
   const { data, pending, isOwner, perform, words, sampleSaid } = useWorkspace();
   const t = words.teams;
-  const text = words.rooms.peopleRoom.teams;
+  const text = peopleWords(words).teams;
   // Each opening of the dialog is its own object, so an answer that comes late can tell whether the person is
   // still in the opening it was asked from, even if the same team's dialog has been opened again since.
   const [addingTo, setAddingTo] = useState<{ team: LiveWorkspaceData["teams"][number] } | null>(null);
@@ -170,7 +171,7 @@ function LiveTeamRoster({
 }) {
   const { words, sampleSaid } = useWorkspace();
   const t = words.teams;
-  const text = words.rooms.peopleRoom.teams;
+  const text = peopleWords(words).teams;
   const [open, setOpen] = useState(false);
   const roster = usePaginatedQuery(
     api.pages.teamRosterPage,

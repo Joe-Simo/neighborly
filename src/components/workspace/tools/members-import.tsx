@@ -11,14 +11,14 @@ import { sayFailure } from "@/components/workspace/failure";
 import { useWorkspace } from "@/components/workspace/context";
 import { invitationLinksCsv, readMemberRows, type MemberRow } from "@/components/workspace/tools/member-rows";
 import { fileProblem, readSoFar, SheetImportView, type LeftOut, type SheetStep, type SheetWords } from "@/components/workspace/tools/sheet-import";
-import type { Words } from "@/lib/words";
 import { randomId } from "@/lib/random-id";
+import { toolsWords } from "@/lib/words/rooms/tools";
 
 type Checked = FunctionReturnType<typeof api.importExport.checkMembers>;
 type Imported = FunctionReturnType<typeof api.importExport.importMembers>;
 type Problem = Exclude<(Checked[number] | Imported[number])["outcome"], "ready" | "invited">;
 
-type ToolsWords = Words["rooms"]["tools"];
+type ToolsWords = ReturnType<typeof toolsWords>;
 /** The sheet's own lines in the person's language. The sample file is made-up data and stays as it is. */
 const memberWords = (text: ToolsWords["members"]): SheetWords => ({
   id: "members-import",
@@ -38,7 +38,7 @@ function membersLeftOut(rows: (Checked[number] | Imported[number])[], reasons: R
 
 export function MembersImport() {
   const { data, isOwner, words } = useWorkspace();
-  const tools = words.rooms.tools;
+  const tools = toolsWords(words);
   const convex = useConvex();
   const importMembers = useAction(api.importExport.importMembers);
   const [state, setState] = useState<SheetStep>({ step: "choose" });

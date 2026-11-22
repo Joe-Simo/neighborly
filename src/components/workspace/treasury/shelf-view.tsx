@@ -21,6 +21,7 @@ import {
   type Refusal,
 } from "@/components/workspace/treasury/form-parts";
 import { dayLabel, type Shelf } from "@/components/workspace/treasury/labels";
+import { treasuryWords } from "@/lib/words/rooms/treasury";
 
 type Vouchers = {
   item: string;
@@ -40,7 +41,7 @@ function VoucherForm({
   onSubmit: (vouchers: Vouchers) => Promise<Refusal>;
   onCancel: () => void;
 }) {
-  const w = useWorkspace().words.rooms.treasury.shelf.form;
+  const w = treasuryWords(useWorkspace().words).shelf.form;
   const [item, setItem] = useState(items[0] ?? "");
   const [count, setCount] = useState("");
   const [date, setDate] = useState(today);
@@ -126,7 +127,7 @@ function ShelfView({
   onAdd: () => void;
 }) {
   const { words, sampleSaid } = useWorkspace();
-  const w = words.rooms.treasury.shelf;
+  const w = treasuryWords(words).shelf;
   return (
     <>
       {done && <HelpDone className="treasury-notice" focus={false}>{done}</HelpDone>}
@@ -239,7 +240,7 @@ export function ShelfRoom({
   onBack: () => void;
 }) {
   const { setHeading, setHeadAction, words } = useWorkspace();
-  const room = words.rooms.treasury;
+  const room = treasuryWords(words);
   const w = room.shelf;
   // The head's way back always runs the newest onBack without redrawing the head.
   const back = useRef(onBack);

@@ -28,6 +28,7 @@ import {
   type Statement,
   type TreasuryWords,
 } from "@/components/workspace/treasury/labels";
+import { treasuryWords } from "@/lib/words/rooms/treasury";
 
 /** "$214.60 to Demo Power & Light", the way a statement line reads. */
 const line = (words: TreasuryWords, entry: BankEntry, typed?: (typed: string) => string) => amountLine(words, entry, formatFigure(entry.amount), typed);
@@ -87,7 +88,7 @@ function BankView({
   onClearAll: () => void;
 }) {
   const { words, sampleSaid } = useWorkspace();
-  const room = words.rooms.treasury;
+  const room = treasuryWords(words);
   const w = room.bank;
   const day = (date: string) => dayLabel(words.locale, date);
   const [statement, setStatement] = useState("");
@@ -407,7 +408,7 @@ export function BankRoom({
   onBack: () => void;
 }) {
   const { setHeading, words, sampleSaid } = useWorkspace();
-  const room = words.rooms.treasury;
+  const room = treasuryWords(words);
   const w = room.bank;
   const day = (date: string) => dayLabel(words.locale, date);
   // The head's way back always runs the newest onBack without redrawing the head.

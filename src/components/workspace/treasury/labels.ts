@@ -1,6 +1,7 @@
 import type { FunctionReturnType } from "convex/server";
+import { treasuryWords } from "@/lib/words/rooms/treasury";
 import type { api } from "../../../../convex/_generated/api";
-import { formatDate, type Language, type Words } from "@/lib/words";
+import { formatDate, type Language } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
 
 export type Ledger = FunctionReturnType<typeof api.treasury.ledger>;
@@ -22,7 +23,7 @@ export const spendingKinds = ["pantry", "supplies", "dues", "fee", "twinning", "
 export type SpendingKind = (typeof spendingKinds)[number];
 
 /** The treasury's own words, in the person's language. */
-export type TreasuryWords = Words["rooms"]["treasury"];
+export type TreasuryWords = ReturnType<typeof treasuryWords>;
 
 /** The ledger stores its own kinds under these names; each is said in the person's language. A kind a person named is not here. */
 const stored: Record<string, (words: TreasuryWords) => string> = {

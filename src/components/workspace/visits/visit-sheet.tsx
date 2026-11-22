@@ -20,6 +20,7 @@ import { TimeForm } from "@/components/workspace/visits/forms";
 import { fill } from "@/lib/words/fill";
 import type { Words } from "@/lib/words";
 import { capital, firstName, need, spoken, together, useVisitDates, type Sheet } from "@/components/workspace/visits/format";
+import { visitsWords } from "@/lib/words/rooms/visits";
 
 // The printed request is fetched only when someone asks to print one.
 const RequestDetailFromVisit = lazy(() => import("@/components/workspace/help-line/request-detail").then((module) => ({ default: module.RequestDetailFromVisit })));
@@ -31,7 +32,7 @@ const RequestDetailFromVisit = lazy(() => import("@/components/workspace/help-li
 export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
   const { data, now, setHeading, words, offerUndo, sampleSaid } = useWorkspace();
   const reinstate = useMutation(api.visits.reinstate);
-  const text = words.rooms.visitsRoom.sheet;
+  const text = visitsWords(words).sheet;
   const format = useVisitDates();
   const churchId = data.church.id;
   // One neighbor's details: a plain head, with no painting.
@@ -104,7 +105,7 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
         <div className="visits-sheet-bar">
           <div className="visits-sheet-links">
             <Link className="visits-back" href="/app/visits">
-              <ArrowLeft size={17} aria-hidden="true" /> {words.rooms.visitsRoom.name}
+              <ArrowLeft size={17} aria-hidden="true" /> {visitsWords(words).name}
             </Link>
           </div>
         </div>
@@ -132,7 +133,7 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
             address: sheet.neighbor.address,
             phone: sheet.neighbor.phone,
             householdSize: sheet.neighbor.adults + sheet.neighbor.children,
-            speaks: spoken(words.rooms.visitsRoom, sheet.neighbor),
+            speaks: spoken(visitsWords(words), sheet.neighbor),
             alert: sheet.neighbor.alert,
           }}
           visit={{ at: sheet.scheduledAt, visitors: sheet.visitors }}
@@ -279,7 +280,7 @@ function VisitSheetView({
   onChangeTime: () => void;
 }) {
   const { neighbor, request } = sheet;
-  const room = words.rooms.visitsRoom;
+  const room = visitsWords(words);
   const text = room.sheet;
   const household = neighbor.children
     ? fill(text.adultsAndChildren, { adults: text.adults(neighbor.adults), children: text.children(neighbor.children) })

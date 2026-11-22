@@ -14,6 +14,7 @@ import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
 import { useSave } from "@/components/workspace/use-save";
 import "@/components/workspace/for-good.css";
 import "@/components/workspace/help-line/help-line.css";
+import { reportsWords } from "@/lib/words/rooms/reports";
 
 /** Where the export lives in Your files, so the advice to export first is one step from it. */
 const EXPORT = "records-export-name";
@@ -31,7 +32,7 @@ const nameKey = (name: string) =>
  */
 export function CloseConference() {
   const { data, isOwner, words } = useWorkspace();
-  const w = words.rooms.reports.closing;
+  const w = reportsWords(words).closing;
   const [open, setOpen] = useState(false);
   if (!isOwner || data.church.sample) return null;
   return (
@@ -79,7 +80,7 @@ function CloseConferenceForm({
   church: { id: Id<"churches">; name: string };
   onExport: () => void;
 }) {
-  const w = useWorkspace().words.rooms.reports.closing;
+  const w = reportsWords(useWorkspace().words).closing;
   const close = useMutation(api.closing.close);
   const router = useRouter();
   const { pending, error, save } = useSave();

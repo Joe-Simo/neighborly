@@ -29,6 +29,7 @@ import {
   type Visit,
   type Visitors,
 } from "@/components/workspace/visits/format";
+import { visitsWords } from "@/lib/words/rooms/visits";
 
 const DAYS_AHEAD = 42;
 
@@ -38,7 +39,7 @@ const DAYS_AHEAD = 42;
  */
 function VisitWhen({ defaultValue }: { defaultValue?: string }) {
   const { data, now, words } = useWorkspace();
-  const text = words.rooms.visitsRoom.forms;
+  const text = visitsWords(words).forms;
   const [day, time] = (defaultValue ?? "").split("T");
   const today = DateTime.fromMillis(now, { zone: data.church.timeZone });
   return (
@@ -94,7 +95,7 @@ function VisitorSelect({
   defaultValue?: string;
 }) {
   const { words } = useWorkspace();
-  const room = words.rooms.visitsRoom;
+  const room = visitsWords(words);
   const text = room.forms;
   const option = (person: Visitors[number]) => (
     <NativeSelectOption key={person.memberId} value={person.memberId}>
@@ -222,7 +223,7 @@ function PlanFormView({
     ...board.toArrange,
   ];
   const { words } = useWorkspace();
-  const text = words.rooms.visitsRoom.forms;
+  const text = visitsWords(words).forms;
   const [chosen, setChosen] = useState<string>(
     requestId ?? waiting[0]?.requestId ?? withoutRequest,
   );
@@ -365,7 +366,7 @@ export function WriteUpForm({
   onSaved: () => void;
 }) {
   const { words } = useWorkspace();
-  const text = words.rooms.visitsRoom.forms;
+  const text = visitsWords(words).forms;
   const writeUp = useMutation(api.visits.writeUp);
   const { pending, error, save } = useSave();
   return (
@@ -517,7 +518,7 @@ export function TimeForm({
       }}
     >
       <VisitWhen defaultValue={at} />
-      <FormEnd error={error} pending={pending} submit={words.rooms.visitsRoom.forms.changeTime} />
+      <FormEnd error={error} pending={pending} submit={visitsWords(words).forms.changeTime} />
     </form>
   );
 }
@@ -535,7 +536,7 @@ export function ReplaceForm({
   onSaved: (joining: string) => void;
 }) {
   const { words } = useWorkspace();
-  const text = words.rooms.visitsRoom.forms;
+  const text = visitsWords(words).forms;
   const people = useQuery(api.visits.visitors, { churchId });
   const replace = useMutation(api.visits.replaceVisitor);
   const { pending, error, save } = useSave();

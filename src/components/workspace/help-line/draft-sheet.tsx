@@ -13,6 +13,7 @@ import {
   shortMoney,
   type Call,
 } from "@/components/workspace/help-line/format";
+import { helpLineWords } from "@/lib/words/rooms/help-line";
 
 type Draft = FunctionReturnType<typeof api.drafts.draftRequest>;
 /** Only what the sheet itself reads, so it can be laid down anywhere a call and its draft are known. */
@@ -99,7 +100,7 @@ export function DraftSheet({
   const sheet = text.sheet;
   const callerName = call.callerName.trim();
   const firstName = callerName.split(/\s+/)[0] ?? "";
-  const room = words.rooms.helpLine.draft;
+  const room = helpLineWords(words).draft;
   const complete =
     !!draft.kind &&
     draft.amountRequested !== null &&

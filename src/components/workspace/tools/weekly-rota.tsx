@@ -9,12 +9,13 @@ import { ChevronLeft, ChevronRight, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { weekLabel, weekRota, weekStart, type RotaDay } from "@/components/workspace/tools/rota";
+import { toolsWords } from "@/lib/words/rooms/tools";
 
 function WeeklyRotaView({ group, week, days, printed, sample, titled = true, none, onEarlier, onLater, onPrint }: { group: string; week: string; days: RotaDay[]; printed: string; sample?: boolean; titled?: boolean; /** True when no commitment exists in any week: there is no other week to turn to. */ none?: boolean; onEarlier: () => void; onLater: () => void; onPrint: () => void }) {
   const planned = days.some((day) => day.shifts.length > 0);
   const { words } = useWorkspace();
   const text = words.rota;
-  const foot = words.rooms.tools.rota;
+  const foot = toolsWords(words).rota;
   return (
     <section className={titled ? "live-section" : undefined}>
       {titled && (

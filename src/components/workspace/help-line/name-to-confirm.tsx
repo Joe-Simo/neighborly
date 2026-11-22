@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { LiveField } from "@/components/workspace/primitives";
 import { useWorkspaceIfAny } from "@/components/workspace/context";
 import { words as wordsFor } from "@/lib/words";
+import { helpLineFormsWords } from "@/lib/words/rooms/help-line-forms";
 
 const english = wordsFor();
 
@@ -29,7 +30,7 @@ export function NameToConfirm({
   onTyped: (typed: string) => void;
 }) {
   const note = useId();
-  const w = (useWorkspaceIfAny()?.words ?? english).rooms.helpLineForms.confirm;
+  const w = helpLineFormsWords((useWorkspaceIfAny()?.words ?? english)).confirm;
   const [left, setLeft] = useState(false);
   const off = left && typed.trim() !== "" && nameKey(typed) !== nameKey(name);
   return (

@@ -15,6 +15,7 @@ import {
   type Refusal,
 } from "@/components/workspace/treasury/form-parts";
 import { categoryLabel, dayLabel, type Gift } from "@/components/workspace/treasury/labels";
+import { treasuryWords } from "@/lib/words/rooms/treasury";
 
 type Deposit = { entryIds: Gift["id"][]; date: string; memo: string };
 
@@ -31,7 +32,7 @@ export function DepositForm({
   onCancel: () => void;
 }) {
   const { words, sampleSaid } = useWorkspace();
-  const room = words.rooms.treasury;
+  const room = treasuryWords(words);
   const w = room.deposit;
   const [left, setLeft] = useState<Gift["id"][]>([]);
   const [date, setDate] = useState(today);
