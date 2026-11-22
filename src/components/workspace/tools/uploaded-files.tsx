@@ -152,7 +152,7 @@ export default function UploadedFiles(place: Place) {
         </ul>
       )}
       <div className="tools-file-pick help-actions">
-        <input ref={picker} id={`${headingId}-pick`} type="file" accept={ACCEPT} onChange={(event) => void chosen(event)} disabled={busy} />
+        <input ref={picker} id={`${headingId}-pick`} type="file" tabIndex={-1} aria-hidden="true" accept={ACCEPT} onChange={(event) => void chosen(event)} disabled={busy} />
         <Button type="button" variant="outline" disabled={busy} onClick={() => picker.current?.click()}>{text.choose}</Button>
         <span className="tools-small">{text.help}</span>
       </div>
