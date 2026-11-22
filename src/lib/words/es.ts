@@ -178,7 +178,7 @@ export function es(set: WordSet): Words {
       quietDetail:
         "No hay compromisos en los próximos siete días. Las fechas posteriores están en Compromisos.",
       fromGroup: set === "vincentian" ? "De tu conferencia" : "De tu grupo",
-      noAnnouncementsTitle: "Todo tranquilo en el grupo.",
+      noAnnouncementsTitle: set === "vincentian" ? "Todo tranquilo en la conferencia." : "Todo tranquilo en el grupo.",
       noAnnouncementsDetail: "Los avisos de tus coordinadores aparecerán aquí.",
     },
     mine: {
@@ -301,7 +301,7 @@ export function es(set: WordSet): Words {
       done: "Hecha",
       open: "Pendiente",
       emptyTitle: "Sin tareas por ahora.",
-      emptyDetail: "Aquí aparece todo lo que el grupo necesita hacer, con quién lo hace y para cuándo.",
+      emptyDetail: `Aquí aparece todo lo que ${set === "vincentian" ? "la conferencia" : "el grupo"} necesita hacer, con quién lo hace y para cuándo.`,
       meetings: "Reuniones",
       going: "Vas a ir",
       notGoing: "No puedes ir",

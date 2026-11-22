@@ -181,7 +181,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     addNeighbor: "Agregar al registro",
     likely: (name: string) => `Mismo teléfono que el registro de ${name}.`,
     useLikely: "Usar este hogar",
-    useLikelyThis: (name: string) => `Usar el registro de ${name} para esta solicitud`,
+    useLikelyThis: (name: string) => `Usar el registro de ${name} para esta petición`,
   },
   reading: {
     label: "El asistente",
