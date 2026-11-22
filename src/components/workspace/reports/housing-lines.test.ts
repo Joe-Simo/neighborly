@@ -17,14 +17,14 @@ const report = {
 describe("the housing provider summary as a spreadsheet", () => {
   test("has a column per month and the year to date, in English and Spanish", () => {
     const rows = Papa.parse<string[]>(housingCsv(report, "Sample Conference", true, words(), lines)).data;
-    expect(rows[0]).toEqual(["Sample Conference", "Housing Provider Summary, fiscal year 2026", "October 1, 2025 to September 30, 2026"]);
+    expect(rows[0]).toEqual(["Sample Conference", "What each landlord was paid, fiscal year 2026", "October 1, 2025 to September 30, 2026"]);
     expect(rows[3]?.[0]).toBe("Landlord");
     expect(rows[3]?.at(-1)).toBe("Year to date");
     expect(rows[3]).toHaveLength(14);
     expect(rows[4]).toEqual(["Orchard Street Apartments", "450.50", ...Array(11).fill("0.00"), "450.50"]);
     expect(rows[5]?.[0]).toBe("All landlords");
     const spanish = Papa.parse<string[]>(housingCsv(report, "Sample Conference", false, words("es"), lines)).data;
-    expect(spanish[0]?.[1]).toBe("Resumen de arrendadores, año fiscal 2026");
+    expect(spanish[0]?.[1]).toBe("Lo que se pagó a cada arrendador, año fiscal 2026");
     expect(spanish[2]?.[0]).toBe("Arrendador");
     expect(housingFileName(report, "St. Ann Conference")).toBe("st-ann-conference-housing-providers-2026.csv");
   });

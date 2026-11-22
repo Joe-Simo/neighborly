@@ -6,8 +6,8 @@ import type { Language } from "@/lib/words/sets";
  * load carries them. Every sentence is written whole in each language.
  */
 const en = {
-  title: "Housing Provider Summary",
-  show: "Show what each landlord was paid",
+  title: "What each landlord was paid",
+  show: "Show the landlord payments",
   hide: "Hide the landlord summary",
   deck: "Rent paid to each landlord, month by month, and the year to date.",
   loading: "Adding up the landlord payments",
@@ -17,12 +17,12 @@ const en = {
   payments: (count: number) => (count === 1 ? "1 payment" : `${counter("en")(count)} payments`),
   total: "All landlords",
   download: "Download the landlord summary",
-  fileTitle: (year: number) => `Housing Provider Summary, fiscal year ${year}`,
+  fileTitle: (year: number) => `What each landlord was paid, fiscal year ${year}`,
 };
 
 const es: typeof en = {
-  title: "Resumen de arrendadores",
-  show: "Ver lo que se pagó a cada arrendador",
+  title: "Lo que se pagó a cada arrendador",
+  show: "Ver los pagos a arrendadores",
   hide: "Ocultar el resumen de arrendadores",
   deck: "Alquiler pagado a cada arrendador, mes por mes, y lo que va del año.",
   loading: "Sumando los pagos a arrendadores",
@@ -32,7 +32,7 @@ const es: typeof en = {
   payments: (count) => (count === 1 ? "1 pago" : `${counter("es")(count)} pagos`),
   total: "Todos los arrendadores",
   download: "Descargar el resumen de arrendadores",
-  fileTitle: (year) => `Resumen de arrendadores, año fiscal ${year}`,
+  fileTitle: (year) => `Lo que se pagó a cada arrendador, año fiscal ${year}`,
 };
 
 /** The summary's words in the reader's language. */

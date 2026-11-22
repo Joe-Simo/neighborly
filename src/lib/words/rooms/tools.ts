@@ -142,7 +142,7 @@ export const en = (t: Terms, place: string) => ({
   records: {
     title: "Take your records with you",
     deck: `Your ${t.group}’s records are yours. Download them as spreadsheets whenever you like: to keep, to print, or to move. They go to this device only; nothing is sent anywhere. The columns are named in English, as ServWare names them, so the files go back into ServWare as they are.`,
-    gather: "Gather your records",
+    gather: "Download all records",
     what: `Everything your ${t.group} has written here, one file for each kind of record: the ${t.neighbors} and their notes, calls, requests and visits; the ledger, deposits and vouchers; your members, teams and commitments. Account numbers show their last four digits only. Each time, it is written down who took the records out.`,
     ready: `Your records are ready on this device. Keep the files somewhere safe: they hold your ${t.neighbors}’ private details. The download adds a cover sheet that lists every file.`,
     downloadAll: (count: number) => `Download all ${enN(count)} files`,
@@ -324,7 +324,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     records: {
       title: "Llévate tus registros",
       deck: `Los registros de tu ${t.group} son tuyos. Descárgalos como hojas de cálculo cuando quieras: para guardarlos, imprimirlos o llevarlos a otro lugar. Van solo a este dispositivo; nada se envía a ninguna parte. Las columnas llevan en inglés los nombres que usa ServWare, para que los archivos vuelvan a ServWare tal como están.`,
-      gather: "Reunir tus registros",
+      gather: "Descargar todos los registros",
       what: `Todo lo que tu ${t.group} ha escrito aquí, un archivo por cada tipo de registro: los ${t.neighbors} y sus notas, llamadas, peticiones y visitas; el libro, los depósitos y los vales; tus miembros, equipos y compromisos. De los números de cuenta solo se ven los últimos cuatro dígitos. Cada vez queda anotado quién sacó los registros.`,
       ready: `Tus registros están listos en este dispositivo. Guarda los archivos en un lugar seguro: tienen los datos privados de tus ${t.neighbors}. La descarga agrega una portada que enumera cada archivo.`,
       downloadAll: (count) => `Descargar los ${esN(count)} archivos`,
