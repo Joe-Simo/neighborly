@@ -183,7 +183,7 @@
    pass. The rows keep the room's one left edge, the heading's and the search's, at every width. */
 .live-app .help-letter-head {
   position: sticky; top: var(--live-bar, 0px); z-index: 2; margin: 0;
-  font: 400 48px/0.9 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.03em;
+  font: 400 var(--type-figure-l)/0.9 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.03em;
   color: var(--relief-letter);
   padding: var(--space-8) 0; background: var(--live-paper, #f5f3ec); border-bottom: 1px solid var(--live-line);
 }

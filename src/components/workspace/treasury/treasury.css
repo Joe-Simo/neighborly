@@ -113,7 +113,7 @@
 .treasury-entry-amount {
   font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
   font-weight: 400;
-  font-size: 44px;
+  font-size: var(--type-figure-s);
   font-feature-settings: "lnum" 1, "tnum" 1;
   line-height: 1;
   letter-spacing: -0.03em;
@@ -658,7 +658,7 @@
 .treasury-balance-leaves i:nth-child(3) { translate: -1px 0; width: calc(100% - 7px); rotate: -0.2deg; }
 .treasury-paper b {
   display: inline-block;
-  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 40px; line-height: 0.9; letter-spacing: -0.02em;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: var(--type-figure-s); line-height: 0.9; letter-spacing: -0.02em;
   font-feature-settings: "lnum" 1, "tnum" 1; color: var(--live-ink);
 }
 /* The balance's figure (96px) clears the month's two slips only in a wide room. Where the room is narrower, by the

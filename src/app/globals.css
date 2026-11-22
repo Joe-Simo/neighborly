@@ -101,6 +101,9 @@ body {
   --serif-sheet: 26px;
   --serif-title: 30px;
   --serif-figure: 35px;
+  /* Figure steps: Newsreader numbers and big display heads only, never words in a row. The hero (68px) is the home page's. */
+  --type-figure-s: 44px;
+  --type-figure-l: 54px;
   --caps-track: 0.08em; /* every small-caps label */
 }
 button,

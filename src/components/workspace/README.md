@@ -85,6 +85,22 @@ import { RoomAside } from "@/components/workspace/aside";
 - A room with a wide table (People, Neighbors, the ledger) leaves it out: at 1280px the room's column beside it
   is about 590px.
 
+## The type scale
+
+Every size a room sets is a step from `src/app/globals.css`; a room may drop a step at phone width but never sets a
+size between two steps.
+
+| Face | Steps | Tokens |
+| --- | --- | --- |
+| Source Sans 3 (words, controls) | 13 / 15 / 16 / 17 / 19 | `--text-xs` `--text-sm` `--text-ui` `--text-md` `--text-lg` |
+| Newsreader (names, heads, amounts) | 16 / 22 / 24 / 26 / 30 / 35 | `--serif-sm` `--serif-row` `--serif-head` `--serif-sheet` `--serif-title` `--serif-figure` |
+| Newsreader figure steps (numbers and big display heads only) | 44 / 54 | `--type-figure-s` `--type-figure-l` |
+| Hero (home page only) | 68 | |
+
+The sign-in wordmark (38px) is a logo and stands outside the scale. Figures that line up (columns, totals, counts) set
+`font-feature-settings: "lnum" 1, "tnum" 1`, never `font-variant-numeric`: the minifier drops that after a `font:`
+shorthand.
+
 ## A row's long press in the app
 
 In the iOS app (`row-menu.tsx`, mounted once by the shell) a finger held 450ms on a row marked `data-row-menu`

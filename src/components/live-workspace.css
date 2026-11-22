@@ -450,7 +450,7 @@
   padding-bottom: var(--space-48);
 }
 .live-auth h1 {
-  font-size: 54px;
+  font-size: var(--type-figure-l);
 }
 .live-auth .live-form {
   margin-top: var(--space-32);
@@ -593,7 +593,7 @@
     padding: var(--space-24) 24px !important;
   }
   .live-app h1 {
-    font-size: 44px;
+    font-size: var(--type-figure-s);
   }
   .live-header-actions {
     gap: var(--space-8) 8px;
@@ -650,7 +650,7 @@
     border-bottom: 1px solid #d9ddd3;
   }
   .live-auth h1 {
-    font-size: 48px;
+    font-size: var(--type-figure-l);
   }
   .live-auth .live-deck{margin-bottom:var(--space-16)}
   .live-auth-tabs{margin-top:var(--space-16)}

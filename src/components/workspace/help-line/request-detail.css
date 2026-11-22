@@ -8,7 +8,7 @@
 .request-detail-kicker, .request-detail dt, .request-detail h3 {
   font-size: 13px; font-weight: 650; letter-spacing: var(--caps-track); text-transform: uppercase; color: #52644f; margin: 0 0 var(--space-8);
 }
-.request-detail h2 { font: 400 clamp(32px, 6vw, 46px)/1.05 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.025em; margin: 0 0 var(--space-8); }
+.request-detail h2 { font: 400 clamp(35px, 4vw, 44px)/1.05 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.025em; margin: 0 0 var(--space-8); }
 .request-detail-when { margin: 0; color: var(--live-muted); }
 /* The paper title block's wordmark, as on the year report and the visit sheet: printed only. */
 .request-detail-mark { display: none; }

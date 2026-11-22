@@ -1047,7 +1047,7 @@ nav.week-figures .count-up {
 @media (max-width: 560px) {
   nav.week-figures { gap: var(--space-8) 8px; }
   nav.week-figures a, nav.week-figures a + a { padding: var(--space-16) 10px var(--space-12); }
-  nav.week-figures .count-up { font-size: 44px; }
+  nav.week-figures .count-up { font-size: var(--type-figure-s); }
 }
 @media (prefers-reduced-motion: reduce) { nav.week-figures a { transition: none; } }
 /* Numeral beside its words: a card is as tall as its number. What is waiting is said in ink beside the small ochre ring. */
@@ -1068,7 +1068,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 @media (max-width: 560px) {
   nav.week-figures { grid-template-columns: minmax(0, 1fr); gap: var(--space-8) 10px; }
   nav.week-figures a, nav.week-figures a + a { padding: var(--space-8) 16px; column-gap: 16px; }
-  nav.week-figures .count-up { font-size: 44px; }
+  nav.week-figures .count-up { font-size: var(--type-figure-s); }
   nav.week-figures a > span:nth-child(2) { font-size: 16px; }
   nav.week-figures a > small { font-size: 13px; min-height: 0; }
 }
