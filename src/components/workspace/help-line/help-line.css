@@ -312,7 +312,7 @@
 .help-filed-words { display: grid; justify-items: start; gap: 1px 0; min-width: 0; flex: 1 1 auto; }
 .help-filed-words strong { font: 400 24px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; white-space: nowrap; transform-origin: 0 0; }
 .help-filed-words [data-filed="asks"] { font-size: 17px; line-height: 1.45; }
-.help-filed-words > span:last-child { font-size: 15px; line-height: 1.45; margin-top: 3px; }
+.help-filed-words > span:last-child { font-size: 15px; line-height: 1.45; margin-top: var(--space-4); }
 .help-done.help-filed > :is(a, button) { align-self: center; flex: none; }
 @media (max-width: 700px) {
   .help-done.help-filed { flex-wrap: wrap; }

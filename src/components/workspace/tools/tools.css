@@ -189,7 +189,7 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 }
 /* Fifteen files read as a folder's contents, not a long page: two columns on a wide screen, closer rows everywhere. */
 .live-app .tools-records .help-row { padding-block: var(--space-16); }
-.live-app .tools-records .help-row h3 { margin-bottom: 3px; font-size: 22px; }
+.live-app .tools-records .help-row h3 { margin-bottom: var(--space-4); font-size: 22px; }
 .live-app .tools-records .help-row p { font-size: 15px; }
 @media (min-width: 1000px) {
   .tools-records { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 44px; }

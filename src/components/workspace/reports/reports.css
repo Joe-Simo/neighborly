@@ -36,7 +36,7 @@
   border-radius: 2px;
   font-weight: 400; font-size: 19px; line-height: 1; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
   color: var(--live-muted);
-  gap: var(--space-8) 7px;
+  gap: var(--space-8) 8px;
   transition: background 220ms var(--paper-ease), color 220ms var(--paper-ease);
 }
 .report-switches {
@@ -710,7 +710,7 @@
 .report-check li { padding: var(--space-16) 0 var(--space-16); border-bottom: 1px solid var(--live-line); }
 .report-check li[data-source="assistant"] { border-left: 2px solid var(--help-ochre); padding-left: 18px; }
 .report-check li p { margin: 0; max-width: none; }
-.report-check li .help-why { font-size: 19px; margin-bottom: 3px; }
+.report-check li .help-why { font-size: 19px; margin-bottom: var(--space-4); }
 .report-check li .help-assistant { font-size: 17px; }
 .live-app .report-check .report-check-more {
   min-height: 44px;

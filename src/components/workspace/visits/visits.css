@@ -183,7 +183,7 @@
 .visits-paper footer {
   display: flex;
   align-items: center;
-  gap: var(--space-8) 9px;
+  gap: var(--space-8) 8px;
   margin-top: var(--space-40);
   font-size: 15px;
   color: var(--live-muted);

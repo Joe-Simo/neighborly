@@ -367,7 +367,7 @@
   .live-app .live-menu-trigger {
     display: inline-flex;
     height: 44px;
-    gap: var(--space-8) 9px;
+    gap: var(--space-8) 8px;
     padding: 0 12px;
     font-size: 16px;
     font-weight: 500;

@@ -238,7 +238,7 @@
 .live-status {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-8) 7px;
+  gap: var(--space-8) 8px;
   font-size: 13px;
   color: #466143;
   white-space: nowrap;
@@ -584,7 +584,7 @@
     padding: var(--space-8) 14px;
   }
   .live-nav a {
-    gap: var(--space-8) 7px;
+    gap: var(--space-8) 8px;
   }
   .live-main {
     padding: var(--space-32) 20px var(--space-64);
@@ -596,7 +596,7 @@
     font-size: 44px;
   }
   .live-header-actions {
-    gap: var(--space-8) 7px;
+    gap: var(--space-8) 8px;
   }
   .live-header-actions button {
     padding: 0 12px;
@@ -763,7 +763,7 @@
 }
 
 .live-auth-availability {
-  padding: var(--space-16) 17px;
+  padding: var(--space-16) 16px;
   margin: var(--space-20) 0 0;
   font-size: 15px;
   line-height: 1.5;
