@@ -305,7 +305,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     },
     payees: {
       title: "Trae a quienes les pagas",
-      deck: `Los dueños de vivienda, las compañías de servicios y las tiendas a las que tu ${t.group} ya les paga. Exporta la lista de ServWare o de otro sistema, guárdala como CSV y elígela aquí, para que nadie escriba dos veces a quién se le paga.`,
+      deck: `Los arrendadores, las compañías de servicios y las tiendas a las que tu ${t.group} ya les paga. Exporta la lista de ServWare o de otro sistema, guárdala como CSV y elígela aquí, para que nadie escriba dos veces a quién se le paga.`,
       fileHelp: "Necesita una columna Name. Si hay columnas Type, Address, Phone, Email o Notes, también se importan.",
       yes: (count) => (count === 1 ? "Agregar 1 nombre a tu lista de pagos" : `Agregar ${esN(count)} nombres a tu lista de pagos`),
       nothingReady: "Todavía no se puede agregar nada de este archivo",

@@ -72,7 +72,7 @@ const es: typeof en = {
     { title: "Tus registros pertenecen a tu conferencia", blocks: ["Kind Helps es un programa gratuito para que una conferencia guarde su propio trabajo en un solo lugar. Lo que una conferencia escribe aquí pertenece a la conferencia, no a nosotros."] },
     { title: "Qué guarda aquí una conferencia", blocks: [[
       ["Sus miembros:", "nombre, correo electrónico, rol, equipos, disponibilidad, días libres, compromisos, tareas, reuniones y avisos."],
-      ["Los vecinos a quienes ayuda:", "nombre, teléfono, correo electrónico, dirección, cuántos adultos y niños, idioma y notas. Si la conferencia decide anotarlos: quién vive en el hogar, por parentesco y año de nacimiento (sin nombres ni fechas de nacimiento), ingresos y gastos mensuales, y datos de la cuenta del dueño de la vivienda o de los servicios."],
+      ["Los vecinos a quienes ayuda:", "nombre, teléfono, correo electrónico, dirección, cuántos adultos y niños, idioma y notas. Si la conferencia decide anotarlos: quién vive en el hogar, por parentesco y año de nacimiento (sin nombres ni fechas de nacimiento), ingresos y gastos mensuales, y datos de la cuenta del arrendador o de los servicios."],
       ["Su trabajo:", "llamadas a la línea de ayuda, peticiones de ayuda y visitas domiciliarias."],
       ["Su dinero:", "el libro, los depósitos, a quién se le paga, los vales y los saldos de los estados de cuenta del banco."],
     ]] },

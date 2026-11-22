@@ -561,7 +561,7 @@ export function es(set: WordSet): Words {
         kindMissing: { why: "La nota no dice qué tipo de ayuda se pide.", act: "Elige el tipo de ayuda." },
         amountSeveral: { why: "La nota da más de un monto.", act: "Escribe el monto que se pide." },
         amountMissing: { why: "La nota no da un monto.", act: "Escribe el monto que se pide." },
-        payee: { why: "Aún no está anotado a quién se le paga.", act: `Confirma a quién se le paga: al dueño de la vivienda, a la compañía de servicios o a la tienda, nunca al ${t.neighbor}.` },
+        payee: { why: "Aún no está anotado a quién se le paga.", act: `Confirma a quién se le paga: al arrendador, a la compañía de servicios o a la tienda, nunca al ${t.neighbor}.` },
         doubtful: { why: "Una parte de la nota es una pregunta o no es segura, así que se dejó fuera.", act: "Lee la nota completa antes de guardar." },
         confirmKind: { why: "El asistente no estaba seguro del tipo de ayuda.", act: "Confirma el tipo de ayuda." },
         confirmPayee: { why: "El asistente no estaba seguro de a qué tipo de destinatario va el pago.", act: "Confirma a qué tipo de destinatario va el pago." },
