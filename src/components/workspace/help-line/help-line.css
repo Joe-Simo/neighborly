@@ -87,8 +87,9 @@
   .help-lines[data-shape="pair"] .help-line-row { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
 }
 @media (max-width: 850px) { .help-home { grid-template-columns: 1fr; gap: var(--space-24) 26px; } }
-/* The link keeps its 44px reach without making its line taller than the other rows. */
-.help-timeline p .help-text-action[data-slot="button"] { margin-block: -13px; }
+/* The link sits in its line at the line's own height; on touch its reach comes from the shared ::after, capped so it never meets the lines above and below. */
+.live-app .help-timeline p .help-text-action[data-slot="button"] { min-height: 0; }
+.help-timeline p { --reach-y: 9px; }
 @media (max-width: 640px) {
   .help-timeline .help-sep { display: none; }
   .help-timeline .help-sep + [data-slot="button"] { display: flex; margin-block: 2px 0; }
@@ -415,7 +416,8 @@
 .help-row .help-next-step { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; margin-top: var(--space-4); }
 /* The assistant's suggestion is muted ink with its sparkle in ink; the step it names is the plain ink link. Never plum: plum is wrong. */
 .live-app .help-row .help-next-step svg { color: var(--live-ink); }
-.live-app .help-row .help-next-step .help-text-action[data-slot="button"] { min-height: 44px; margin-block: -12px; color: var(--paper-ink, #283c32); vertical-align: baseline; }
+.live-app .help-row .help-next-step { --reach-y: 9px; }
+.live-app .help-row .help-next-step .help-text-action[data-slot="button"] { min-height: 0; color: var(--paper-ink, #283c32); vertical-align: baseline; }
 .help-next-step svg { position: relative; top: 2px; flex: none; }
 /* The household's lines lie in the form as its own lines; their box is only there to be said aloud as they arrive. */
 .help-repeat { display: contents; }
