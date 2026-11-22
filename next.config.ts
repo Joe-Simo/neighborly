@@ -14,6 +14,8 @@ export const securityHeaders = [
 
 const nextConfig: NextConfig = {
   /* config options here */
+  // This deploy's name, under which a tab's once-only reload after a failed code load is kept (src/lib/chunk-recovery.ts).
+  env: { NEXT_PUBLIC_BUILD_ID: process.env.VERCEL_DEPLOYMENT_ID ?? process.env.VERCEL_GIT_COMMIT_SHA ?? String(Date.now()) },
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {

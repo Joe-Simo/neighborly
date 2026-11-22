@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { ROOM_WHOLE } from "@/lib/room-whole";
 import { whenIdle } from "@/lib/idle";
+import { reloadOnceForCode } from "@/lib/chunk-recovery";
 
 /**
  * Registers the offline worker once the page is in and the browser is idle. Its first install fetches the whole release
@@ -38,8 +39,11 @@ let started = false;
 export function OfflineWorker() {
   // Nothing is undone when the page leaves: the root layout this stands in is never taken down.
   useEffect(() => {
-    if (started || !("serviceWorker" in navigator)) return;
+    if (started) return;
     started = true;
+    // Code loaded from an effect or a press (a form, a month's dates) that fails across a deploy reloads the tab once in place.
+    window.addEventListener("unhandledrejection", (event) => reloadOnceForCode(event.reason));
+    if (!("serviceWorker" in navigator)) return;
     let registered = false;
     const once = () => {
       if (registered) return;

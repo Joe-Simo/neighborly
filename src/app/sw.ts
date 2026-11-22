@@ -66,10 +66,58 @@ const publicArt = ({ request, url }: { request: Request; url: URL }) =>
   request.method === "GET" && url.origin === self.location.origin && (url.pathname.startsWith("/assets/") || url.pathname.startsWith("/fonts/"));
 const keptPublicArt = new CacheFirst({ cacheName: PUBLIC_PAGES + deploy, plugins: [new CacheableResponsePlugin({ statuses: [200] })] });
 
-// A new deploy lets go of the pages kept under the one before.
+/**
+ * The code a tab already open still asks for. This worker takes over every open tab at once (skipWaiting, clientsClaim),
+ * and on taking over the precache lets go of every file the last deploy listed and this one does not. A tab opened on the
+ * last deploy still runs that deploy's code, and its next lazily loaded piece (a sheet, a form) names a file the server
+ * no longer has: it failed to load, and the room broke. So, while installing, before anything is let go, the last
+ * deploys' own /_next/static files (named by their content, so never changed) are moved to a cache of their own, and
+ * answered from there when asked for. The files of the last KEPT_DEPLOYS deploys are kept; older ones are let go.
+ */
+const KEPT_CODE = "kh-kept-code-";
+const KEPT_DEPLOYS = 3;
+const precacheName = (names: string[]) => names.find((name) => name.startsWith("serwist-precache-"));
+const staticPath = (url: URL) => url.origin === self.location.origin && url.pathname.startsWith("/_next/static/");
+const listed = new Set((self.__SW_MANIFEST ?? []).map((entry) => new URL(typeof entry === "string" ? entry : entry.url, self.location.origin).pathname));
+async function keepLastDeploysCode() {
+  const name = precacheName(await caches.keys());
+  if (!name) return;
+  const precache = await caches.open(name);
+  const keptName = `${KEPT_CODE}${Date.now()}-${deploy}`;
+  const kept = await caches.open(keptName);
+  let count = 0;
+  for (const request of await precache.keys()) {
+    const url = new URL(request.url);
+    if (!staticPath(url) || listed.has(url.pathname)) continue;
+    const response = await precache.match(request);
+    if (!response) continue;
+    url.search = "";
+    await kept.put(url.href, response);
+    count += 1;
+  }
+  if (count === 0) await caches.delete(keptName);
+}
+// Registered before Serwist's own install, so the last deploy's files are moved while they are all still there.
+self.addEventListener("install", (event) => event.waitUntil(keepLastDeploysCode().catch(() => undefined)));
+const keptCodeNames = async () =>
+  (await caches.keys()).filter((name) => name.startsWith(KEPT_CODE)).sort((a, b) => Number(b.slice(KEPT_CODE.length).split("-")[0]) - Number(a.slice(KEPT_CODE.length).split("-")[0]));
+const keptCode = async ({ request }: { request: Request }) => {
+  const url = new URL(request.url);
+  url.search = "";
+  for (const name of await keptCodeNames()) {
+    const answer = await (await caches.open(name)).match(url.href);
+    if (answer) return answer;
+  }
+  return fetch(request);
+};
+
+// A new deploy lets go of the pages kept under the one before, and of the code of all but the last few deploys.
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((names) => Promise.all(names.filter((name) => (name.startsWith(APP_PAGES) && name !== APP_PAGES + deploy) || (name.startsWith(PUBLIC_PAGES) && name !== PUBLIC_PAGES + deploy)).map((name) => caches.delete(name)))),
+    caches.keys().then(async (names) => {
+      const oldCode = (await keptCodeNames()).slice(KEPT_DEPLOYS);
+      await Promise.all(names.filter((name) => (name.startsWith(APP_PAGES) && name !== APP_PAGES + deploy) || (name.startsWith(PUBLIC_PAGES) && name !== PUBLIC_PAGES + deploy) || oldCode.includes(name)).map((name) => caches.delete(name)));
+    }),
   );
 });
 
@@ -87,6 +135,8 @@ const serwist = new Serwist({
     { matcher: appArt, handler: keptArt },
     { matcher: publicPage, handler: keptPublic },
     { matcher: publicArt, handler: keptPublicArt },
+    // Only what this deploy did not list reaches here (its own files are the precache's): a tab's code from a deploy before.
+    { matcher: ({ request, url }) => request.method === "GET" && staticPath(url), handler: keptCode },
     {
       matcher: ({ request }) => request.mode === "navigate",
       handler: new NetworkOnly(),
