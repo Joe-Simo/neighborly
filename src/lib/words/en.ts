@@ -251,6 +251,9 @@ export function en(set: WordSet) {
       restored: "Time off put back.",
       availabilityRemoved: "Available dates removed.",
       availabilityRestored: "Available dates put back.",
+      availabilityAdded: "Available dates added.",
+      coverStarted: "Coordinators may now ask you to cover.",
+      coverStopped: "Cover requests stopped.",
       emptyTitle: "Every day is open.",
       emptyDetail:
         "Add the dates you won’t be available.",

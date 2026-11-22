@@ -247,6 +247,9 @@ export function es(set: WordSet): Words {
       restored: "Días libres repuestos.",
       availabilityRemoved: "Fechas disponibles quitadas.",
       availabilityRestored: "Fechas disponibles repuestas.",
+      availabilityAdded: "Fechas disponibles agregadas.",
+      coverStarted: "Ahora los coordinadores pueden pedirte que cubras.",
+      coverStopped: "Ya no recibirás peticiones para cubrir.",
       emptyTitle: "Todos tus días están libres.",
       emptyDetail:
         "Agrega las fechas en que no estarás.",

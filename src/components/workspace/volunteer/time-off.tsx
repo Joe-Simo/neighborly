@@ -66,10 +66,11 @@ export function TimeOffSection() {
           variant="outline"
           disabled={pending || !ownPerson}
           onClick={() =>
-            void perform({
-              type: "setCoverOptIn",
-              optedIn: !ownPerson?.coverOptIn,
-            })
+            void perform(
+              { type: "setCoverOptIn", optedIn: !ownPerson?.coverOptIn },
+              ownPerson?.coverOptIn ? words.timeOff.coverStopped : words.timeOff.coverStarted,
+              { command: { type: "setCoverOptIn", optedIn: !!ownPerson?.coverOptIn }, said: ownPerson?.coverOptIn ? words.timeOff.coverStarted : words.timeOff.coverStopped },
+            )
           }
         >
           {ownPerson?.coverOptIn
@@ -89,7 +90,7 @@ function LiveAvailability({
   data: LiveWorkspaceData;
   run: (command: LiveCommand, success?: string, undo?: { command: LiveCommand; said: string }) => Promise<boolean>;
 }) {
-  const { words } = useWorkspace();
+  const { words, pending } = useWorkspace();
   return (
     <section className="live-section">
       <h2>{words.timeOff.availableTitle}</h2>
@@ -108,6 +109,7 @@ function LiveAvailability({
                 aria-label={`${words.timeOff.removeDates}: ${readDays(words, item.start, item.end)}`}
                 variant="outline"
                 size="sm"
+                disabled={pending}
                 onClick={() =>
                   void run(
                     { type: "removeAvailability", availabilityId: item.id },
@@ -132,7 +134,7 @@ function LiveAvailability({
               type: "addAvailability",
               start: String(f.get("start")),
               end: String(f.get("end")),
-            })
+            }, words.timeOff.availabilityAdded)
           )
             form.reset();
         }}
@@ -146,7 +148,7 @@ function LiveAvailability({
           </LiveField>
         </div>
         <div>
-          <Button type="submit" variant="outline">
+          <Button type="submit" variant="outline" disabled={pending}>
             {words.timeOff.addAvailable}
           </Button>
         </div>
