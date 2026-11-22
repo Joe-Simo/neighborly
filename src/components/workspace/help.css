@@ -238,7 +238,7 @@ td.help-money[data-balance] { color: var(--live-muted); }
 /* ── Small inputs in a row ────────────────────────────────────────────── */
 .help-inline { display: flex; gap: var(--space-12) 12px; align-items: end; flex-wrap: wrap; }
 .help-inline label { display: grid; gap: var(--space-8) 6px; font-size: 15px; color: var(--live-muted); }
-.live-app .help-inline input { width: 92px; height: 44px; font-size: 19px; background: var(--help-sheet); font-variant-numeric: tabular-nums; }
+.live-app .help-inline input { width: 92px; height: 44px; font-size: 19px; background: var(--help-sheet); font-feature-settings: "lnum" 1, "tnum" 1; }
 
 /* ── States ───────────────────────────────────────────────────────────── */
 .help-empty {

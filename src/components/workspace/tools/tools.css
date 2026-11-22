@@ -1,5 +1,5 @@
 .tools-address { display: flex; gap: var(--space-8) 10px; align-items: center; max-width: 640px; margin-top: var(--space-24); }
-.tools-address input { font-variant-numeric: tabular-nums; text-overflow: ellipsis; }
+.tools-address input { font-feature-settings: "lnum" 1, "tnum" 1; text-overflow: ellipsis; }
 .tools-small { font-size: 15px; color: var(--live-muted); line-height: 1.55; max-width: 640px; margin: var(--space-16) 0 0; }
 .tools-file { max-width: 560px; margin-top: var(--space-24); }
 .tools-file .tools-small { margin-top: var(--space-16); }
@@ -24,9 +24,9 @@
 .tools-rota header p { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: var(--caps-track); color: var(--live-muted); }
 .tools-rota header h3 { margin: var(--space-4) 0 var(--space-16); font: 400 26px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; color: var(--live-ink); }
 .tools-rota td { vertical-align: top; }
-.tools-rota td:first-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tools-rota td:first-child { white-space: nowrap; font-feature-settings: "lnum" 1, "tnum" 1; }
 .tools-rota td small { display: block; color: var(--live-muted); font-size: 15px; }
-.tools-rota .tools-rota-day th { padding-top: var(--space-24); font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; font-weight: 600; font-size: 16px; line-height: 1.3; font-variant-numeric: lining-nums tabular-nums; text-transform: none; letter-spacing: 0; color: var(--live-ink); }
+.tools-rota .tools-rota-day th { padding-top: var(--space-24); font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; font-weight: 600; font-size: 16px; line-height: 1.3; font-feature-settings: "lnum" 1, "tnum" 1; text-transform: none; letter-spacing: 0; color: var(--live-ink); }
 .tools-rota .tools-rota-none td { color: var(--live-muted); font-style: italic; }
 .tools-rota-foot { display: none; }
 .tools-rota-open { display: inline-block; min-width: 9em; border-bottom: 1px solid currentColor; color: var(--live-muted); }
@@ -68,7 +68,7 @@
 }
 
 :is(.live-app, .live-dialog) .tools-done:focus, :is(.live-app, .live-dialog) .tools-done:focus-visible { outline: none; }
-:is(.live-app, .live-dialog) .tools-progress { margin: var(--space-16) 0 0; font-size: 17px; color: var(--live-muted); font-variant-numeric: tabular-nums; }
+:is(.live-app, .live-dialog) .tools-progress { margin: var(--space-16) 0 0; font-size: 17px; color: var(--live-muted); font-feature-settings: "lnum" 1, "tnum" 1; }
 .tools-records { margin-top: var(--space-24); }
 .live-app .help-row .tools-one { padding-inline: 0; border: 0; background: none; box-shadow: none; border-radius: 2px; width: auto; justify-self: start; color: var(--live-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); }
 @media (hover: hover) { .live-app .help-row .tools-one:hover { text-decoration-color: currentColor; } }
@@ -131,7 +131,7 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 /* A file being read: its first lines rise one by one, as they are on the page of the spreadsheet. */
 .tools-reading { list-style: none; margin: var(--space-24) 0 0; padding: 0; border-top: 1px solid var(--live-line); }
 .tools-reading li { display: flex; align-items: baseline; gap: var(--space-16) 16px; padding: var(--space-12) 0; border-bottom: 1px solid var(--live-line); font-size: 17px; color: var(--live-ink); overflow-wrap: anywhere; }
-.tools-reading li span { flex: none; width: 3ch; text-align: right; font-size: 13px; color: var(--live-muted); font-variant-numeric: tabular-nums; }
+.tools-reading li span { flex: none; width: 3ch; text-align: right; font-size: 13px; color: var(--live-muted); font-feature-settings: "lnum" 1, "tnum" 1; }
 .tools-reading .tools-reading-more { padding-left: calc(3ch + 16px); font-size: 15px; color: var(--live-muted); }
 .tools-gathering { border-top: 0; }
 /* The bundle: three leaves, one in each colour, that lift together when the download is taken. */
@@ -168,7 +168,7 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
   .tools-rota header h3 { margin: 1.5mm 0 0; text-wrap: balance; font-size: 27pt; line-height: 1.05; letter-spacing: -0.015em; }
   :is(.live-app, .live-dialog) .tools-rota thead th { padding-top: 3mm; padding-bottom: 1.5mm; border-bottom: 0; font-size: 7.5pt; letter-spacing: 0.1em; }
   :is(.live-app, .live-dialog) .tools-rota th, :is(.live-app, .live-dialog) .tools-rota td { border-color: #8a8a8a; border-bottom-width: 0.35pt; }
-  :is(.live-app, .live-dialog) .tools-rota .tools-rota-day th { padding-top: 5mm; padding-bottom: 1.5mm; border-bottom: 0.75pt solid #000; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 14pt; line-height: 1.2; font-variant-numeric: lining-nums tabular-nums; text-transform: none; letter-spacing: -0.005em; }
+  :is(.live-app, .live-dialog) .tools-rota .tools-rota-day th { padding-top: 5mm; padding-bottom: 1.5mm; border-bottom: 0.75pt solid #000; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 14pt; line-height: 1.2; font-feature-settings: "lnum" 1, "tnum" 1; text-transform: none; letter-spacing: -0.005em; }
   .tools-rota tr:not(.tools-rota-none) td:last-child { font-weight: 600; }
   .tools-rota .tools-rota-none td { font-size: 10pt; }
   .tools-rota-open { min-width: 38mm; height: 5mm; color: transparent !important; border-bottom: 0.5pt solid #000; }

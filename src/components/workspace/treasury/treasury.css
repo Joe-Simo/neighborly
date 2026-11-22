@@ -114,6 +114,7 @@
   font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
   font-weight: 400;
   font-size: 44px;
+  font-feature-settings: "lnum" 1, "tnum" 1;
   line-height: 1;
   letter-spacing: -0.03em;
   font-feature-settings: "lnum" 1, "tnum" 1;

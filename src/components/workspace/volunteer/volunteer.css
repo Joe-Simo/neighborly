@@ -129,7 +129,7 @@
 .volunteer-days,
 .volunteer-meeting-desk,
 .live-app .live-commitment-row .live-row-main p {
-  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
 }
 
 /* A span of dates breaks as two even lines, never leaving a year alone on the second. */

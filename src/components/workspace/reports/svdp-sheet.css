@@ -6,7 +6,7 @@
 .svdp-form th, .svdp-form td { text-align: left; vertical-align: top; padding: var(--space-8) var(--space-8) var(--space-8) 0; border-top: 1px solid #e4dfd3; font-weight: 400; }
 .svdp-form thead th { font-size: 13px; color: var(--live-muted); border-top: 0; }
 .svdp-form thead th:last-child { text-align: right; }
-.svdp-form td:first-child { width: 3.5rem; font-variant-numeric: tabular-nums; }
+.svdp-form td:first-child { width: 3.5rem; font-feature-settings: "lnum" 1, "tnum" 1; }
 .svdp-form td:last-child { width: 11rem; text-align: right; font-feature-settings: "tnum"; }
 .svdp-form tr[data-untracked] td:last-child { color: var(--live-muted); font-style: italic; }
 .svdp-form small { display: block; font-size: 13px; color: var(--live-muted); }

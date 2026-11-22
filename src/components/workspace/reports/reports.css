@@ -191,7 +191,7 @@
   min-width: 84px;
   padding: var(--space-16) 16px var(--space-8);
   background: #fbf9f3;
-  font-weight: 400; font-size: 42px; line-height: 1; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
+  font-weight: 400; font-size: 42px; font-feature-settings: "lnum" 1, "tnum" 1; line-height: 1; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
   letter-spacing: -0.03em;
   text-align: center;
   color: var(--live-ink);

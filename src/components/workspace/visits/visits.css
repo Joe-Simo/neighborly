@@ -28,7 +28,7 @@
 :is(.live-app, .live-dialog) .visits-consequence { margin: 0; color: var(--live-muted); font-size: 16px; line-height: 1.5; max-width: 52ch; }
 .visits-given {
   color: var(--live-muted);
-  font-variant-numeric: tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
 }
 .visits-given::before {
   display: none;
@@ -98,7 +98,7 @@
   font-weight: 400;
   font-size: 22px;
   line-height: 1.3;
-  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
   color: #3c4a40;
   margin: 0;
 }
@@ -271,7 +271,7 @@
 .live-app .visits-aside-day h3 { margin: 0 0 var(--space-8); font-family: inherit; font-size: 15px; font-weight: 600; line-height: 1.5; letter-spacing: 0; color: var(--live-ink, #283c32); }
 .visits-aside-day ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-8) 10px; }
 .visits-aside-day li { display: grid; grid-template-columns: 76px minmax(0, 1fr); align-items: baseline; }
-.visits-aside-day li > span:first-child { color: var(--live-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.visits-aside-day li > span:first-child { color: var(--live-muted); font-feature-settings: "lnum" 1, "tnum" 1; white-space: nowrap; }
 /* A long name turns between its words, never cut short. */
 .visits-aside-day strong { display: block; font-weight: 400; color: var(--live-ink, #283c32); }
 .visits-aside-day em { display: block; font-style: normal; color: var(--help-plum, #6f5f93); }
