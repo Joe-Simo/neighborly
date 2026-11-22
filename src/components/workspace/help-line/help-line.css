@@ -175,7 +175,7 @@
   .help-seal { position: static; align-self: start; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .help-sheet.help-sealed, .help-seal, .help-seal path, .help-row[data-arrived] .live-status:before { animation: none; }
+  .help-sheet.help-sealed, .help-seal, .help-seal path, .help-row[data-arrived] .live-status:before, .help-decided.help-approved::after { animation: none; }
   .help-sealed .help-actions, .help-sealed .help-unsaved { transition: none; }
   .help-row-arrow { transition: none; }
 }
