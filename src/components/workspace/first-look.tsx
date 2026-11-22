@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import type { FunctionReturnType } from "convex/server";
-import { api } from "../../../convex/_generated/api";
+import type { api } from "../../../convex/_generated/api";
 import { askFirstRoom, firstRoom, firstRoomHere, type FirstRoom } from "@/lib/first-room";
 import type { LiveWorkspaceData } from "@/components/workspace/types";
 import type { Language } from "@/lib/words";
@@ -47,7 +47,7 @@ export function useFirstRoom(wanted: boolean) {
     if (!wanted) return;
     let current = true;
     // A fresh load of the address asks here; an answer still on its way is waited for. One already drawn changes nothing.
-    askFirstRoom(async () => api.demo.firstRoom);
+    askFirstRoom();
     void (firstRoom() ?? Promise.resolve(null)).then((answer) => current && setRoom(answer));
     return () => {
       current = false;

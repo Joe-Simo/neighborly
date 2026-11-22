@@ -7,7 +7,6 @@ import type { LiveEntryIntent } from "@/components/live-auth";
 import { areaTitles, liveAreas } from "@/components/workspace/areas";
 import { useKeysInUse } from "@/components/workspace/keys-in-use";
 import { askFirstRoom } from "@/lib/first-room";
-import { api } from "../../convex/_generated/api";
 import { askSampleTicket } from "@/lib/sample-ticket";
 
 const areaOf = (pathname: string) => {
@@ -41,7 +40,7 @@ export function LiveFrame({ children, sampleEntry }: { children: ReactNode; samp
   useEffect(() => {
     if (!enterSample || !sampleEntry) return;
     askSampleTicket();
-    askFirstRoom(async () => api.demo.firstRoom);
+    askFirstRoom();
   }, [enterSample, sampleEntry]);
 
   // Any link from one room to another, in the menu or inside a room, is taken here.

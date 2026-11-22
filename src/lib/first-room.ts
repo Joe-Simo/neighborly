@@ -1,5 +1,5 @@
 import type { FunctionReturnType } from "convex/server";
-import type { api } from "../../convex/_generated/api";
+import { api } from "../../convex/_generated/api";
 
 /** This week of the sample as the seed has it: public, read from no row, and holding nothing a visitor typed. */
 export type FirstRoom = NonNullable<FunctionReturnType<typeof api.demo.firstRoom>>;
@@ -12,15 +12,13 @@ let asked: { hour: number; answer: Promise<FirstRoom | null>; here?: FirstRoom |
  * is in hand at the press and is drawn while the real sign-in is still on its way. One request per page view and hour.
  * It needs no session and sends nothing about the visitor. Without an answer the room simply waits for sign-in, as before.
  */
-export function askFirstRoom(reference: () => Promise<typeof api.demo.firstRoom>) {
+export function askFirstRoom() {
   const url = process.env.NEXT_PUBLIC_CONVEX_URL;
   const hour = Math.floor(Date.now() / HOUR) * HOUR;
   if (!url || asked?.hour === hour) return;
   // The backend's client is loaded only now, so the home page does not carry it for visitors who never come near the card.
-  // The function reference is handed in: a public page fetches it with the client (convex/_generated/api pulls in
-  // convex/server's validators), while the workspace, which carries it already, hands in its own.
-  const answer = Promise.all([import("convex/browser"), reference()])
-    .then(([{ ConvexHttpClient }, query]) => new ConvexHttpClient(url).query(query, { at: hour }))
+  const answer = import("convex/browser")
+    .then(({ ConvexHttpClient }) => new ConvexHttpClient(url).query(api.demo.firstRoom, { at: hour }))
     .catch(() => null);
   const asking: NonNullable<typeof asked> = { hour, answer };
   asked = asking;

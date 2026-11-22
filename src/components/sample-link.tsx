@@ -3,12 +3,10 @@
 import Link from "next/link";
 import type { ComponentProps, MouseEvent, MouseEventHandler, PointerEvent } from "react";
 import { askFirstRoom } from "@/lib/first-room";
-
-/** The sample's function reference, fetched only when the card nears the window, so public pages do not carry convex/server. */
-const fromPublicPage = () => import("../../convex/_generated/api").then(({ api }) => api.demo.firstRoom);
 import { whenIdle } from "@/lib/idle";
 import { askSampleTicket, startSignIn, warmSignIn } from "@/lib/sample-ticket";
 import { warmAppStyles } from "@/lib/app-styles";
+import { SAMPLE_DOOR } from "@/lib/sample-door";
 
 /**
  * What every way into the sample does before the visitor arrives: pointing at it or reaching it by keyboard fetches
@@ -22,7 +20,7 @@ export function useSampleDoor(onClick?: MouseEventHandler<HTMLAnchorElement>) {
     onPointerDown: (event: PointerEvent<HTMLAnchorElement>) => {
       if (event.button !== 0) return;
       askSampleTicket();
-      askFirstRoom(fromPublicPage);
+      askFirstRoom();
       warmSignIn();
       startSignIn();
     },
@@ -36,11 +34,7 @@ export function useSampleDoor(onClick?: MouseEventHandler<HTMLAnchorElement>) {
   };
 }
 
-/**
- * Where the home page's sample door leads: straight to the help line, where Rosa Fontaine's call waits with its drafted request,
- * so one Yes is the whole walk (the one-minute walk). The visitor is signed in there, in that room, as at /app.
- */
-export const SAMPLE_DOOR = "/app/help-line?intent=sample";
+export { SAMPLE_DOOR };
 
 /** The link into the sample conference. */
 export function SampleLink(props: Omit<ComponentProps<typeof Link>, "href">) {
@@ -57,7 +51,7 @@ export function warmWhenNear(link: HTMLElement | null) {
     // Both lay tags and run code as they arrive, so they are asked for once the page is idle, never in a scroll's frame.
     cancel = whenIdle(() => {
       warmSignIn();
-      askFirstRoom(fromPublicPage);
+      askFirstRoom();
     }, 1000);
   }, { rootMargin: "600px 0px" });
   near.observe(link);

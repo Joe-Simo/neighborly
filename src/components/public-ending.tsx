@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { CardOfferGrow } from "./card-offer-grow";
 import { Colophon } from "./public-foot";
+import { SampleLink } from "./sample-link";
 import "./neighborly-continuation.css";
 import "./thread-card.css";
 import "./public-touch.css";
@@ -65,7 +66,7 @@ export function PublicEnding({ language = "en" }: { language?: Language }) {
     <section className="neighborly-together" aria-labelledby="together-title">
       <div ref={paper} className="neighborly-together-paper" data-settled={near} aria-hidden="true" />
       <ClosingBand language={language} />
-      <Colophon language={language} />
+      <Colophon language={language} Sample={SampleLink} />
     </section>
   </div>;
 }
