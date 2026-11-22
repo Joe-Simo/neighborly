@@ -140,6 +140,8 @@ async function decide(key: string, state: Record<string, unknown>, questions: Re
     return null;
   }
 }
+/** A score the model gave, when it is a number from 0 to 1; anything else (a percent, NaN) is no answer. */
+const unit = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1;
 /** A yes-or-no answer as a number from 0 to 1, or null when the answer is not one. */
 function noul(answer: unknown): number | null {
   if (!answer || typeof answer !== "object" || !("type" in answer) || answer.type !== "noul" || !("noul" in answer) || typeof answer.noul !== "number" || !Number.isFinite(answer.noul) || answer.noul < 0 || answer.noul > 1) return null;
@@ -239,7 +241,7 @@ const agreed = 0.8;
 const kindQuestion: Question = { type: "choice", instructions: "What one kind of help does note ask for? A bill or an amount owed that note states as a present fact counts as asking for help with it.", criteria: kindChoice };
 /** Jev's pick from the closed list, or null when the answer is not one. */
 function picked(answer: unknown): { kind: RequestKind | "none"; confidence: number } | null {
-  if (!answer || typeof answer !== "object" || !("choice" in answer) || !("confidence" in answer) || typeof answer.confidence !== "number") return null;
+  if (!answer || typeof answer !== "object" || !("choice" in answer) || !("confidence" in answer) || !unit(answer.confidence)) return null;
   const { choice, confidence } = answer;
   const kind = choice === "none" ? "none" : requestKinds.find(option => option === choice);
   return kind ? { kind, confidence } : null;
@@ -284,7 +286,10 @@ export const suggestTeam = action({
       console.log(`jev ${JSON.stringify({ team: "nothing read, nothing sent" })}`);
       return fallback;
     }
-    if (await ctx.runMutation(internal.drafts.reserve, { userId }) !== "ok") throw new ConvexError("Please wait a minute before preparing another draft.");
+    // Five a minute is worth waiting for; the day's allowance is not, so then the draft simply comes back for review.
+    const reserved = await ctx.runMutation(internal.drafts.reserve, { userId });
+    if (reserved === "minute") throw new ConvexError("Please wait a minute before preparing another draft.");
+    if (reserved !== "ok") return fallback;
     const plain = description;
     // The team's name is never sent to the assistant.
     const { teamName, ...proposed } = draft;
@@ -967,7 +972,7 @@ async function spentOn(key: string, lines: { memo: string; category: string }[],
   if (!answers) return null;
   return lines.map((line, index) => {
     const answer = answers[`l${index}`];
-    if (!answer || typeof answer !== "object" || !("choice" in answer) || !("confidence" in answer) || typeof answer.confidence !== "number" || typeof answer.choice !== "string") return null;
+    if (!answer || typeof answer !== "object" || !("choice" in answer) || !("confidence" in answer) || !unit(answer.confidence) || typeof answer.choice !== "string") return null;
     const own = `c${categories.indexOf(line.category)}`;
     return { pick: answer.choice, confidence: answer.confidence, elsewhere: answer.choice !== own && answer.choice !== "unclear" };
   });
@@ -1248,7 +1253,7 @@ const nextStepQuestion: Question = { type: "choice", instructions: "note is what
 const shownSteps = v.union(v.literal("resolved"), v.literal("request"), v.literal("refer"), v.literal("callAgain"));
 /** The step to show from Jev's answer: only at 0.9 or more, and never "none". */
 function shownStep(answer: unknown): Exclude<NextStep, "none"> | null {
-  if (!answer || typeof answer !== "object" || !("choice" in answer) || !("confidence" in answer) || typeof answer.confidence !== "number") return null;
+  if (!answer || typeof answer !== "object" || !("choice" in answer) || !("confidence" in answer) || !unit(answer.confidence)) return null;
   const step = nextSteps.find(option => option === (answer as { choice: unknown }).choice);
   return step && step !== "none" && answer.confidence >= sureEnough ? step : null;
 }
