@@ -321,7 +321,8 @@
   :root[data-shell="ios"] .live-app .live-menu-trigger { display: none; }
   /* A room ends clear above the bar. */
   :root[data-shell="ios"] .live-app .live-main { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
-  :root[data-shell="ios"] body[data-scroll-locked] .live-tab-bar,
+  /* Two rules, not one list: iOS 15.0-15.3 has no :has(), and one selector it cannot read drops the whole list. */
+  :root[data-shell="ios"] body[data-scroll-locked] .live-tab-bar { display: none; }
   :root[data-shell="ios"]:has(:is(textarea, select, [contenteditable="true"], input:not([type="checkbox"], [type="radio"], [type="button"], [type="submit"], [type="file"], [type="range"])):focus) .live-tab-bar { display: none; }
 }
 /* Where the app draws the system's tab bar (Liquid Glass) in its place, this one keeps its room at the foot, unseen. */
