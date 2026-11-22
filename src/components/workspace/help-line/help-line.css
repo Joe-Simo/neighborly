@@ -180,10 +180,11 @@
   .help-sealed .help-actions, .help-sealed .help-unsaved { transition: none; }
   .help-row-arrow { transition: none; }
 }
-/* The neighbor list reads under cut-paper letters, each riding above its group and held in view while those households
-   pass. The rows keep the room's one left edge, the heading's and the search's, at every width. */
+/* The neighbor list reads under cut-paper letters, each standing above its group and scrolling with it: a letter is never
+   laid over a household, so no row is ever half hidden under one. The rows keep the room's one left edge, the heading's
+   and the search's, at every width. */
 .live-app .help-letter-head {
-  position: sticky; top: var(--live-bar, 0px); z-index: 2; margin: 0;
+  margin: 0;
   font: 400 var(--type-figure-l)/0.9 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.03em;
   color: var(--relief-letter);
   padding: var(--space-8) 0; background: var(--live-paper, #f5f3ec); border-bottom: 1px solid var(--live-line);
