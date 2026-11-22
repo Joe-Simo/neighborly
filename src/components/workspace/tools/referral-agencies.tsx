@@ -6,6 +6,7 @@ import { Building2 } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/components/workspace/context";
 import { agenciesWords } from "@/components/workspace/tools/agencies-words";
 import { useQuery } from "@/components/workspace/query";
@@ -135,9 +136,9 @@ function AgencyForm({ initial, submit, busy, onSave, onCancel }: { initial: Fiel
         void onSave(fields);
       }}
     >
-      <LiveField label={text.name}><input name="name" required maxLength={120} value={fields.name} onChange={set("name")} /></LiveField>
-      <LiveField label={text.phone}><input name="phone" type="tel" maxLength={40} value={fields.phone} onChange={set("phone")} /></LiveField>
-      <LiveField label={text.helpsWith}><input name="helpsWith" maxLength={300} value={fields.helpsWith} onChange={set("helpsWith")} /></LiveField>
+      <LiveField label={text.name}><Input name="name" required maxLength={120} value={fields.name} onChange={set("name")} /></LiveField>
+      <LiveField label={text.phone}><Input name="phone" type="tel" maxLength={40} value={fields.phone} onChange={set("phone")} /></LiveField>
+      <LiveField label={text.helpsWith}><Input name="helpsWith" maxLength={300} value={fields.helpsWith} onChange={set("helpsWith")} /></LiveField>
       <div className="help-actions">
         <Button type="submit" variant="outline" disabled={busy}>{submit}</Button>
         {onCancel && <Button type="button" variant="ghost" onClick={onCancel}>{text.cancel}</Button>}
