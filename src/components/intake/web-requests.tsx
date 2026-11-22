@@ -13,7 +13,7 @@ import { DateField } from "@/components/workspace/date-field";
 import { useHour, useQuery } from "@/components/workspace/query";
 import { LiveFailure } from "@/components/workspace/states";
 import { useSave } from "@/components/workspace/use-save";
-import { readFailure } from "@/components/workspace/failure";
+import { sayFailure } from "@/components/workspace/failure";
 import { ServiceAreaForm, type ServiceArea } from "./service-area";
 import { webWords } from "./web-words";
 import { AREA_MILES, type AreaSize } from "@/lib/intake/intake-words";
@@ -66,7 +66,7 @@ export function WebRequests() {
               setEditing(false);
               return null;
             } catch (cause) {
-              return readFailure(cause, words.states.notSaved);
+              return sayFailure(words.notices, cause, words.states.notSaved);
             }
           }}
         />
