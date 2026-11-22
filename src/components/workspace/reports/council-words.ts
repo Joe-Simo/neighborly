@@ -33,7 +33,7 @@ const esLines: Lines = {
   people: "Personas en ellos",
   adults: "Adultos",
   children: "Niños",
-  visits: "Visitas a domicilio",
+  visits: "Visitas domiciliarias",
   peopleVisited: "Personas visitadas",
   visitHours: "Horas de visita",
   visitMiles: "Millas de visita",
