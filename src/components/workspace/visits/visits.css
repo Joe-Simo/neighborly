@@ -73,7 +73,7 @@
   border: 1px solid var(--relief-edge);
   border-radius: 3px;
   box-shadow: var(--relief-card);
-  animation: help-settle 620ms var(--help-ease) both;
+  animation: paper-settle 620ms var(--help-ease) both;
 }
 .visits-paper-label {
   font-size: 13px;
