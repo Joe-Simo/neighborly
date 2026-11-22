@@ -105,6 +105,8 @@ function Council({ council, year, money }: { council: CouncilRow; year: number; 
   const [code, setCode] = useState("");
   const [said, setSaid] = useState("");
   const [error, setError] = useState("");
+  // Taking a conference off is asked once more first: only a new invitation joins the two again.
+  const [removing, setRemoving] = useState<string | null>(null);
   const run = async (work: () => Promise<unknown>, done: string) => {
     setError("");
     setSaid("");
@@ -128,7 +130,15 @@ function Council({ council, year, money }: { council: CouncilRow; year: number; 
           {council.conferences.map((row) => (
             <li key={row.id}>
               <span>{row.name}</span> <small>{row.status === "accepted" ? w.joined : w.pending}</small>{" "}
-              <Button variant="ghost" onClick={() => void run(() => unlink({ linkId: row.id }), w.removed)}>{w.remove}</Button>
+              {removing === row.id ? (
+                <>
+                  <span>{w.removeQuestion}</span>{" "}
+                  <Button variant="outline" onClick={() => void run(() => unlink({ linkId: row.id }), w.removed).then(() => setRemoving(null))}>{w.removeSure}</Button>{" "}
+                  <Button variant="ghost" onClick={() => setRemoving(null)}>{w.stay}</Button>
+                </>
+              ) : (
+                <Button variant="ghost" aria-label={`${w.remove}: ${row.name}`} onClick={() => setRemoving(row.id)}>{w.remove}</Button>
+              )}
             </li>
           ))}
         </ul>
