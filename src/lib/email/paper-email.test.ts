@@ -23,4 +23,11 @@ describe("paper email", () => {
     expect(email.html).toContain("Sábado &#60;9&#62;<br>Traigan latas");
     expect(email.text).toContain("Abrir Kind Helps: https://kindhelps.com/app");
   });
+  test("a hidden preheader carries the body's first line, escaped, so the inbox preview is not the wordmark", () => {
+    const email = paperEmail({ kind: "announcement", language: "en", set: "general", place: "Hope Pantry", link: "https://kindhelps.com/app", content: { title: "Drive", body: "\nSaturday <9am>\nBring cans" } });
+    expect(email.html).toMatch(/<div style="display:none[^>]*>Saturday &#60;9am&#62;&#8204;/);
+    expect(email.html.indexOf("Saturday &#60;9am&#62;&#8204;")).toBeLessThan(email.html.indexOf("kind helps</td>"));
+    const code = paperEmail({ kind: "help_code", language: "es", set: "general", place: "123456", link: "https://kindhelps.com/h/x" });
+    expect(code.html).toContain(">Escríbelo en la página donde empezaste.");
+  });
 });
