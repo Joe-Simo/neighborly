@@ -414,7 +414,6 @@
 /* The mark keeps beside its words, as on the Spanish line; the way on sits under the words, never under the mark. */
 .help-row .help-next-step { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; margin-top: var(--space-4); }
 /* The assistant's suggestion is muted ink with its sparkle in ink; the step it names is the plain ink link. Never plum: plum is wrong. */
-.live-app .help-row .help-next-step { color: var(--live-muted) !important; }
 .live-app .help-row .help-next-step svg { color: var(--live-ink); }
 .live-app .help-row .help-next-step .help-text-action[data-slot="button"] { min-height: 44px; margin-block: -12px; color: var(--paper-ink, #283c32); vertical-align: baseline; }
 .help-next-step svg { position: relative; top: 2px; flex: none; }
