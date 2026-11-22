@@ -105,6 +105,11 @@ export function LiveDialog({
   const words = useWorkspaceIfAny()?.words;
   const close = words?.shell.close ?? "Close";
   const opener = useRef<HTMLElement | null>(null);
+  // The way back is taken as the dialog is asked to open, before its form is drawn (the sheet itself follows a frame
+  // later, see `ready`): a box that focuses itself as it is drawn (autoFocus) is inside the sheet, not the way back.
+  useLayoutEffect(() => {
+    if (open) opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  }, [open]);
   const [sheet, setSheet] = useState<HTMLElement | null>(null);
   useEffect(() => (sheet ? dragDownToClose(sheet, onClose) : undefined), [sheet, onClose]);
   // A save button that waits is disabled (or the step it was on is redrawn), and the browser drops its focus to the
@@ -157,7 +162,8 @@ export function LiveDialog({
           if (free && from?.isConnected) from.focus({ preventScroll: true });
         }}
         onOpenAutoFocus={(event) => {
-          opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+          const now = document.activeElement;
+          if (!opener.current && now instanceof HTMLElement && !(event.currentTarget instanceof Node && event.currentTarget.contains(now))) opener.current = now;
           // A desk opens on the first box to fill, or on the one control a sheet marks as its point (data-sheet-first).
           const first =
             event.currentTarget instanceof HTMLElement &&
