@@ -265,7 +265,7 @@ export function PeopleSection() {
                     <div className="live-meta">
                       <span className="people-role-wide">{role}</span>
                       <span data-waits={waits || expired ? "" : undefined} data-joined={invite.status === "accepted" ? "" : undefined}>
-                        {expired ? text.invitations.expired : waits ? text.invitations.waiting : invite.status === "accepted" ? text.invitations.joined : invite.status}
+                        {expired ? text.invitations.expired : waits ? text.invitations.waiting : invite.status === "accepted" ? text.invitations.joined : text.invitations.revoked}
                       </span>
                     </div>
                     <div className="live-row-actions">
