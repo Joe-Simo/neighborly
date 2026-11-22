@@ -2,7 +2,7 @@
 
 import "./volunteer.css";
 import { Button } from "@/components/ui/button";
-import { LiveEmpty, LiveField } from "@/components/workspace/primitives";
+import { LiveEmpty, LiveField, markWrong } from "@/components/workspace/primitives";
 import { DateField } from "@/components/workspace/date-field";
 import { useWorkspace } from "@/components/workspace/context";
 import { readDays } from "@/components/workspace/volunteer/days";
@@ -129,12 +129,11 @@ function LiveAvailability({
           event.preventDefault();
           const form = event.currentTarget;
           const f = new FormData(form);
+          const start = String(f.get("start")), end = String(f.get("end"));
+          if (end < start) markWrong(form, "end", words.timeOffForm.orderError);
+          if (!form.checkValidity()) return;
           if (
-            await run({
-              type: "addAvailability",
-              start: String(f.get("start")),
-              end: String(f.get("end")),
-            }, words.timeOff.availabilityAdded)
+            await run({ type: "addAvailability", start, end }, words.timeOff.availabilityAdded)
           )
             form.reset();
         }}
