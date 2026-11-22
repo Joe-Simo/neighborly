@@ -13,7 +13,8 @@ const nextConfig: NextConfig = {
     root: process.cwd(),
     rules: {
       "*.css": {
-        loaders: ["@tailwindcss/turbopack"],
+        // postcss-loader runs last, on what Tailwind wrote (scripts/viewport-fallback.cjs).
+        loaders: [{ loader: "postcss-loader", options: { postcssOptions: { config: false, plugins: [`${process.cwd()}/scripts/viewport-fallback.cjs`] } } }, "@tailwindcss/turbopack"],
         as: "*.css",
       },
     },
