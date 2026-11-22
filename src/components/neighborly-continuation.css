@@ -129,7 +129,7 @@
   .neighborly-continuation .neighborly-colophon>span{flex:none}
   .neighborly-continuation .neighborly-colophon nav{flex:1 1 0;min-width:0;justify-content:center;gap:0 clamp(16px,2vw,28px)}
   .neighborly-continuation .neighborly-colophon nav a{display:inline-flex;align-items:center;min-height:44px}
-  .neighborly-continuation .neighborly-colophon>a{flex:none;margin:0;font-size:clamp(48px,4.6vw,88px)}
+  .neighborly-continuation .neighborly-colophon>a{flex:none;min-height:44px;margin:0;font-size:clamp(48px,4.6vw,88px)}
 }
 /* On a phone the painting stands taller than the screen, so the last screen leads with the card in the hands: the foot sits
    right under the torn edge, with room kept below the name so the close's words leave the frame whole, never cut. */
