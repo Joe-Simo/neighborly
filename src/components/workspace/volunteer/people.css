@@ -162,3 +162,6 @@
   .people-address[data-one-line] { flex-wrap: wrap; }
   .people-address > span { white-space: normal; overflow-wrap: anywhere; overflow: visible; }
 }
+/* With no invitations open, their heading is for screen readers only: the empty note sits straight under the
+   people list's closing rule, so it draws no second, shorter rule of its own. */
+.live-app h2.sr-only + .live-empty { border-top: 0; padding-top: var(--space-8); }
