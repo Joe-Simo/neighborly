@@ -110,6 +110,7 @@ export const serverRefusalsEs: Record<string, string> = {
   "One of the two is no longer in the conference. Ask a second visitor first.":
     "Uno de los dos ya no está en la conferencia. Primero pide un segundo visitador.",
   "One of these gifts is already in a deposit.": "Uno de estos donativos ya está en un depósito.",
+  "One of these gifts has already cleared the bank on its own.": "Uno de estos donativos ya pasó por el banco por su cuenta.",
   "One of these gifts was taken back, so it cannot be deposited.": "Uno de estos donativos se anuló, así que no se puede depositar.",
   "Only a planned visit can be called off.": "Solo se puede cancelar una visita planeada.",
   "Only a planned visit can change its pair.": "Solo una visita planeada puede cambiar de pareja.",

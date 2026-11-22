@@ -90,8 +90,13 @@ describe("reviewable team drafting", () => {
     await t.run(ctx => ctx.db.insert("aiUsageBySession", { session: `*user:${userId}`, day, windowStart: 0, minute: 0, count: personalDailyAllowance - 1 }));
     expect((await signed.action(api.drafts.suggestTeam, { description })).verification).toBe("review");
     vi.advanceTimersByTime(60_000);
-    await expect(signed.action(api.drafts.suggestTeam, { description })).rejects.toThrow("wait a minute");
+    // The day is used up, so waiting a minute would not help: the draft comes back for a person to review, unasked.
+    expect(await signed.action(api.drafts.suggestTeam, { description })).toMatchObject({ verification: "review", sent: "" });
     expect(fetch).toHaveBeenCalledTimes(1);
+    // The next day starts a fresh count.
+    vi.advanceTimersByTime(86_400_000);
+    await signed.action(api.drafts.suggestTeam, { description });
+    expect(fetch).toHaveBeenCalledTimes(2);
     vi.useRealTimers();
   });
 

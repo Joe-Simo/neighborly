@@ -167,6 +167,9 @@ describe("the next step after a returned call", () => {
     expect((await returned("Gave her the legal aid number.")).row?.nextStep).toBeNull();
     vi.stubGlobal("fetch", replying({ nextStep: { type: "choice", choice: "none", confidence: 0.99 } }));
     expect((await returned("Talked for a while.")).row?.nextStep).toBeNull();
+    // A score off the 0-to-1 scale is malformed, not sure: a percent never clears the line.
+    vi.stubGlobal("fetch", replying({ nextStep: { type: "choice", choice: "refer", confidence: 95 } }));
+    expect((await returned("Gave her the legal aid number again.")).row?.nextStep).toBeNull();
     const fetch = vi.fn();
     vi.stubGlobal("fetch", fetch);
     expect((await returned("")).row?.nextStep).toBeNull();

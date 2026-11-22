@@ -170,7 +170,10 @@ export function paperEmail({ kind, language, set, place, link, week, content, co
 /** One sheet of paper: the head, the words (a line break kept as one), the one way in, and the foot. */
 function render(language: Language, s: Said, link: string): Email {
   const text = [s.head, "", s.body, "", `${s.action}: ${link}`, "", s.foot, "", "kind helps"].join("\n");
-  const e = { head: escape(s.head), body: escape(s.body).replace(/\r?\n/g, "<br>"), action: escape(s.action), foot: escape(s.foot), link: escape(link) };
+  // The preheader: the line a mail app shows beside the subject in the list, the first of the body rather than the wordmark.
+  const first = s.body.split(/\r?\n/).find((line) => line.trim()) ?? s.head;
+  const preheader = first.length > 140 ? `${first.slice(0, 139).trimEnd()}…` : first;
+  const e = { preheader: escape(preheader), head: escape(s.head), body: escape(s.body).replace(/\r?\n/g, "<br>"), action: escape(s.action), foot: escape(s.foot), link: escape(link) };
   const html = `<!doctype html>
 <html lang="${language}">
 <head>
@@ -205,6 +208,7 @@ function render(language: Language, s: Said, link: string): Email {
 </style>
 </head>
 <body class="page" style="margin:0;padding:0;background:#ebe5d6;">
+<div style="display:none;max-height:0;max-width:0;overflow:hidden;opacity:0;mso-hide:all;font-size:1px;line-height:1px;">${e.preheader}${"&#8204;&nbsp;".repeat(40)}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="page" style="background:#ebe5d6;">
 <tr><td align="center" style="padding:32px 16px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
