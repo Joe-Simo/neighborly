@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, type CSSProperties } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, CircleCheck, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,9 @@ import { handOver, type Paid } from "@/components/workspace/treasury/paid-moment
 import "./treasury.css";
 import { reportsWords } from "@/lib/words/rooms/reports";
 import { treasuryWords } from "@/lib/words/rooms/treasury";
+
+/** How many characters a figure has, so its size can be held to its slip's width (treasury.css). */
+const figureLength = (figure: string) => ({ "--figure-chars": figure.length }) as CSSProperties;
 
 const neighborHref = (id: string) =>
   `/app/neighbors?neighbor=${encodeURIComponent(id)}`;
@@ -218,7 +221,7 @@ export function LedgerView({
           <dt>{w.figures.balance}</dt>
           <dd>
             <span className="treasury-balance-stand">
-              <span className="treasury-balance-figure">{formatDollars(ledger.balance)}</span>
+              <span className="treasury-balance-figure" style={figureLength(formatDollars(ledger.balance))}>{formatDollars(ledger.balance)}</span>
               <span className="treasury-balance-leaves" aria-hidden="true"><i /><i /><i /></span>
             </span>
             <small>{w.figures.asOf(weekDayLabel(words.locale, ledger.today))}</small>
@@ -227,7 +230,7 @@ export function LedgerView({
         <div>
           <dt>{w.figures.in(month)}</dt>
           <dd>
-            <b>{formatDollars(ledger.moneyIn)}</b>
+            <b style={figureLength(formatDollars(ledger.moneyIn))}>{formatDollars(ledger.moneyIn)}</b>
             <small>
               {formatList(midSentence(ledger.incomeSources.map((source) => categoryLabel(room, source, sampleSaid))), words.locale) || w.figures.nothingIn}
             </small>
@@ -236,7 +239,7 @@ export function LedgerView({
         <div>
           <dt>{w.figures.out(month)}</dt>
           <dd>
-            <b>{formatDollars(ledger.moneyOut)}</b>
+            <b style={figureLength(formatDollars(ledger.moneyOut))}>{formatDollars(ledger.moneyOut)}</b>
             <small>{formatList(midSentence(paidFor), words.locale) || w.figures.nothingOut}</small>
           </dd>
         </div>
