@@ -9,6 +9,10 @@
   --live-ink: #283c32;
   --live-paper: #f7f4ed;
   --live-accent: #365c46;
+  /* The chosen room in the side menu, and a room under the pointer: --live-nav-hover is --live-nav-selected
+     (#dde5d3 = 221 229 211) at 50% alpha. Change them together; no color-mix, which iOS 15 lacks. */
+  --live-nav-selected: #dde5d3;
+  --live-nav-hover: rgb(221 229 211 / 0.5);
   --primary: #365c46;
   --primary-foreground: #fffdf5;
   --background: #fffdf7;
@@ -118,7 +122,7 @@
   color: #242a27;
 } }
 .live-nav a[aria-current="page"] {
-  background: #dde5d3;
+  background: var(--live-nav-selected);
   color: #294c39;
   box-shadow: inset 3px 0 #55714c;
 }

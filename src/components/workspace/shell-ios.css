@@ -439,7 +439,7 @@
   :root[data-shell="ios"] :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):hover { background: none; box-shadow: none; }
   :root[data-shell="ios"] :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):hover::before { opacity: 1; }
   :root[data-shell="ios"] .people-row[data-opens]:hover { background-color: var(--relief-paper); box-shadow: var(--relief-slip); }
-  :root[data-shell="ios"] .live-app .live-nav a:not([aria-current="page"]):hover { background: rgb(221 229 211 / 0.5); color: var(--live-muted); }
+  :root[data-shell="ios"] .live-app .live-nav a:not([aria-current="page"]):hover { background: var(--live-nav-hover); color: var(--live-muted); }
   :root[data-shell="ios"] :is(.live-app, .live-dialog) [data-slot="button"]:hover { transform: none; translate: none; }
   :root[data-shell="ios"] .live-app .start-here:hover svg { transform: none; }
 }
