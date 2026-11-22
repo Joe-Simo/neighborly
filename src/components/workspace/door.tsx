@@ -10,6 +10,8 @@ import { ROOM_WHOLE } from "@/components/workspace/room-sheet";
 import { roomTurn } from "@/components/workspace/room-turn";
 import "@/components/workspace/door.css";
 import { EASE_PAPER_LEAVE } from "@/lib/motion";
+// After a paint, what follows never lands in the same frame as the paper going; in a hidden page, which paints nothing, at once.
+import { afterAPaint, nextLook, unseen } from "@/lib/next-look";
 
 /**
  * The paper's welcome for someone who has just come through the door: the sign-in sheet or the sample link.
@@ -141,8 +143,6 @@ const watch = (watcher: () => void) => {
  * Through the door, focus lands on the room's head once the paper is off it, as it does between rooms: a screen reader
  * says where the person has arrived, and the next Tab goes on from the top of the room. Only when nothing else holds it.
  */
-/** After the frame now being drawn has been painted: what follows never lands in the same frame as the paper going. */
-const afterAPaint = (then: () => void) => requestAnimationFrame(() => requestAnimationFrame(then));
 
 function restOnTheRoomHead() {
   // Focus left on the door's way in (the sign-in sheet folded away, or anything else no longer in the room) is not
@@ -180,7 +180,7 @@ export function DoorSweep() {
   useEffect(() => {
     if (!playing) return;
     const plain = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let frame = 0;
+    let stop = () => {};
     let lifting = false;
     let saidAt = 0;
     let goOnSaying = heldSaying;
@@ -208,13 +208,14 @@ export function DoorSweep() {
           finished = arrival;
           for (const watch of watchers) watch();
         };
-        if (heldSheet) foldTheSheet(heldSheet).then(over, over);
+        // A hidden page plays nothing out (its moves never finish there): the sheet simply goes.
+        if (heldSheet && !unseen()) foldTheSheet(heldSheet).then(over, over);
         else over();
         return;
       }
       const sheet = paper.current?.querySelector<HTMLElement>(".door-card, .door-paper");
       let leave: Promise<unknown> | undefined;
-      if (sheet && paper.current && !plain) {
+      if (sheet && paper.current && !plain && !unseen()) {
         // The last sheet is turned off the room as one room's page is turned off the next (room-turn.ts): its lower right corner
         // lifts and folds back, and the room the door opens on is found lying beneath. The paper as it stands in the window is the page turned:
         // a still copy of it, the sheets behind long covered and left out, its marks where they are, nothing moving on it.
@@ -268,8 +269,10 @@ export function DoorSweep() {
         setHolding("shown");
       }
       const waited = performance.now() - arrivedAt;
-      const landed = plain || down || waited >= SWEEP;
-      const read = saidAt === 0 || performance.now() - saidAt >= READ;
+      // In a hidden page nothing is seen landing or read: the paper lifts the moment what is under it is ready.
+      const hidden = unseen();
+      const landed = plain || down || hidden || waited >= SWEEP;
+      const read = hidden || saidAt === 0 || performance.now() - saidAt >= READ;
       // The public sheet comes off a room at rest (`data-room-whole`): every part of it in place, its figures landed.
       const ready = underneathIsReady() && (!folds || document.querySelector(".live-app[data-room-whole]") !== null);
       if (landed && read && (ready || waited > LONGEST)) return lift();
@@ -290,19 +293,20 @@ export function DoorSweep() {
         paper.current?.querySelector(".door-card")?.setAttribute("data-waits", "");
         setHolding("shown");
       }
-      frame = requestAnimationFrame(look);
+      stop = nextLook(look);
     };
-    frame = requestAnimationFrame(look);
+    // Once a frame; in a hidden page, which draws none, whenever the page changes or is shown (next-look.ts).
+    stop = nextLook(look);
     // The room says the frame it is whole (room-sheet.tsx), before that frame is painted: the paper is looked at then,
     // not a frame later. The look each frame goes on beside it, for the line's own clock and a part that arrives late.
     const whole = () => {
-      cancelAnimationFrame(frame);
+      stop();
       look();
     };
     window.addEventListener(ROOM_WHOLE, whole);
     return () => {
       window.removeEventListener(ROOM_WHOLE, whole);
-      cancelAnimationFrame(frame);
+      stop();
     };
   }, [playing, arrival]);
 
