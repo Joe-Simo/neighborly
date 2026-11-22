@@ -20,13 +20,13 @@ const en: PublicWords = {
       ["No axe violations.", "axe-core 4.14 (WCAG 2.2 A and AA) found none in the 13 rooms, in English and Spanish, as owner and as member, at 390 and 1440 pixels, nor on the 10 public pages, sign-in included. Lighthouse 12.6 scored 100 for accessibility on all 66 of its runs."],
       ["Large text:", "each room in English and Spanish at 200% zoom, at the largest iOS text size at 360 and 1440 pixels, and reflowed to 320 pixels: 104 checks. The first walk found faults in 7 rooms, which were fixed. After the fixes 97 pass clean and 7 show something we chose on purpose, listed under known limits."],
       ["Keyboard:", "52 sheets and dialogs, each at 360 and 1440 pixels: opened from the keyboard, focus kept inside, a single name for each, Escape closes it, and focus goes back to what opened it. All pass. Six of them had a calendar that read as a second dialog; that was fixed, then checked again."],
-      ["Forced colors:", "the week, help line, neighbors, home visits, commitments and treasury, at 390 and 1440 pixels. Marks that showed meaning by color alone, such as a tick or a waiting ring, now keep their shape in the system's own colors."],
+      ["Forced colors:", "the week, help line, neighbors, home visits, commitments and treasury, at 390 and 1440 pixels. Marks that showed meaning by color alone, such as a tick or a waiting ring, now keep their shape in the system’s own colors."],
     ]] },
     { title: "Known limits", blocks: [[
-      ["A written visit's notes", "show as one line ending in an ellipsis in the list, even at large text. The full notes open on the visit."],
-      ["An email address", "may break onto a new line partway through at large text, and so may a hyphenated word such as thank-you. A person's name is never split."],
+      ["A written visit’s notes", "show as one line ending in an ellipsis in the list, even at large text. The full notes open on the visit."],
+      ["An email address", "may break onto a new line partway through at large text, and so may a hyphenated word such as thank-you. A person’s name is never split."],
       ["Color contrast on art:", "where words sit near the painted paper art, axe cannot measure the contrast and asks for a person to look. Each of these was checked by eye; the words sit on solid paper."],
-      ["Where we tested:", "the rooms were tested with the app's sample conference, using the same screens a signed-in member sees. We have not yet tested with every screen reader or with people who use one every day."],
+      ["Where we tested:", "the rooms were tested with the app’s sample conference, using the same screens a signed-in member sees. We have not yet tested with every screen reader or with people who use one every day."],
     ]] },
   ],
   questions: {
@@ -56,9 +56,9 @@ const es: PublicWords = {
     ]] },
     { title: "Límites conocidos", blocks: [[
       ["Las notas de una visita escrita", "se ven en la lista como una sola línea con puntos suspensivos, aun con letra grande. Las notas completas se abren en la visita."],
-      ["Una dirección de correo", "puede partirse a mitad de línea con letra grande, y también una palabra con guion. El nombre de una persona nunca se parte."],
+      ["Una dirección de correo", "puede partirse entre dos líneas con letra grande, y también una palabra con guion. El nombre de una persona nunca se parte."],
       ["Contraste sobre el arte:", "donde las palabras están cerca del arte de papel pintado, axe no puede medir el contraste y pide que una persona lo mire. Cada caso se revisó a ojo; las palabras están sobre papel liso."],
-      ["Dónde probamos:", "las secciones se probaron con la conferencia de ejemplo de la app, con las mismas pantallas que ve un miembro que entró. Todavía no hemos probado con todos los lectores de pantalla ni con personas que usan uno cada día."],
+      ["Dónde probamos:", "las secciones se probaron con la conferencia de muestra de la aplicación, con las mismas pantallas que ve un miembro que entró. Todavía no hemos probado con todos los lectores de pantalla ni con personas que usan uno cada día."],
     ]] },
   ],
   questions: {
