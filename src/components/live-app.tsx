@@ -274,7 +274,8 @@ function LiveRooms({
   // Before the rooms, the device's answer, not `deviceLanguage`: while a fresh load wakes that is still the server's English,
   // and the page, already Spanish from its head, would say English for a moment. Leaving the app, PageLanguage says English again.
   const fromRoom = !!dashboard && !sampleVisitor;
-  useEffect(() => {
+  // Before paint: the tab is named in the language the page says (live-frame.tsx, shell.tsx), in the same frame.
+  useLayoutEffect(() => {
     document.documentElement.lang = fromRoom ? shown : entryLanguageNow();
   }, [fromRoom, shown]);
   // A room, the welcome and the launch failure are drawn only once their reader's book is in hand: until then the launch

@@ -159,7 +159,8 @@ export function LiveWorkspace({
   // The browser tab names the room in the person's language, in the menu's own words.
   const tabTitle = menu[area];
   const groupName = data.church.name;
-  useEffect(() => {
+  // Before paint, in the same frame as the frame's own (live-frame.tsx), so no other name shows between.
+  useLayoutEffect(() => {
     if (tabTitle) document.title = `${tabTitle} · ${groupName} · Kind Helps`;
   }, [tabTitle, groupName]);
   // Every room reads in the person's own language, the leaders' rooms included (words/rooms).

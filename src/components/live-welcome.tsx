@@ -7,7 +7,7 @@ import { dateFormatter, words, type Language } from "@/lib/words";
 import { EntrySheet } from "./entry-sheet";
 import { useWaited } from "@/lib/use-waited";
 import { useFocusBack } from "@/lib/use-focus-back";
-import { authWords, entryLanguageNow, tabInReadersLanguage, useEntryLanguage } from "./live-auth-words";
+import { authWords, entryLanguageNow, giveTabBack, useEntryLanguage } from "./live-auth-words";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,10 +73,9 @@ export function LiveWelcome({
   // Said in the device's answer, not `w`: while a fresh load wakes, `language` is still the server's English.
   useEffect(() => {
     const found = document.title, said = words(entryLanguageNow()).welcome.first;
-    document.title = `${mode === "create" ? said.start : said.invited} · Kind Helps`;
-    return () => {
-      document.title = tabInReadersLanguage(found);
-    };
+    const mine = `${mode === "create" ? said.start : said.invited} · Kind Helps`;
+    document.title = mine;
+    return () => giveTabBack(found, mine);
   }, [mode, language]);
   const [timeZone] = useState(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone,
