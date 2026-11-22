@@ -51,5 +51,5 @@
 
 /* The public foot under the page, one per language, the reader's shown. */
 .lost-door-foot{padding:0 7%}
-@media(max-width:900px){.lost-door-foot{padding-inline:20px}}
+@media(max-width:900px){.lost-door-foot.neighborly-continuation{padding-inline:20px;background:#f5f3ec}}
 :root:lang(es) .lost-door-foot[lang="en"],:root:not(:lang(es)) .lost-door-foot[lang="es"]{display:none}
