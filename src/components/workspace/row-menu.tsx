@@ -90,7 +90,9 @@ export function RowMenu() {
         const box = row.getBoundingClientRect();
         const tall = actions.length * 45 + 8;
         const above = box.bottom + tall + 12 > window.innerHeight - 90 && box.top - tall - 12 > 60;
-        setOpen({ row, actions, top: above ? box.top - tall - 8 : box.bottom + 8, above });
+        // A short window (a phone or iPad on its side) may have room on neither side: the sheet then stays whole on screen.
+        const top = Math.max(8, Math.min(above ? box.top - tall - 8 : box.bottom + 8, window.innerHeight - tall - 8));
+        setOpen({ row, actions, top, above });
       }, HOLD);
     };
     const move = (event: TouchEvent) => {
