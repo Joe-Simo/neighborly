@@ -59,7 +59,8 @@ export default function WeekDigest() {
   const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId });
   const found = useQuery(api.digest.week, allowed && at ? { churchId, at } : "skip");
   const setEmail = useMutation(api.digest.setDigestEmail);
-  if (!found) return null;
+  // Held until it is in (room-sheet.tsx), so the week never lands above a report already on screen.
+  if (!found) return allowed === false ? null : <span hidden data-room-pending="" />;
   const { waiting, month, overdue } = found.digest;
   const money = (cents: number) => formatMoney(cents / 100, locale, cents % 100 === 0);
   const name = w.months[month.month - 1];
