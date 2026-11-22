@@ -195,7 +195,7 @@ function MergeForm({ neighborId, other, w, onMerged }: { neighborId: Id<"neighbo
   const { data } = useWorkspace();
   const moving = useQuery(api.duplicates.mergeCounts, { churchId: data.church.id, otherId: other.id });
   const merge = useMutation(api.duplicates.merge);
-  const { pending, error, save } = useSave("decided");
+  const { pending, error, save } = useSave();
   return (
     <form
       className="live-form help-form help-for-good"

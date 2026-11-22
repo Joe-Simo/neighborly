@@ -9,11 +9,14 @@ import { SAVED_EVENT } from "@/components/workspace/kept-typing";
 type Felt = "saved" | "decided";
 type FeltBridge = { webkit?: { messageHandlers?: { kindHelpsFelt?: { postMessage: (felt: "decided" | "refused") => void } } } };
 
+/** One light tap in the iOS app when a yes goes through. The app feels nothing else, and nothing under Reduce Motion. */
+export const feelYes = () => (window as FeltBridge).webkit?.messageHandlers?.kindHelpsFelt?.postMessage("decided");
+
 /**
- * Runs one save at a time and keeps the plain sentence to show when it is refused. In the iOS app only what is real
- * is felt: a decision going through (an approval, a call marked returned; its corner lays green) is one light tap, and
- * a save the server refuses is the system's warning. An ordinary save is not felt. The page turn is the only other
- * thing felt (room-sheet.tsx), and the device's own haptics setting turns all of it off.
+ * Runs one save at a time and keeps the plain sentence to show when it is refused. In the iOS app only the yes
+ * actions are felt (Approve, Save this request, and Record payment in treasury/payment-form.tsx): one light tap,
+ * which the app leaves out under Reduce Motion. An ordinary save, a refusal, and anything else the page says are
+ * not felt (SceneDelegate.swift, tap(for:)).
  */
 export function useSave(felt: Felt = "saved") {
   const words = useWorkspaceIfAny()?.words;
@@ -25,7 +28,7 @@ export function useSave(felt: Felt = "saved") {
     setError("");
     try {
       const result = await work();
-      if (felt === "decided") (window as FeltBridge).webkit?.messageHandlers?.kindHelpsFelt?.postMessage("decided");
+      if (felt === "decided") feelYes();
       window.dispatchEvent(new Event(SAVED_EVENT));
       return { saved: true as const, result };
     } catch (cause) {

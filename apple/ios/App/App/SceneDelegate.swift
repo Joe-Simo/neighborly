@@ -285,13 +285,12 @@ final class ShellViewController: CAPBridgeViewController {
     }
 
     /// The page's undo slip: while it shows, the same undo is the system's own, so Shake to Undo (and an iPad's
-    /// keyboard Command-Z) runs the inverse the slip's Undo runs. Its showing is felt as one light tap.
+    /// keyboard Command-Z) runs the inverse the slip's Undo runs. Its showing is not felt: only a yes is.
     override var canBecomeFirstResponder: Bool { true }
 
     fileprivate func undoSlip(_ label: String?) {
         undoManager?.removeAllActions(withTarget: self)
         guard let label else { return }
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         becomeFirstResponder()
         undoManager?.registerUndo(withTarget: self) { shell in
             shell.webView?.evaluateJavaScript("window.kindHelpsUndo?.()")
@@ -366,27 +365,17 @@ final class ShellViewController: CAPBridgeViewController {
         webView.callAsyncJavaScript("return typeof window.kindHelpsPulled === 'function' && (await window.kindHelpsPulled()) === true", arguments: [:], in: nil, in: .page) { [weak self] result in
             guard let self else { return }
             self.refresh.endRefreshing()
-            if case .success(let current) = result, current as? Bool == true {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                return
-            }
+            if case .success(let current) = result, current as? Bool == true { return }
             webView.reload()
         }
     }
 
-    /// Only what is real is felt, and iOS's own System Haptics setting turns all of it off: a page turn that commits
-    /// (`turned`, soft), a decision whose corner lays green (`decided`, light), a save the server refused
-    /// (`refused`, the system's warning), and a row's long-press sheet opening (`selected`, the selection tap).
-    /// Anything else the page says is not felt.
+    /// Haptics, quietly: one light impact on a yes going through (Approve, Save this request, Record payment, which
+    /// the page says as `decided`) and nothing else. Reduce Motion turns it off, as does iOS's System Haptics setting.
+    /// Anything else the page says (a page turn, a crease, a refusal, a long-press sheet) is not felt.
     private func tap(for what: String) {
-        guard cover == nil else { return }
-        switch what {
-        case "turned": UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-        case "decided", "creased": UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        case "refused": UINotificationFeedbackGenerator().notificationOccurred(.warning)
-        case "selected": UISelectionFeedbackGenerator().selectionChanged()
-        default: break
-        }
+        guard cover == nil, what == "decided", !UIAccessibility.isReduceMotionEnabled else { return }
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 
     /// The launch cover is the room's own head: the bar's paper with the wordmark where the room draws it
