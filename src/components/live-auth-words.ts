@@ -1,5 +1,6 @@
 import { createContext, useContext, useSyncExternalStore } from "react";
 import { languages, type Language } from "@/lib/words";
+import { areaTitles, areaTitlesEs, liveAreas } from "@/components/workspace/areas";
 
 /** Every phrase of the sign-in sheet. English is the source; the other two follow its shape. */
 const en = {
@@ -290,9 +291,15 @@ export function useJustLeft(): boolean {
   return useSyncExternalStore(never, () => (leftNow ??= readLeft()), () => false);
 }
 
+/** The tabs the server names in English, the only language it knows, each with its Spanish. */
+const serverTabs: Record<Language, string>[] = [
+  { en: authWords.en.workspaceTab, es: authWords.es.workspaceTab },
+  ...liveAreas.map((area) => ({ en: `${areaTitles[area]} · Kind Helps`, es: `${areaTitlesEs[area]} · Kind Helps` })),
+];
 /**
- * The server names the workspace's tab in English, the only language it knows. Given that title (in either
- * language) this answers it in the reader's own; any other title, a room's or a sheet's, is left as it is.
+ * Given the workspace's or a room's tab as the server names it (in either language), this answers it in the reader's
+ * own; any other title, a sheet's or a room's under a conference's name, is left as it is. React puts the server's
+ * title back as the page wakes, so this is said again then.
  */
 export const tabInReadersLanguage = (title: string) =>
-  languages.some((language) => authWords[language].workspaceTab === title) ? authWords[entryLanguageNow()].workspaceTab : title;
+  serverTabs.find((tab) => languages.some((language) => tab[language] === title))?.[entryLanguageNow()] ?? title;

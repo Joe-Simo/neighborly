@@ -15,7 +15,7 @@ import { LiveField } from "@/components/workspace/primitives";
 import { carryTheCard } from "@/components/workspace/door";
 import { holdAndTurn } from "./courtyard-door";
 import { underneathIsReady } from "@/lib/room-whole";
-import { authWords, DrawnIn, tabInReadersLanguage, useEntryLanguage, useJustLeft, type AuthError } from "./live-auth-words";
+import { authWords, DrawnIn, entryLanguageNow, tabInReadersLanguage, useEntryLanguage, useJustLeft, type AuthError } from "./live-auth-words";
 import { EntrySheet } from "./entry-sheet";
 
 export type LiveEntryIntent = "start" | "join" | "signin";
@@ -117,15 +117,18 @@ export function LiveAuth({
   useEffect(() => () => clearTimeout(resting.current), []);
   // The tab of the browser, and what a screen reader says on arrival, name this page and not the workspace
   // behind it. When the sheet leaves, the title it found is put back, so the room that opens is named as before.
-  const pageTitle = `${flow === "signUp" ? w.create : w.signIn} · Kind Helps`;
+  // Said in the device's answer, not `w`: while a fresh load wakes, `language` is still the server's English.
+  // While it is not known whether anyone is signed in, the sheet is drawn once in each language (live-app.tsx): only
+  // the reader's own copy names the tab, so the other, leaving, does not put back a title from before it.
+  const drawnIn = useContext(DrawnIn);
   useEffect(() => {
-    if (behind) return;
+    if (behind || (drawnIn && drawnIn !== entryLanguageNow())) return;
     const found = document.title;
-    document.title = pageTitle;
+    document.title = `${authWords[entryLanguageNow()][flow === "signUp" ? "create" : "signIn"]} · Kind Helps`;
     return () => {
       document.title = tabInReadersLanguage(found);
     };
-  }, [pageTitle, behind]);
+  }, [flow, language, behind, drawnIn]);
 
   // The sheet leaves with its answer given: on the web it is held over the page as it stands, and folds into the
   // first room once that room is whole (door.tsx). The iPhone app has its own way in, and less motion keeps the plain paper.

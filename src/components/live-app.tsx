@@ -16,7 +16,7 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { useDashboard, useFirstChurch } from "@/components/workspace/dashboard";
 import { LiveAuth, type LiveEntryIntent } from "@/components/live-auth";
-import { authWords, DrawnIn, leftKey, useEntryLanguage } from "@/components/live-auth-words";
+import { authWords, DrawnIn, entryLanguageNow, leftKey, useEntryLanguage } from "@/components/live-auth-words";
 import { words as wordsFor, type Language, type Words } from "@/lib/words";
 import { useBook } from "@/lib/words/use-book";
 import type { LiveArea } from "@/components/workspace/areas";
@@ -271,12 +271,12 @@ function LiveRooms({
   // The page says which language it is showing, so a screen reader speaks Spanish as Spanish, in the rooms and in
   // every dialog (dialogs are drawn outside the rooms, straight under <body>). Before the rooms it is the door's.
   const shown = dashboard && !sampleVisitor ? dashboard.user.language : deviceLanguage;
+  // Before the rooms, the device's answer, not `deviceLanguage`: while a fresh load wakes that is still the server's English,
+  // and the page, already Spanish from its head, would say English for a moment. Leaving the app, PageLanguage says English again.
+  const fromRoom = !!dashboard && !sampleVisitor;
   useEffect(() => {
-    document.documentElement.lang = shown;
-    return () => {
-      document.documentElement.lang = "en";
-    };
-  }, [shown]);
+    document.documentElement.lang = fromRoom ? shown : entryLanguageNow();
+  }, [fromRoom, shown]);
   // A room, the welcome and the launch failure are drawn only once their reader's book is in hand: until then the launch
   // line stands, as it does while their data comes, so a Spanish reader never sees them in English first.
   const bookReady = useBook([deviceLanguage, shown, kept && !kept.visiting ? kept.room.user.language : undefined]);

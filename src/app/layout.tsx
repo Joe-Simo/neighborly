@@ -8,6 +8,7 @@ import "@/components/cut-heads.css";
 import { launchScreens } from "@/lib/launch-screens";
 import { linkCardIn, linkPreview } from "@/lib/link-preview";
 import { firstLanguage } from "@/lib/first-language";
+import { firstTab } from "@/lib/first-tab";
 import { staleCheck } from "@/lib/stale-check";
 import { sunLight } from "@/lib/sun";
 export const viewport: Viewport = {
@@ -53,7 +54,7 @@ export default function RootLayout({
         <style dangerouslySetInnerHTML={{ __html: "html{background:#f5f3ec}" }} />
         {firstFaces.map((face) => <link key={face} rel="preload" href={`/fonts/${face}.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />)}
         {/* The opening is set down once a visit: a later page load in the same visit finds it already in place. */}
-        <script dangerouslySetInnerHTML={{ __html: firstLanguage }} />
+        <script dangerouslySetInnerHTML={{ __html: firstLanguage + ";" + firstTab }} />
         {/* A tab Safari brings back from an old visit can be an older deploy's page, whose stylesheet is no longer served, so it
             would be drawn unstyled. Once the page has loaded, if the site's stylesheet is not in force, it is asked for afresh, once. */}
         <script dangerouslySetInnerHTML={{ __html: staleCheck }} />

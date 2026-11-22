@@ -4,7 +4,8 @@ import { startTransition, Suspense, useEffect, useLayoutEffect, useState, type R
 import { usePathname, useSearchParams } from "next/navigation";
 import { LiveApp } from "@/components/live-app";
 import type { LiveEntryIntent } from "@/components/live-auth";
-import { areaTitles, liveAreas } from "@/components/workspace/areas";
+import { areaTitles, areaTitlesEs, liveAreas } from "@/components/workspace/areas";
+import { entryLanguageNow } from "@/components/live-auth-words";
 import { useKeysInUse } from "@/components/workspace/keys-in-use";
 import { askFirstRoom } from "@/lib/first-room";
 import { askSampleTicket } from "@/lib/sample-ticket";
@@ -102,10 +103,10 @@ export function LiveFrame({ children, sampleEntry }: { children: ReactNode; samp
     for (const link of document.querySelectorAll("a[data-going]")) link.removeAttribute("data-going");
   }, [pathname]);
 
-  // The tab names the room; the server only does so on a fresh load. Set before paint, so the room's own
-  // effect (shell.tsx), which knows the person's language, has the last word.
+  // The tab names the room; the server only does so on a fresh load. Set before paint in the door's language (never
+  // English first for a Spanish reader), so the room's own effect (shell.tsx), which knows the person's, has the last word.
   useLayoutEffect(() => {
-    if (area) document.title = `${areaTitles[area]} · Kind Helps`;
+    if (area) document.title = `${(entryLanguageNow() === "es" ? areaTitlesEs : areaTitles)[area]} · Kind Helps`;
   }, [area]);
 
   return (

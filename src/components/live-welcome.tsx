@@ -7,7 +7,7 @@ import { dateFormatter, words, type Language } from "@/lib/words";
 import { EntrySheet } from "./entry-sheet";
 import { useWaited } from "@/lib/use-waited";
 import { useFocusBack } from "@/lib/use-focus-back";
-import { authWords, tabInReadersLanguage, useEntryLanguage } from "./live-auth-words";
+import { authWords, entryLanguageNow, tabInReadersLanguage, useEntryLanguage } from "./live-auth-words";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,14 +70,14 @@ export function LiveWelcome({
   /** Someone who came by an invitation link has nothing to copy: the code rides along unseen. It is shown if joining is refused, so another can be pasted. */
   const [codeShown, setCodeShown] = useState(!initialToken);
   // The tab names this page, in the reader's language, as the sign-in sheet does. Nobody is in a workspace yet.
-  const pageTitle = `${mode === "create" ? w.start : w.invited} · Kind Helps`;
+  // Said in the device's answer, not `w`: while a fresh load wakes, `language` is still the server's English.
   useEffect(() => {
-    const found = document.title;
-    document.title = pageTitle;
+    const found = document.title, said = words(entryLanguageNow()).welcome.first;
+    document.title = `${mode === "create" ? said.start : said.invited} · Kind Helps`;
     return () => {
       document.title = tabInReadersLanguage(found);
     };
-  }, [pageTitle]);
+  }, [mode, language]);
   const [timeZone] = useState(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone,
   );
