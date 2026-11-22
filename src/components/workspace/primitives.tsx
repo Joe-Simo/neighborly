@@ -59,7 +59,8 @@ export function LiveRoomLoading({
   label?: string;
   children?: ReactNode;
 }) {
-  const opening = useOpening();
+  const workspace = useWorkspaceIfAny();
+  const said = label ?? workspace?.words.states.opening;
   // One wait, one line: this screen carries on the line of the launch screen it replaces, and the room that follows
   // carries on this one's, in the same place (room-sheet.tsx).
   const line = useRef<HTMLParagraphElement>(null);
@@ -69,7 +70,14 @@ export function LiveRoomLoading({
       <LaunchMark />
       <div className="paper-loading-words">
         <p className="paper-loading-label" role="status" ref={line}>
-          <span className="text-balance">{label ?? opening}</span>
+          {said !== undefined ? <span className="text-balance">{said}</span> : (
+            // Before the rooms, the line is drawn in both languages, by the server too, and the page's own language
+            // (said by its head before the first paint, first-language.ts) shows one: a Spanish reader never reads "Opening…".
+            <>
+              <span className="text-balance" lang="en" data-said="en">{authWords.en.opening}</span>
+              <span className="text-balance" lang="es" data-said="es">{authWords.es.opening}</span>
+            </>
+          )}
         </p>
         {children}
       </div>

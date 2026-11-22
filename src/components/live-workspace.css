@@ -1016,3 +1016,6 @@
 .door-out, .door-wait { display: contents; }
 html:not([data-door-early]) .door-out[data-maybe], html[data-door-early] .door-wait[data-maybe],
 html[data-door-early="en"] .door-out[data-maybe][data-language="es"], html[data-door-early="es"] .door-out[data-maybe][data-language="en"] { display: none; }
+
+/* The launch line before the rooms carries both languages (LiveRoomLoading): the page's language shows one. */
+html:not([lang="es"]) .paper-loading-label [data-said="es"], html[lang="es"] .paper-loading-label [data-said="en"] { display: none; }
