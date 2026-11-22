@@ -4,13 +4,10 @@ import "@/components/workspace/paper.css";
 import "@/components/workspace/shell-ios.css";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
-import { ClerkProvider } from "@clerk/nextjs";
-import { clerkAppearance } from "@/lib/clerk-appearance";
 import { LiveFrame } from "@/components/live-frame";
+import { LiveClerk } from "@/components/live-clerk";
 import { protect } from "@/lib/sample-ticket";
 import { LiveProviders } from "@/components/live-providers";
-import Loading from "./loading";
 import { doorEarly } from "@/lib/door-early";
 import { PaperArrival } from "@/components/paper-arrival";
 import { PageLanguage } from "@/components/page-language";
@@ -44,15 +41,13 @@ export default function LiveAppLayout({
       <link rel="preload" as="image" href="/launch/mark-240.png" imageSrcSet="/launch/mark-240.png 1x, /launch/mark-480.png 2x, /launch/mark-720.png 3x" fetchPriority="high" />
       {/* Before the first paint: may the server's sign-in sheet show at once (lib/door-early.ts)? */}
       <script dangerouslySetInnerHTML={{ __html: `var l=(${doorEarly})();if(l)document.documentElement.dataset.doorEarly=l` }} />
-      <Suspense fallback={<Loading />}>
-        {/* The door's forms are our own (useSignIn, useSignUp), so Clerk's prebuilt screens are never drawn: their
-            bundle is not asked for. Clerk waits for it before it starts the session, which held a cold room for its whole download. */}
-        <ClerkProvider prefetchUI={false} appearance={clerkAppearance} signInUrl="/app" signUpUrl="/app?intent=start" afterSignOutUrl="/app">
-          <LiveProviders>
-            <LiveFrame sampleEntry={Boolean(process.env.DEMO_CLERK_USER_ID)}>{children}</LiveFrame>
-          </LiveProviders>
-        </ClerkProvider>
-      </Suspense>
+      {/* Clerk's client provider, so the frame needs no Suspense boundary: it is in the first HTML and hydrates with the
+          page, where a streamed boundary is revealed and hydrated only on an animation frame (live-clerk.tsx). */}
+      <LiveClerk>
+        <LiveProviders>
+          <LiveFrame sampleEntry={Boolean(process.env.DEMO_CLERK_USER_ID)}>{children}</LiveFrame>
+        </LiveProviders>
+      </LiveClerk>
       <PaperArrival />
       {/* Nothing in the app opens without scripts, and the launch sheet's line would say "Opening…" for ever. That
           reader is told so on the same paper, under the same mark, and shown the way back. Which language they read
