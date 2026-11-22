@@ -1,5 +1,6 @@
 "use client";
 
+import { numberLocales } from "@/lib/words/numbers";
 import { DateLeaf } from "@/components/workspace/primitives";
 
 import { FOLD_HOLD, foldLeaves, holdThePage, openInPlaceOf, openUp, takeLine, useKeptLine } from "@/components/workspace/fold";
@@ -857,8 +858,8 @@ function HelpLineView({
           <div className="room-tally">
             {/* The heading names the figure, so the slip carries no label of its own; a screen reader hears it whole. */}
             <p className="room-tally-figure">
-              <b aria-hidden="true">{new Intl.NumberFormat(words.locale).format(calls.waiting.length)}</b>
-              <span className="sr-only">{`${new Intl.NumberFormat(words.locale).format(calls.waiting.length)} ${text.messagesNoun(calls.waiting.length)}`}</span>
+              <b aria-hidden="true">{new Intl.NumberFormat(numberLocales[words.locale]).format(calls.waiting.length)}</b>
+              <span className="sr-only">{`${new Intl.NumberFormat(numberLocales[words.locale]).format(calls.waiting.length)} ${text.messagesNoun(calls.waiting.length)}`}</span>
             </p>
             {oldest && at !== undefined && (
               <span className="live-count help-oldest">{oldestWaiting(waited(oldest))}</span>
