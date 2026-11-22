@@ -34,6 +34,7 @@ import type * as intake from "../intake.js";
 import type * as intakeActions from "../intakeActions.js";
 import type * as intakeCare from "../intakeCare.js";
 import type * as intakeHttp from "../intakeHttp.js";
+import type * as intakeKeys from "../intakeKeys.js";
 import type * as intakeNotify from "../intakeNotify.js";
 import type * as intakePartners from "../intakePartners.js";
 import type * as intakeReview from "../intakeReview.js";
@@ -94,6 +95,7 @@ declare const fullApi: ApiFromModules<{
   intakeActions: typeof intakeActions;
   intakeCare: typeof intakeCare;
   intakeHttp: typeof intakeHttp;
+  intakeKeys: typeof intakeKeys;
   intakeNotify: typeof intakeNotify;
   intakePartners: typeof intakePartners;
   intakeReview: typeof intakeReview;
