@@ -10,6 +10,7 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { LiveField, LiveLoading } from "@/components/workspace/primitives";
+import { HousingFrame } from "@/components/workspace/reports/housing-providers";
 import { useHour, useQuery } from "@/components/workspace/query";
 import { LiveFailure } from "@/components/workspace/states";
 import { councilCsv, councilFileName, figureOrder, isMoney } from "@/components/workspace/reports/council-lines";
@@ -180,7 +181,7 @@ function CouncilYearTable({ councilId, year, money }: { councilId: Id<"councils"
     <>
       <p className="housing-note">{report.closed ? w.year(report.year) : `${w.year(report.year)}, ${w.soFar}`}</p>
       {report.updating && <p className="housing-note" role="status">{w.updating}</p>}
-      <div className="housing-scroll" tabIndex={0} role="region" aria-label={w.title}>
+      <HousingFrame label={w.title}>
         <table className="housing-table">
           <thead>
             <tr>
@@ -203,7 +204,7 @@ function CouncilYearTable({ councilId, year, money }: { councilId: Id<"councils"
             ))}
           </tbody>
         </table>
-      </div>
+      </HousingFrame>
       <div className="live-row-actions">
         <Button variant="outline" onClick={save}>
           <Download size={17} aria-hidden="true" /> {w.download}
