@@ -286,7 +286,9 @@ export const suggestTeam = action({
     }
     if (await ctx.runMutation(internal.drafts.reserve, { userId }) !== "ok") throw new ConvexError("Please wait a minute before preparing another draft.");
     const plain = description;
-    const { teamName: _unsent, ...proposed } = draft;
+    // The team's name is never sent to the assistant.
+    const { teamName, ...proposed } = draft;
+    void teamName;
     const sure = await confidence(env.TYPESAFE_API_KEY, { description: plain, proposed }, Object.fromEntries(present.map(field => [field,
       `Does description explicitly and unambiguously support proposed.${field}? ${stated} Never infer availability, consent, qualifications, membership, or a new fact.`,
     ])) as Record<(typeof present)[number], string>);
