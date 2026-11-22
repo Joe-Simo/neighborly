@@ -110,7 +110,7 @@ function foot(language: IntakeLanguage) {
   const said = endingWords[language];
   return `<footer class="colophon">
   <span><em>${esc(said.free[0])}</em>${esc(said.free[1])}</span>
-  <nav aria-label="${esc(said.about)}"><a href="/app/help-line?intent=sample">${esc(said.sample)}</a><a href="${said.howMadePath}">${esc(said.howMade)}</a><a href="${said.accessPath}">${esc(said.access)}</a><a href="${said.privacyPath}">${esc(said.privacy)}</a></nav>
+  <nav aria-label="${esc(said.about)}"><a href="/app/help-line?intent=sample">${esc(said.sample)}</a><a href="${said.howMadePath}">${esc(said.howMade)}</a><a href="${said.accessPath}">${esc(said.access)}</a><a href="${said.privacyPath}">${esc(said.privacy)}</a><a href="https://github.com/sponsors/Joe-Simo" target="_blank" rel="noopener noreferrer">${esc(said.give)}<span class="sr-only"> ${esc(said.newTab)}</span></a></nav>
   <a class="name" href="/" lang="en">kind helps</a>
 </footer>`;
 }
@@ -338,6 +338,7 @@ form:has(#safe-yes:checked) .when{display:none}
 @font-face{font-family:"Newsreader";font-style:italic;font-weight:400;font-display:swap;src:url(/fonts/newsreader-display-italic.woff2) format("woff2")}
 .colophon{container-type:inline-size;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:24px;padding:12px 20px calc(82px + env(safe-area-inset-bottom));background:#eee7d7;color:#293f32;font-size:15px}
 .colophon em{font-family:Newsreader,Georgia,serif;font-style:italic;font-weight:400}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .colophon nav{display:flex;flex-wrap:wrap;gap:0 28px}
 .colophon nav a{display:inline-flex;align-items:center;min-height:44px;white-space:nowrap;text-decoration-color:#343e3366}
 .colophon .name{flex-basis:100%;display:inline-flex;align-items:center;margin:20px 0 -.08em;font:400 calc(100cqi / 4.1)/.8 Newsreader,Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;text-decoration:none;text-shadow:.008em .016em .012em #3b2a1240,.03em .07em .08em #3b2a1224}
