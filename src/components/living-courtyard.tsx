@@ -120,6 +120,10 @@ void main(){
   vec2 t3 = clamp(texAt(b, pivot, mix(FOCUS, floorAt, edge)), 0., 1.), t2 = clamp(texAt(b, pivot, mix(FOCUS, floorAt, edge)), 0., 1.);
   vec2 t1 = clamp(texAt(b, pivot, FOCUS), 0., 1.), t0 = clamp(texAt(b, pivot, mix(FOCUS, .06, smoothstep(0., .08, b.y))), 0., 1.);
   vec4 p3 = texture2D(uPlane3, t3), p2 = texture2D(uPlane2, t2), p1 = texture2D(uPlane1, t1), p0 = texture2D(uMap, t0);
+  // The paving's cut top edge meets the cloister plane's foot with nothing but the far plane's dark back between them. Where an engine lays the
+  // paving a few texels low (WebKit did), that dark showed as a line across the courtyard, so the paving reaches up over its own top edge by four.
+  vec4 below = texture2D(uPlane2, clamp(t2 + vec2(0., PX.y * 4.), 0., 1.));
+  if (below.a > p2.a) p2 = below;
   // Each plane is lit by the relief of its own painting: the plate's normal map was drawn for the plate, and its edges do not match the cut planes'.
   vec3 col = relight(p0.rgb, normalize(vec3(0., 0., 1.) + reliefAt(uMap, t0)), t0, .06);
   if (p1.a > .004) col = mix(col, relight(p1.rgb, normalize(vec3(0., 0., 1.) + reliefAt(uPlane1, t1)), t1, depthAt(t1)), p1.a);
