@@ -1719,3 +1719,22 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
   :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):active::before { opacity: 1; transition: none; }
   .people-row[data-opens]:active { background-color: var(--relief-paper); transition: none; }
 }
+
+/* ── A sheet's foot is its own row ───────────────────────────────────────────
+   A sheet with buttons ends on them: the sheet keeps no paper of its own below them, so the buttons' row is its
+   foot, with a 1px rule above and 16px of paper round the buttons. The form scrolls above that rule and is cut
+   there: nothing is drawn under the buttons, and a box reached with the keyboard is scrolled clear of them.
+   On a phone the row's foot clears the home bar; with the keyboard up, the keyboard is its foot. */
+.live-dialog.live-dialog-fixed.live-dialog-fixed:has(.live-form-actions) { padding-bottom: 0 !important; scroll-padding-bottom: 120px; }
+.live-dialog.live-dialog-fixed .live-form-actions.live-form-actions {
+  position: sticky; bottom: 0; z-index: 1;
+  margin: var(--space-24) calc(-1 * var(--live-dialog-pad)) 0;
+  padding: var(--space-16) var(--live-dialog-pad);
+  background: #f5f3ec; border-top: 1px solid var(--live-line); box-shadow: none;
+}
+@media (max-width: 699px) {
+  .live-dialog.live-dialog-fixed .live-form-actions.live-form-actions { padding-bottom: max(var(--space-16), env(safe-area-inset-bottom)); }
+  [data-live-keyboard] .live-dialog.live-dialog-fixed .live-form-actions.live-form-actions { padding-bottom: var(--space-16); }
+}
+[data-live-tight] .live-dialog.live-dialog-fixed .live-form-actions.live-form-actions { padding-block: var(--space-8); }
+[data-live-short] .live-dialog.live-dialog-fixed .live-form-actions.live-form-actions { position: static; }
