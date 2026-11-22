@@ -430,3 +430,16 @@
 /* The same one column on a wide screen, where the room's own three columns would leave the time a sliver. */
 :root[data-shell="ios"][data-text-large] .live-app :is(.help-row, .help-row[data-call]:not([data-quiet])):not(.help-neighbor) { grid-template-columns: minmax(0, 1fr); }
 :root[data-shell="ios"][data-text-large] .live-app :is(.help-row, .help-row[data-call]:not([data-quiet])):not(.help-neighbor) > * { grid-column: 1; }
+
+/* ── R7: an iPad with a trackpad or mouse. iPadOS reports a touch screen first, so the page's (hover: hover) rules
+   never match there; these follow any pointer that can hover. A row that opens lifts one step on the paper (the same
+   slip a desk shows), with no change of colour; a button keeps still under the pointer and shows the 2px ink ring
+   only when reached by keys (paper.css); a room in the side menu takes the chosen room's green at half strength. ── */
+@media (any-hover: hover) and (any-pointer: fine) {
+  :root[data-shell="ios"] :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):hover { background: none; box-shadow: none; }
+  :root[data-shell="ios"] :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):hover::before { opacity: 1; }
+  :root[data-shell="ios"] .people-row[data-opens]:hover { background-color: var(--relief-paper); box-shadow: var(--relief-slip); }
+  :root[data-shell="ios"] .live-app .live-nav a:not([aria-current="page"]):hover { background: rgb(221 229 211 / 0.5); color: var(--live-muted); }
+  :root[data-shell="ios"] :is(.live-app, .live-dialog) [data-slot="button"]:hover { transform: none; translate: none; }
+  :root[data-shell="ios"] .live-app .start-here:hover svg { transform: none; }
+}
