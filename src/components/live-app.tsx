@@ -18,6 +18,7 @@ import { useDashboard, useFirstChurch } from "@/components/workspace/dashboard";
 import { LiveAuth, type LiveEntryIntent } from "@/components/live-auth";
 import { authWords, DrawnIn, leftKey, useEntryLanguage } from "@/components/live-auth-words";
 import { words as wordsFor, type Language, type Words } from "@/lib/words";
+import { useBook } from "@/lib/words/use-book";
 import type { LiveArea } from "@/components/workspace/areas";
 import { stateWords } from "@/components/workspace/failure";
 import { LiveRoomLoading } from "@/components/workspace/primitives";
@@ -276,6 +277,9 @@ function LiveRooms({
       document.documentElement.lang = "en";
     };
   }, [shown]);
+  // A room, the welcome and the launch failure are drawn only once their reader's book is in hand: until then the launch
+  // line stands, as it does while their data comes, so a Spanish reader never sees them in English first.
+  const bookReady = useBook([deviceLanguage, shown, kept && !kept.visiting ? kept.room.user.language : undefined]);
   // Asked from the hour the app was opened, so the question stays the same and the first page is what is coming.
   // Read after the page wakes (0 on the server, which has no present hour), so the server can draw the door.
   const openedAt = useSyncExternalStore(noChange, hourOpened, () => 0);
@@ -458,7 +462,7 @@ function LiveRooms({
   if (look || signedOut || unknown) {
     // A sample visitor reads the rooms in their own device's language, kept room or not; a member in their saved one.
     const lookLanguage = kept && !kept.visiting ? kept.room.user.language : deviceLanguage;
-    const first = look && firstLookData(look, lookLanguage, kept ? { allowed: kept.allowed, visiting: kept.visiting, answers: helpKept?.answers } : {});
+    const first = look && bookReady && firstLookData(look, lookLanguage, kept ? { allowed: kept.allowed, visiting: kept.visiting, answers: helpKept?.answers } : {});
     // The sheet is drawn once, as what it will stay: not as "join" and then as sign-in with a notice.
     const sheetKnown = invitationGood !== undefined;
     const entry = badInvite ? "signin" : intent;
@@ -470,12 +474,12 @@ function LiveRooms({
         {(signedOut || unknown) && sheetKnown && (unknown ? (["en", "es"] as const) : [deviceLanguage]).map((language) => (
           <div key={`door-${language}`} className="door-out" data-maybe={unknown ? "" : undefined} data-language={language}>
             <DrawnIn value={unknown ? language : null}>
-              <LiveAuth key={entry} intent={entry} sampleEntry={sampleEntry && !liveToken} enterSample={enterSample} badInvite={badInvite} behind={!!first || lookComing} onSampleRefused={() => setLookOver(true)} />
+              <LiveAuth key={entry} intent={entry} sampleEntry={sampleEntry && !liveToken} enterSample={enterSample} badInvite={badInvite} behind={!!first || lookComing || (!!look && !bookReady)} onSampleRefused={() => setLookOver(true)} />
             </DrawnIn>
           </div>
         ))}
         {/* Nor is the sheet drawn before it is known whether a room will be: the launch line stands until then. */}
-        {!first && (unknown || lookComing || !sheetKnown) && (
+        {!first && (unknown || lookComing || (!!look && !bookReady) || !sheetKnown) && (
           <div key="wait" className="door-wait" data-maybe={unknown ? "" : undefined}>
             <LiveRoomLoading />
           </div>
@@ -501,8 +505,9 @@ function LiveRooms({
   }
   if (leavingForSample) return <LiveRoomLoading label={authWords[deviceLanguage].sampleOpening} />;
   // The shared visitor never starts a conference. With none to show, theirs is being rebuilt.
-  if (waiting) return waitedLong ? <LaunchFailure language={deviceLanguage} leave={signOut} /> : <LiveRoomLoading />;
+  if (waiting) return waitedLong && bookReady ? <LaunchFailure language={deviceLanguage} leave={signOut} /> : <LiveRoomLoading />;
   if (sampleVisitor && !churchId) return <SampleResetting language={deviceLanguage} leave={signOut} />;
+  if (!bookReady) return <LiveRoomLoading />;
   if (
     !churchId ||
     (liveToken && !invitationConsumed) ||

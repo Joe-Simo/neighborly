@@ -2,8 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { useEntryLanguage } from "@/components/live-auth-words";
-import { words as wordsFor } from "@/lib/words";
+import { authWords, useEntryLanguage } from "@/components/live-auth-words";
 import { readCardWord } from "@/lib/card-for";
 import { HELD_CARD, dropTheHeldCard, takeTheHeldCard } from "@/lib/held-card";
 import { restWhatIsUnderneath, underneathIsReady } from "@/lib/room-whole";
@@ -319,7 +318,7 @@ export function DoorSweep() {
       {card ? <div className="door-card"><i />{cardFor && <span className="door-card-for"><em>{cardWord} {cardFor}</em></span>}</div> : <div className="door-paper" />}
       {holding && (
         <p className="door-opening" role="status" data-spoken={holding === "spoken" ? "" : undefined} data-low={card ? "" : undefined}>
-          <span>{wordsFor(language).states.opening}</span>
+          <span>{authWords[language].opening}</span>
         </p>
       )}
     </div>,

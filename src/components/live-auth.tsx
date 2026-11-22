@@ -11,7 +11,6 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { holdTheSheet } from "@/components/workspace/door";
 import { Input } from "@/components/ui/input";
-import { words } from "@/lib/words";
 import { LiveField } from "@/components/workspace/primitives";
 import { carryTheCard } from "@/components/workspace/door";
 import { holdAndTurn } from "./courtyard-door";
@@ -97,8 +96,8 @@ export function LiveAuth({
   const [email, setEmail] = useState("");
   const [language] = useEntryLanguage();
   const w = authWords[language];
-  /** "Fill this in." is the workspace's own sentence, read from the same book so the two never differ. */
-  const { needed } = words(language).states;
+  /** "Fill this in." is the workspace's own sentence; a test holds the two the same. */
+  const { needed } = w;
   const [error, setError] = useState<AuthError | "">("");
   const [notice, setNotice] = useState(false);
   /** The server has said yes: the sheet's corner turns green while the workspace opens. */

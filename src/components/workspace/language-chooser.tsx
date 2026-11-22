@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { languageNames, languages, type Language, type Words } from "@/lib/words";
+import { languageNames, languages, learnBook, type Language, type Words } from "@/lib/words";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { takeEntryLanguage, useEntryLanguage } from "@/components/live-auth-words";
 import { api } from "../../../convex/_generated/api";
@@ -49,8 +49,10 @@ function useLanguage(words: Words, churchId: Id<"churches">) {
     choose: (language: Language) => {
       setFailed(false);
       if (language === words.locale) return;
-      if (visiting) setOnDevice(language);
-      else save({ churchId, language }).catch(() => setFailed(true));
+      // The new language's book is fetched first, and only then is the language changed: the rooms turn straight to it.
+      learnBook(language)
+        .then(() => (visiting ? setOnDevice(language) : save({ churchId, language })))
+        .catch(() => setFailed(true));
     },
   };
 }

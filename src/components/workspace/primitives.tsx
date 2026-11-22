@@ -6,15 +6,14 @@ import { Button } from "@/components/ui/button";
 import type { LiveArea } from "@/components/workspace/areas";
 import { useWorkspaceIfAny } from "@/components/workspace/context";
 import { stateWords, wrongControl } from "@/components/workspace/failure";
-import { useEntryLanguage } from "@/components/live-auth-words";
-import { words as wordsFor } from "@/lib/words";
+import { authWords, useEntryLanguage } from "@/components/live-auth-words";
 import { useLaunchCarried } from "@/components/workspace/room-sheet";
 
 /** "Opening…" in the reader's language: the room's own words inside the workspace, the door's language before it. */
 function useOpening() {
   const workspace = useWorkspaceIfAny();
   const [language] = useEntryLanguage();
-  return (workspace?.words ?? wordsFor(language)).states.opening;
+  return workspace?.words.states.opening ?? authWords[language].opening;
 }
 
 /** A short wait inside a room, a form or a dialog: one quiet line. */

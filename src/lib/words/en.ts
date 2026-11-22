@@ -1,6 +1,7 @@
 import { measured as m } from "../jev-set";
 import { refusals } from "../refusals";
-import { nextStep, notFound, sayLikeEnglish, serverRefusalPatternsEs, serverRefusalsEs, serverRefusalsPlain } from "../refusals-es";
+// Only the plain sentences: the Spanish tables (refusals-es.ts) stay with the Spanish book, which English readers never download.
+import { nextStep, notFound, serverRefusalsPlain } from "../refusals-plain";
 import * as sheetsWords from "./rooms/sheets";
 import * as firstDaysWords from "./rooms/first-days";
 import type { Language, Terms, WordSet } from "./sets";
@@ -387,11 +388,14 @@ export function en(set: WordSet) {
       failed: "That change couldn’t be saved. Try again.",
       /** A refusal the backend says in English, in this language, keyed by the English sentence. */
       refused: {
-        ...Object.fromEntries([...Object.values(refusals), ...Object.keys(serverRefusalsEs)].map((sentence) => [sentence, notFound.test(sentence) ? `${sentence} ${nextStep.en}` : sentence])),
+        ...Object.fromEntries(Object.values(refusals).map((sentence) => [sentence, notFound.test(sentence) ? `${sentence} ${nextStep.en}` : sentence])),
         ...Object.fromEntries(Object.entries(serverRefusalsPlain).map(([sentence, said]) => [sentence, said.en])),
       } as Record<string, string>,
-      /** A refusal built around a name or a number: its pattern, and how this language says it. */
-      refusedLike: serverRefusalPatternsEs.map(([pattern]) => [pattern, (...parts: string[]) => sayLikeEnglish(pattern, parts)] as const) as ReadonlyArray<
+      /**
+       * A refusal built around a name or a number: its pattern, and how this language says it. English says every
+       * other refusal as the backend did, and one for something no longer there with its next step.
+       */
+      refusedLike: [[/^(.*not found\.)$/, (sentence: string) => `${sentence} ${nextStep.en}`]] as ReadonlyArray<
         readonly [RegExp, (...parts: string[]) => string]
       >,
     },
