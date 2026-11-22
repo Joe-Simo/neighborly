@@ -5,6 +5,13 @@ import { withBotId } from "botid/next/config";
 // The backend's own web address. Calendar feeds live there, but people see them on this site's domain.
 const convexSite = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
 
+/** Sent with every page and file. SAMEORIGIN, not DENY: BotID frames its own challenge on this origin. A private invitation link (?invite=) never leaves in a Referer to another site. */
+export const securityHeaders = [
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+];
+
 const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
@@ -22,7 +29,12 @@ const nextConfig: NextConfig = {
   // /about and /sobre are the parents of the two pages about Kind Helps; a reader who trims the address lands on how it was made.
   // The offline worker lives under /serwist/ but looks after the whole site, and a new deploy's worker is found on the next visit.
   async headers() {
-    return [{ source: "/serwist/sw.js", headers: [{ key: "Service-Worker-Allowed", value: "/" }, { key: "Cache-Control", value: "public, max-age=0, must-revalidate" }] }];
+    return [
+      // No page is ever shown inside another site's frame (clickjacking), types are never guessed, and other sites
+      // are told only this site's origin, never a page's address with its query.
+      { source: "/:path*", headers: securityHeaders },
+      { source: "/serwist/sw.js", headers: [{ key: "Service-Worker-Allowed", value: "/" }, { key: "Cache-Control", value: "public, max-age=0, must-revalidate" }] },
+    ];
   },
   async redirects() {
     return [
