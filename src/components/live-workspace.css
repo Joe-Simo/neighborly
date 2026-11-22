@@ -695,7 +695,7 @@
   LiveDialog: the title and the way out stay in view while a long form scrolls,
   and so does the form's last line, the button.
 */
-.live-dialog-fixed { --live-dialog-pad: 32px; }
+.live-dialog-fixed { --live-dialog-pad: 30px; }
 .live-dialog-fixed [data-slot="dialog-header"] { position: sticky; top: 0; z-index: 2; flex-direction: row; align-items: flex-start; justify-content: space-between; gap: var(--space-12) 12px; background: #f5f3ec; box-shadow: 0 -30px 0 #f5f3ec; padding-bottom: var(--space-8); }
 .live-dialog-fixed [data-slot="dialog-header"] :is([data-slot="button"], [data-slot="dialog-close"]) { flex: none; width: 44px; height: 44px; margin: -6px -10px 0 0; color: var(--live-muted); }
 .live-dialog-fixed [data-slot="dialog-description"] { margin-top: -14px; }
