@@ -88,6 +88,14 @@ describe("areas and routing", () => {
     const rows = await t.run((ctx) => ctx.db.query("webRequests").collect());
     expect(rows.map((row) => row.churchId)).toEqual([ids.dearborn.churchId]);
   });
+  test("a phone-only ask with a mistyped zip does not spend that device's one unverified ask of the day", async () => {
+    const { t } = await setup();
+    const phoneOnly = (zip: string) => ({ ...ask({ zip, ipHash: "ip-typo", deviceHash: "device-typo" }), email: "", phone: "313-555-0100" });
+    expect((await t.mutation(internal.intake.receive, phoneOnly("94103"))).result).toBe("no_team");
+    expect((await t.mutation(internal.intake.receive, phoneOnly("99999"))).result).toBe("unknown_zip");
+    expect((await t.mutation(internal.intake.receive, phoneOnly("48201"))).result).toBe("landed");
+    expect((await t.mutation(internal.intake.receive, phoneOnly("48201"))).result).toBe("slow");
+  });
   test("a team that switches the form off is skipped", async () => {
     const { t, ids, as } = await setup();
     await as(ids.dearborn.userId).mutation(api.intake.saveSettings, { churchId: ids.dearborn.churchId, enabled: false, address: "48124", miles: 5 });
