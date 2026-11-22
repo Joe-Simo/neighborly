@@ -17,7 +17,9 @@ import { PageLanguage } from "@/components/page-language";
 
 const convexOrigin = process.env.NEXT_PUBLIC_CONVEX_URL && new URL(process.env.NEXT_PUBLIC_CONVEX_URL).origin;
 
-export const metadata: Metadata = { robots: { index: false, follow: false } };
+// No <title> from React here: the head names the tab in the reader's language before the first paint (first-tab.ts),
+// and the app names it after. A title React rendered it would write back, in English, as the page wakes.
+export const metadata: Metadata = { title: null, robots: { index: false, follow: false } };
 
 export default function LiveAppLayout({
   children,

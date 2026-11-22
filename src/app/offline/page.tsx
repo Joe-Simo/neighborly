@@ -7,7 +7,9 @@ import { words } from "@/lib/words";
 import { TryAgain } from "./try-again";
 
 export const metadata: Metadata = {
-  title: words("en").states.offlinePageTab,
+  // No title from React: the head names the tab in the reader's language (first-tab.ts), and without scripts the
+  // page's own <noscript> does, in English.
+  title: null,
   description: edgeWords.en.offlineAbout,
   // A link to this page, pasted into a chat, says what it is and does not pass as the home page.
   openGraph: { ...linkPreview, title: words("en").states.offlinePageTab, description: edgeWords.en.offlineAbout },
@@ -28,6 +30,8 @@ export default function Offline() {
     lines={{ en: en.offlineTitle, es: es.offlineTitle }}
     abouts={{ en: edgeWords.en.offlineAbout, es: edgeWords.es.offlineAbout }}
     ways={{ en: <TryAgain label={en.tryAgain} />, es: <TryAgain label={es.tryAgain} /> }}>
+    {/* Out of React's hands (a <title> it rendered it would write back as the page wakes): read only without scripts. */}
+    <noscript dangerouslySetInnerHTML={{ __html: `<title>${en.offlinePageTab}</title>` }} />
     <ReaderLanguage tabs={{ en: en.offlinePageTab, es: es.offlinePageTab }} abouts={{ en: edgeWords.en.offlineAbout, es: edgeWords.es.offlineAbout }} />
   </EdgeSheet>;
 }
