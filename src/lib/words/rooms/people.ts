@@ -69,7 +69,7 @@ export const en = (t: Terms, place: string) => ({
   form: {
     createTeam: "Create team",
     planMeeting: "Plan meeting",
-    createInvitation: "Create the meeting invitation",
+    createInvitation: "Create the invitation",
     title: "Title",
     starts: "Starts",
     ends: "Ends",
