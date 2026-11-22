@@ -90,6 +90,7 @@ export function FrescoThreshold() {
     // Where the invitation's words end, measured once for each size of window (they never move within one), never on the frames of the walk.
     let words: { size: string; foot: number } | undefined;
     // The parts drawn with each of the walk's values (relief-journey.css). The stage keeps its own copy of the values scripts read from it; those values are registered not to pass down (relief-journey.css).
+    const doorLink = host.querySelector<HTMLElement>(".fresco-door");
     const all = (selector: string) => [...host.querySelectorAll<HTMLElement>(selector)];
     const drawnBy: Record<string, HTMLElement[]> = { "--door": all(".fresco-doors i"), "--grow": [wall, ...all(".fresco-doors, .fresco-ring")], "--inside": all(".fresco-doors i, .fresco-ring, .fresco-face"), "--come": all(".fresco-slot>span, .fresco-slip"), "--stand": all(".fresco-standing") };
     const put = (name: string, value: string) => { if (name !== "--stand") host.style.setProperty(name, value); for (const part of drawnBy[name] ?? []) part.style.setProperty(name, value); };
@@ -147,6 +148,14 @@ export function FrescoThreshold() {
       scene.style.scale = String(cover);
       // The painting is centred in the opening by translate too, from the opening's corner.
       scene.style.translate = `calc(-50% + ${(w / 2 - held - pan).toFixed(2)}px) calc(-50% + ${(h / 2 + lift).toFixed(2)}px)`;
+      // The door's link lies over the painted door, whose right edge is 94.7% across the painting. How far that edge passes the window's, and the
+      // painting's scale, let the link alone stop short of a notch beside it, its ring too (courtyard-door.css); the painting never moves for it.
+      if (doorLink) {
+        const paintedLeft = mix(mix(doorX, width / 2, grow), width / 2, inside) - held - pan - paintingWidth / 2;
+        const past = `${((paintedLeft + paintingWidth * .947 - width) / cover).toFixed(1)}px`, scale = cover.toFixed(4);
+        if (doorLink.style.getPropertyValue("--door-past") !== past) doorLink.style.setProperty("--door-past", past);
+        if (doorLink.style.getPropertyValue("--door-scale") !== scale) doorLink.style.setProperty("--door-scale", scale);
+      }
       put("--door", door.toFixed(4));
       // Once the doors begin to open the words stay out, even while their button still holds the keyboard.
       host.dataset.opening = String(door > 0);
