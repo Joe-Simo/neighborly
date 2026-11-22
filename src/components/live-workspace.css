@@ -151,6 +151,8 @@
   text-transform: uppercase;
   color: #52644f;
   margin: 0 0 var(--space-12);
+  /* The conference's name: one written without spaces turns at the column's edge instead of running under it. */
+  overflow-wrap: anywhere;
 }
 .live-app h1 {
   font:

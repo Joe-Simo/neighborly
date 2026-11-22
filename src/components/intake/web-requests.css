@@ -19,5 +19,6 @@
 .web-requests .web-review h3 { font-size: 13px; margin: 0 0 4px; }
 .web-requests .web-review h4 { font-size: 13px; font-weight: 600; margin: 12px 0 2px; }
 .web-requests .web-partner { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-height: 44px; }
+.web-requests .web-partner > span { min-width: 0; }
 .web-requests .web-link code { word-break: break-all; }
 .web-requests .web-days { list-style: none; padding: 0; margin: 8px 0; }
