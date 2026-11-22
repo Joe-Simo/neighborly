@@ -1601,9 +1601,15 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
   }
 }
 @media (pointer: coarse) {
-  :is(.live-app, .live-dialog) :is([data-slot="button"]:is([data-variant="ghost"], [data-variant="link"]):not([data-size^="icon"]), .help-text-action, a.meeting-decide):not(:is(.live-password-control, .entry-tabs) button, main button.min-h-11, .live-back)::after { content: ""; position: absolute; inset: min(0px, calc(50% - 22px)); }
+  :is(.live-app, .live-dialog) :is([data-slot="button"]:is([data-variant="ghost"], [data-variant="link"]):not([data-size^="icon"]), .help-text-action, a.meeting-decide):not(:is(.live-password-control, .entry-tabs) button, main button.min-h-11, .live-back)::after { content: ""; position: absolute; inset-block: max(min(0px, calc(50% - 22px)), calc(-1 * var(--reach-y, 22px))); inset-inline: max(min(0px, calc(50% - 22px)), calc(-1 * var(--reach-x, 22px))); }
   /* A short name ("Al") reaches 44px across as well as up and down. */
-  .live-main a.live-link::after { inset: -10px min(-4px, calc(50% - 22px)); }
+  .live-main a.live-link::after { inset-block: max(-10px, calc(-1 * var(--reach-y, 10px))); inset-inline: max(min(-4px, calc(50% - 22px)), calc(-1 * var(--reach-x, 22px))); }
+  /* Where acts stand together, in a row or a column, no reach passes the middle of the gap between them: half the
+     row gap up and down, half the inline gap across. Two neighbours' reaches meet at most; they never overlap. */
+  :is(.live-app, .live-dialog) .help-actions { --reach-y: 4px; --reach-x: 5px; }
+  :is(.live-app, .live-dialog) :is(.help-head-actions, .help-home-actions) { --reach-y: 12px; --reach-x: 11px; }
+  :is(.live-app, .live-dialog) .visits-sheet-links { --reach-y: 4px; --reach-x: 13px; }
+  :is(.live-app, .live-dialog) .meeting-sheet li { --reach-y: 2px; --reach-x: 4px; }
 }
 
 /* A short, wide window (an iPad on its side) keeps the room's head to under two fifths of the screen, so the first
