@@ -144,13 +144,25 @@ export function PageTurn({ children }: { children: ReactNode }) {
       turn.toggleAttribute("data-words-cut", reached);
     };
     const { ask: request, drop } = frameStep(read, update);
+    // Tab can land on words while the page is part turned, where they are hidden and would drop the focus: the page is
+    // then shown at rest, turned fully over for the chapter beneath or not at all for its own, at once.
+    const settle = (event: FocusEvent) => {
+      if (!on) return;
+      const edge = from.getBoundingClientRect().bottom, under = to.contains(event.target as Node);
+      if (under ? edge > 0 : edge < tall) scrollBy({ top: under ? Math.ceil(edge) : Math.floor(edge - tall), behavior: "instant" });
+      // Beneath, scrolling on only keeps the page over: bring a control still below the window into it.
+      const below = (event.target as HTMLElement).getBoundingClientRect().bottom - innerHeight;
+      if (under && below > 0) scrollBy({ top: Math.ceil(below) + 48, behavior: "instant" });
+    };
+    from.addEventListener("focusin", settle);
+    to.addEventListener("focusin", settle);
     const sizes = new ResizeObserver(measure);
     sizes.observe(hold); sizes.observe(page); if (beneath) sizes.observe(beneath);
     addEventListener("scroll", request, { passive: true });
     still.addEventListener("change", measure);
     plain.addEventListener("change", measure);
     measure();
-    return () => { drop(); sizes.disconnect(); removeEventListener("scroll", request); still.removeEventListener("change", measure); plain.removeEventListener("change", measure); };
+    return () => { drop(); sizes.disconnect(); removeEventListener("scroll", request); from.removeEventListener("focusin", settle); to.removeEventListener("focusin", settle); still.removeEventListener("change", measure); plain.removeEventListener("change", measure); };
   }, []);
   return <div ref={root} className="relief-turn" data-turned="no">
     <div className="relief-turn-shade" aria-hidden="true" />
