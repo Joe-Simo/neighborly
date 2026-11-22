@@ -23,6 +23,7 @@ const en = (t: Terms) => ({
   added: "Agency added.",
   saved: "Agency saved.",
   removed: "Agency removed.",
+  putBack: "Agency put back on the list.",
   failed: "That could not be saved. Nothing changed; try again.",
 });
 
@@ -45,6 +46,7 @@ const es = (t: Terms): ReturnType<typeof en> => ({
   added: "Se agregó la agencia.",
   saved: "Se guardó la agencia.",
   removed: "Se quitó la agencia.",
+  putBack: "La agencia volvió a la lista.",
   failed: "No se pudo guardar. Nada cambió; inténtalo otra vez.",
 });
 

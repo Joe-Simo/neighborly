@@ -12,6 +12,7 @@ import { useQuery } from "@/components/workspace/query";
 import { LiveField, LiveLoading } from "@/components/workspace/primitives";
 import { LiveFailure } from "@/components/workspace/states";
 import { sayFailure } from "@/components/workspace/failure";
+import { UndoAct } from "@/components/workspace/undo";
 
 type Agency = { id: Id<"referralAgencies">; name: string; phone: string; helpsWith: string };
 type Fields = { name: string; phone: string; helpsWith: string };
@@ -33,11 +34,14 @@ export default function ReferralAgencies() {
   const [said, setSaid] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  // The agency just taken off, kept so the line that says so can put it back as it was.
+  const [back, setBack] = useState<Fields | null>(null);
 
   const run = async (work: () => Promise<unknown>, done: string) => {
     setBusy(true);
     setError("");
     setSaid("");
+    setBack(null);
     try {
       await work();
       setSaid(done);
@@ -55,7 +59,10 @@ export default function ReferralAgencies() {
       <h2 id="referral-agencies-name"><Building2 size={18} aria-hidden="true" /> {text.title}</h2>
       <p className="tools-leaf-deck">{text.deck}</p>
       {error && <LiveFailure message={error} kept="" />}
-      <p className="tools-small" role="status">{said}</p>
+      <p className="tools-small" role="status">
+        {said}
+        {back && <> <UndoAct run={async () => { await run(() => add({ churchId, ...back }), text.putBack); }} /></>}
+      </p>
       {rows === undefined ? (
         <LiveLoading label={text.loading} />
       ) : rows.length === 0 ? (
@@ -82,7 +89,7 @@ export default function ReferralAgencies() {
                     {removing === row.id ? (
                       <>
                         <span>{text.removeQuestion}</span>
-                        <button type="button" className="tools-agency-act" disabled={busy} onClick={() => void run(() => remove({ churchId, id: row.id }), text.removed).then(() => setRemoving(null))}>{text.removeSure}</button>
+                        <button type="button" className="tools-agency-act" disabled={busy} onClick={() => void run(() => remove({ churchId, id: row.id }), text.removed).then((done) => { setRemoving(null); if (done) setBack({ name: row.name, phone: row.phone, helpsWith: row.helpsWith }); })}>{text.removeSure}</button>
                         <button type="button" className="tools-agency-act" onClick={() => setRemoving(null)}>{text.keep}</button>
                       </>
                     ) : (

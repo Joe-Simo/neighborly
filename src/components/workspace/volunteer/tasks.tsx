@@ -100,16 +100,16 @@ export function TasksSection() {
                       )}
                       <Button
                         variant="outline"
-                        aria-label={task.complete ? words.tasks.reopenTask(sampleSaid(task.title)) : `${words.tasks.markDone}: ${task.title}`}
+                        aria-label={task.complete ? words.tasks.reopenTask(sampleSaid(task.title)) : `${words.tasks.markDone}: ${sampleSaid(task.title)}`}
                         disabled={pending}
                         onClick={async (event) => {
                           const pressed = event.currentTarget;
                           const saved = await perform(
                             { type: "setTaskComplete", taskId: task.id, complete: !task.complete },
-                            task.complete ? words.tasks.openAgain(task.title) : words.tasks.markedDone(task.title),
+                            task.complete ? words.tasks.openAgain(sampleSaid(task.title)) : words.tasks.markedDone(sampleSaid(task.title)),
                             task.complete
                               ? undefined
-                              : { command: { type: "setTaskComplete", taskId: task.id, complete: false }, said: words.tasks.openAgain(task.title), returnTo: pressed },
+                              : { command: { type: "setTaskComplete", taskId: task.id, complete: false }, said: words.tasks.openAgain(sampleSaid(task.title)), returnTo: pressed },
                           );
                           if (saved) setTicked(task.complete ? undefined : task.id);
                           if (saved) keepFocus(pressed, !task.complete);

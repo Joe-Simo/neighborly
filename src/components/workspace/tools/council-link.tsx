@@ -30,6 +30,8 @@ function CouncilLinkLeaf() {
   const accept = useMutation(api.councils.accept);
   const unlink = useMutation(api.councils.unlink);
   const [said, setSaid] = useState("");
+  // Leaving a council is asked once more first: only a new invitation from it joins the two again.
+  const [leaving, setLeaving] = useState<string | null>(null);
   const [error, setError] = useState("");
   const run = async (work: () => Promise<unknown>, done: string) => {
     setError("");
@@ -61,9 +63,17 @@ function CouncilLinkLeaf() {
               <li key={row.id}>
                 <span>{row.status === "accepted" ? w.countedBy(row.name) : w.invitedBy(row.name)}</span>{" "}
                 {row.status === "pending" && <Button onClick={() => void run(() => accept({ linkId: row.id }), w.accepted)}>{w.accept}</Button>}{" "}
-                <Button variant="outline" onClick={() => void run(() => unlink({ linkId: row.id }), w.left)}>
-                  {row.status === "accepted" ? w.leave : w.decline}
-                </Button>
+                {leaving === row.id ? (
+                  <>
+                    <span className="tools-small">{w.leaveQuestion}</span>{" "}
+                    <Button variant="outline" onClick={() => void run(() => unlink({ linkId: row.id }), w.left).then(() => setLeaving(null))}>{w.leaveSure}</Button>{" "}
+                    <Button variant="ghost" onClick={() => setLeaving(null)}>{w.stay}</Button>
+                  </>
+                ) : (
+                  <Button variant="outline" onClick={() => (row.status === "accepted" ? setLeaving(row.id) : void run(() => unlink({ linkId: row.id }), w.left))}>
+                    {row.status === "accepted" ? w.leave : w.decline}
+                  </Button>
+                )}
               </li>
             ))}
           </ul>

@@ -2,7 +2,7 @@
 
 import "./volunteer.css";
 import { Button } from "@/components/ui/button";
-import { LiveEmpty, LiveField } from "@/components/workspace/primitives";
+import { LiveEmpty, LiveField, markWrong } from "@/components/workspace/primitives";
 import { DateField } from "@/components/workspace/date-field";
 import { useWorkspace } from "@/components/workspace/context";
 import { readDays } from "@/components/workspace/volunteer/days";
@@ -66,10 +66,11 @@ export function TimeOffSection() {
           variant="outline"
           disabled={pending || !ownPerson}
           onClick={() =>
-            void perform({
-              type: "setCoverOptIn",
-              optedIn: !ownPerson?.coverOptIn,
-            })
+            void perform(
+              { type: "setCoverOptIn", optedIn: !ownPerson?.coverOptIn },
+              ownPerson?.coverOptIn ? words.timeOff.coverStopped : words.timeOff.coverStarted,
+              { command: { type: "setCoverOptIn", optedIn: !!ownPerson?.coverOptIn }, said: ownPerson?.coverOptIn ? words.timeOff.coverStarted : words.timeOff.coverStopped },
+            )
           }
         >
           {ownPerson?.coverOptIn
@@ -89,7 +90,7 @@ function LiveAvailability({
   data: LiveWorkspaceData;
   run: (command: LiveCommand, success?: string, undo?: { command: LiveCommand; said: string }) => Promise<boolean>;
 }) {
-  const { words } = useWorkspace();
+  const { words, pending } = useWorkspace();
   return (
     <section className="live-section">
       <h2>{words.timeOff.availableTitle}</h2>
@@ -108,6 +109,7 @@ function LiveAvailability({
                 aria-label={`${words.timeOff.removeDates}: ${readDays(words, item.start, item.end)}`}
                 variant="outline"
                 size="sm"
+                disabled={pending}
                 onClick={() =>
                   void run(
                     { type: "removeAvailability", availabilityId: item.id },
@@ -127,12 +129,11 @@ function LiveAvailability({
           event.preventDefault();
           const form = event.currentTarget;
           const f = new FormData(form);
+          const start = String(f.get("start")), end = String(f.get("end"));
+          if (end < start) markWrong(form, "end", words.timeOffForm.orderError);
+          if (!form.checkValidity()) return;
           if (
-            await run({
-              type: "addAvailability",
-              start: String(f.get("start")),
-              end: String(f.get("end")),
-            })
+            await run({ type: "addAvailability", start, end }, words.timeOff.availabilityAdded)
           )
             form.reset();
         }}
@@ -146,7 +147,7 @@ function LiveAvailability({
           </LiveField>
         </div>
         <div>
-          <Button type="submit" variant="outline">
+          <Button type="submit" variant="outline" disabled={pending}>
             {words.timeOff.addAvailable}
           </Button>
         </div>
