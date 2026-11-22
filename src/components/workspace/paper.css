@@ -718,6 +718,8 @@
 .live-app .help-initials + .help-initials { margin-left: -14px; padding-left: 8px; width: 38px; }
 /* A commitment row reads title first; where and when sit under it. */
 .live-commitment-row .live-row-main { display: flex; flex-direction: column; }
+/* A title or a name written as one very long word turns at the row's edge. */
+.live-commitment-row .live-row-main > * { overflow-wrap: anywhere; }
 .live-commitment-row .live-row-main > .live-meta { order: 1; margin: 2px 0 var(--space-4); }
 .live-commitment-row .live-row-main > h3 { order: 0; }
 .live-commitment-row .live-row-main > :not(.live-meta, h3) { order: 2; }
@@ -1505,12 +1507,13 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 }
 
 /* A name is kept whole on its line, and when it is longer than the line (a family's full name on a phone) it turns
-   between its words: it never runs past the page, and never breaks inside a word. */
+   between its words: it never runs past the page. Only a name written without spaces and longer than the whole line
+   breaks inside itself, at the line's edge. */
 .live-app :is(.live-name, .visits-name:not(.visits-aside-day *), .help-row h3 > .help-row-open, .help-sheet .help-from strong, .visits-written-who strong, .volunteer-who) {
   display: inline-block;
   max-width: 100%;
   white-space: normal;
-  overflow-wrap: normal;
+  overflow-wrap: anywhere;
 }
 /* A name and the punctuation after it stay on one line. */
 .live-glue, .live-name-stop, .live-name-word { white-space: nowrap; }

@@ -276,7 +276,7 @@
 @keyframes help-opening { from { opacity: 0; } }
 /* Beside the side column the room's own column is narrow until about 1720px, so a sheet reads down, as on a tablet. */
 @media (min-width: 1280px) and (max-width: 1719px) {
-  .live-main:has(> .live-aside:not(:empty)) .help-sheet-body { grid-template-columns: 1fr; }
+  .live-main:has(> .live-aside:not(:empty)) .help-sheet-body { grid-template-columns: minmax(0, 1fr); }
   .live-main:has(> .live-aside:not(:empty)) .help-sheet[data-blank] { display: block; }
   .live-main:has(> .live-aside:not(:empty)) .help-sheet[data-blank] .help-assistant-line { margin: var(--space-16) 0 0; padding: var(--space-16) 0 0; border-top: 1px solid var(--live-line); border-left: 0; }
 }
@@ -422,3 +422,5 @@
 .help-next-step svg { position: relative; top: 2px; flex: none; }
 /* The household's lines lie in the form as its own lines; their box is only there to be said aloud as they arrive. */
 .help-repeat { display: contents; }
+/* What the assistant read, beside its mark: a long word in it (a name, a link) turns at the sheet's edge. */
+.help-sheet .help-assistant > span { min-width: 0; overflow-wrap: anywhere; }

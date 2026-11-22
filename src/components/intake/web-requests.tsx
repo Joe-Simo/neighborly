@@ -1,5 +1,6 @@
 "use client";
 
+import { systemSaid } from "@/lib/system-sentences";
 import { useEffect, useState } from "react";
 import { useAction, useMutation } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
@@ -114,7 +115,7 @@ export function WebRequests() {
       {requests && requests.passedOn.length > 0 && (
         <div className="web-traces">
           <h3>{w.passedOn}</h3>
-          <ul>{requests.passedOn.map((pass) => <li key={pass.at}>{w.trace(pass.toName, pass.reason)}</li>)}</ul>
+          <ul>{requests.passedOn.map((pass) => <li key={pass.at}>{w.trace(pass.toName, systemSaid(words.locale, pass.reason))}</li>)}</ul>
         </div>
       )}
     </section>
@@ -135,7 +136,7 @@ function WebRow({ row, churchId, sample }: { row: Row; churchId: Id<"churches">;
   const targets = useQuery(api.intake.passTargets, open === "pass" ? { churchId, requestId: row.id } : "skip");
   return (
     <article className={`help-row web-row${row.late ? " web-late" : ""}`}>
-      {row.passedFrom && <p className="web-passed">{w.passedFrom(row.passedFrom.name, row.passedFrom.reason)}</p>}
+      {row.passedFrom && <p className="web-passed">{w.passedFrom(row.passedFrom.name, systemSaid(words.locale, row.passedFrom.reason))}</p>}
       <p className="live-name">{row.kinds.map((kind) => w.kinds[kind]).join(" · ")}{row.language === "es" ? ` · ${w.spanish}` : ""}</p>
       {/* The person's own words, as plain text: React escapes them and nothing is turned into a link. */}
       <p className="web-need">{row.need}</p>

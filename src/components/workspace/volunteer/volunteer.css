@@ -59,6 +59,7 @@
 .volunteer-task h3 {
   /* A row's flex item: it may be narrower than one long word, so a title written without spaces turns in the row. */
   min-width: 0;
+  overflow-wrap: anywhere;
   margin: 0 0 var(--space-4);
   font: 400 24px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif;
   letter-spacing: -0.015em;

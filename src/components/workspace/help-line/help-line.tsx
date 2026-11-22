@@ -1,5 +1,6 @@
 "use client";
 
+import { systemSaid } from "@/lib/system-sentences";
 import { numberLocales } from "@/lib/words/numbers";
 import { DateLeaf } from "@/components/workspace/primitives";
 
@@ -1023,7 +1024,7 @@ function HelpLineView({
                 {leaf(call.returnedAt ?? call.takenAt)}
                 <div>
                   <h3>{caller(call, words)}</h3>
-                  <p>{sampleSaid(call.outcome || call.note)}</p>
+                  <p>{call.outcome ? systemSaid(words.locale, sampleSaid(call.outcome)) : sampleSaid(call.note)}</p>
                   {call.nextStep && (
                     <p className="help-assistant help-next-step">
                       <Sparkles size={16} aria-hidden="true" />
