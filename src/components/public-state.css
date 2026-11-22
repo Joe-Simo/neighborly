@@ -31,6 +31,8 @@
 .public-state [data-slot=button]{transition:translate 90ms ease,box-shadow 90ms ease}
 
 @media (prefers-reduced-motion: reduce){.public-state [data-slot=button]{transition:none}}
+/* The quiet way out under the launch paper's button (Sign out) is a whole 44px target, as the button above it is. */
+.public-state .live-link{display:inline-flex;align-items:center;min-height:44px}
 /* A page that carries both languages shows the reader's own (first-language.ts sets it on the root before paint). */
 :root:lang(es) .public-state [lang="en"],
 :root:not(:lang(es)) .public-state [lang="es"] { display: none; }
