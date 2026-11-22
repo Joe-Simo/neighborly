@@ -606,7 +606,9 @@ export const recordDeposit = mutation({
     for (const id of ids) {
       const entry = await ctx.db.get("ledgerEntries", id);
       if (!entry || entry.churchId !== args.churchId) throw new ConvexError("Entry not found.");
-      if (entry.kind !== "income" || entry.reverses) throw new ConvexError("Only money that came in can be deposited.");
+      // As the list of gifts to deposit shows it: an opening balance was never carried to the bank.
+      if (entry.kind !== "income" || entry.reverses || entry.category === incomeSources.opening) throw new ConvexError("Only money that came in can be deposited.");
+      if (entry.clearedOn) throw new ConvexError("One of these gifts has already cleared the bank on its own.");
       if (entry.depositId) throw new ConvexError("One of these gifts is already in a deposit.");
       if (await ctx.db.query("ledgerEntries").withIndex("by_reverses", (q) => q.eq("reverses", id)).first()) throw new ConvexError("One of these gifts was taken back, so it cannot be deposited.");
       if (entry.date > date) throw new ConvexError("A gift cannot be deposited before the day it was received.");
