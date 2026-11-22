@@ -40,7 +40,19 @@ function device(request: Request): { id: string; set: Extra } {
   const id = crypto.randomUUID();
   return { id, set: { "Set-Cookie": setCookie(DEVICE, id, "/", 31536000) } };
 }
-const senderIp = (request: Request) => request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
+/**
+ * The sender's own address, as Vercel saw it: x-real-ip (what @vercel/functions' ipAddress reads), else the first
+ * x-forwarded-for hop (Vercel writes it; it does not pass on a client's own). Anything else is "", and the backend then
+ * counts this request on its own, never in a bucket shared with other people.
+ */
+const IP_SHAPE = /^[0-9a-fA-F:.]{2,64}$/;
+function senderIp(request: Request) {
+  for (const found of [request.headers.get("x-real-ip"), request.headers.get("x-forwarded-for")?.split(",")[0]]) {
+    const one = found?.trim() ?? "";
+    if (IP_SHAPE.test(one)) return one;
+  }
+  return "";
+}
 
 function backend() {
   const url = process.env.NEXT_PUBLIC_CONVEX_URL, site = process.env.NEXT_PUBLIC_CONVEX_SITE_URL, secret = process.env.INTAKE_SERVER_SECRET;
@@ -67,7 +79,7 @@ async function human() {
   } catch { return false; }
 }
 /** When nothing can be taken (no backend, a failure): the page says to call 211, the line that never closes. */
-const closed = (language: IntakeLanguage) => page(language, { kind: "limit", phone: "211" }, 503);
+const closed = (language: IntakeLanguage) => page(language, { kind: "closed" }, 503);
 const PHONE_SHAPE = /^\(\d{3}\) \d{3}-\d{4}$/;
 /** A team's public phone from a backend answer, in its one shape, or nothing. */
 const phoneFrom = (answer: Record<string, unknown> | null) => (typeof answer?.phone === "string" && PHONE_SHAPE.test(answer.phone) ? answer.phone : undefined);
@@ -75,9 +87,20 @@ const phoneFrom = (answer: Record<string, unknown> | null) => (typeof answer?.ph
 const day = (language: IntakeLanguage, at: number, timeZone: string) =>
   new Intl.DateTimeFormat(language === "es" ? "es-US" : "en-US", { weekday: "long", month: "long", day: "numeric", timeZone }).format(at);
 
-/** GET /help or /ayuda: the empty form, and a quiet device id for the per-device limit. */
+/** The settings the pages need and do not have, by name only (never a value), for the server log. */
+function missingSettings() {
+  return ["NEXT_PUBLIC_CONVEX_URL", "NEXT_PUBLIC_CONVEX_SITE_URL", "INTAKE_SERVER_SECRET"].filter((name) => !process.env[name]);
+}
+
+/**
+ * GET /help or /ayuda: always the empty form, and a quiet device id for the per-device limit. Even when the site is
+ * not set up, a GET shows the form (the log names what is missing); sending then answers with the "closed" page.
+ */
 export async function showForm(language: IntakeLanguage, request: Request) {
-  if (!backend()) return closed(language);
+  if (!backend()) {
+    console.error(`Ask for help: not set up; missing ${missingSettings().join(", ")}`);
+    return page(language, { kind: "form" }, 200, device(request).set);
+  }
   const partner = partnerLink(request);
   if (partner) return partnerDoor(language, request, partner);
   return page(language, { kind: "form" }, 200, device(request).set);
@@ -130,7 +153,7 @@ export async function takeStep(language: IntakeLanguage, request: Request) {
   const partner = partnerLink(request);
   // A partner's device signed in by a code to the partner's own email is trusted as before; everyone else is judged here.
   const signedPartner = Boolean(partner && readKey(cookie(request, PARTNER)));
-  if (!signedPartner && !(await human())) return page(language, { kind: "limit", phone: "211" }, 403);
+  if (!signedPartner && !(await human())) return page(language, { kind: "refused" }, 403);
   if (partner && (step === "code" || step === "resend")) {
     if (step === "resend") return partnerDoor(language, new Request(request.url), partner);
     const answer = await call("/intake/partner/finish", { link: partner, code: text(form, "code", 12) });

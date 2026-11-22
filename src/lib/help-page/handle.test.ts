@@ -59,6 +59,8 @@ describe("the Ask for help pages", () => {
       expect(answer.status).toBe(403);
       const page = await answer.text();
       expect(page).toContain("tel:211");
+      expect(page).toContain("send this from this browser");
+      expect(page).not.toContain("another request");
       expect(page).not.toContain("ana@example.org");
       expect(sent).toHaveLength(0);
     }
@@ -79,10 +81,59 @@ describe("the Ask for help pages", () => {
     expect(judged).toBe(0);
     expect(answer.status).toBeLessThan(600);
   });
-  test("with no backend set, the page says to call 211 and keeps nothing", async () => {
-    delete process.env.INTAKE_SERVER_SECRET;
-    const answer = await showForm("es", new Request("https://kindhelps.com/ayuda"));
-    expect(answer.status).toBe(503);
+  test("a GET always shows the form, even with the site not set up; sending then says closed, not a limit", async () => {
+    const errors: string[] = [];
+    const realError = console.error;
+    console.error = (line: string) => void errors.push(line);
+    try {
+      for (const name of ["INTAKE_SERVER_SECRET", "NEXT_PUBLIC_CONVEX_SITE_URL", "NEXT_PUBLIC_CONVEX_URL"]) {
+        Object.assign(process.env, env);
+        delete process.env[name];
+        for (const language of ["en", "es"] as const) {
+          const answer = await showForm(language, new Request(`https://kindhelps.com/${language === "es" ? "ayuda" : "help"}`));
+          expect(answer.status).toBe(200);
+          const page = await answer.text();
+          expect(page).toContain('<form method="post"');
+          expect(page).not.toMatch(/another request|otra petición/);
+        }
+        expect(errors.at(-1)).toContain(name);
+        expect(errors.at(-1)).not.toContain(env.INTAKE_SERVER_SECRET);
+        const sending = await takeStep("en", post(good));
+        expect(sending.status).toBe(503);
+        const page = await sending.text();
+        expect(page).toContain("take requests online right now");
+        expect(page).not.toContain("another request");
+      }
+    } finally { console.error = realError; }
+    expect(sent).toHaveLength(0);
+  });
+  test("a GET with any cookie or parameter still shows the form", async () => {
+    for (const url of ["https://kindhelps.com/help?k=x", "https://kindhelps.com/help?p=bad", "https://kindhelps.com/help?slow=1"]) {
+      const page = await (await showForm("en", new Request(url, { headers: { cookie: "kh_request=0123456789abcdef0123456789abcdef; kh_device=abcdefgh-123; kh_partner=zz" } }))).text();
+      expect(page).toContain('<form method="post"');
+      expect(page).not.toContain("another request");
+    }
+  });
+  test("the limit page is only the backend's own \"slow\"; a backend that fails or is closed says closed", async () => {
+    globalThis.fetch = (async () => new Response(JSON.stringify({ result: "closed" }), { status: 503 })) as unknown as typeof fetch;
+    expect(await (await takeStep("en", post(good))).text()).toContain("take requests online right now");
+    globalThis.fetch = (async () => { throw new Error("down"); }) as unknown as typeof fetch;
+    expect(await (await takeStep("en", post(good))).text()).toContain("take requests online right now");
+    globalThis.fetch = (async () => new Response(JSON.stringify({ result: "slow" }), { status: 429 })) as unknown as typeof fetch;
+    expect(await (await takeStep("en", post(good))).text()).toContain("another request");
+  });
+  test("the sender's address is Vercel's x-real-ip, else the first forwarded hop, else nothing (never a shared value)", async () => {
+    const asked = async (headers: Record<string, string>) => {
+      sent = [];
+      const form = new FormData();
+      for (const [name, value] of Object.entries(good)) for (const one of Array.isArray(value) ? value : [value]) form.append(name, one);
+      await takeStep("en", new Request("https://kindhelps.com/help", { method: "POST", body: form, headers }));
+      return sent[0]?.body.ip;
+    };
+    expect(await asked({ "x-real-ip": "198.51.100.4", "x-forwarded-for": "203.0.113.9, 10.0.0.1" })).toBe("198.51.100.4");
+    expect(await asked({ "x-forwarded-for": "203.0.113.9, 10.0.0.1" })).toBe("203.0.113.9");
+    expect(await asked({ "x-forwarded-for": "not an address" })).toBe("");
+    expect(await asked({})).toBe("");
   });
   test("under 18 sees the young people's lines and nothing is sent", async () => {
     const page = await (await takeStep("en", post({ ...good, adult: "no" }))).text();
