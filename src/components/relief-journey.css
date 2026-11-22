@@ -135,7 +135,9 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 [data-picture=call] [data-piece=cord]{transform-origin:86.5% 58%;transform:rotate(calc(sin(var(--h) * 180deg) * 4deg + var(--q) * -1.5deg))}
 /* The visit: the door is shut and opens a hand's width; the light comes up behind it; the two who came bring their hands up. */
 [data-picture=visit] [data-piece=light]{opacity:var(--h)}
-[data-picture=visit] [data-piece=leaf]{transform-origin:12.3% 50%;transform:scaleX(calc(1 + var(--q) * .135))}
+/* A door opens into the house, so the leaf never crosses its own frame: fully open, its painted edge (47.35% of the piece) comes to rest
+   against the far jamb's inner edge (49.6%), hinged at 12.3%, so it widens by 2.25/35.05 and no more. Its edge posts stay whole. */
+[data-picture=visit] [data-piece=leaf]{transform-origin:12.3% 50%;transform:scaleX(calc(1 + var(--q) * .064))}
 [data-picture=visit] [data-piece=hands]{transform:translate(calc(var(--q) * -30px),calc(var(--q) * 26px))}
 /* No ground is drawn under the door, so nothing is cast below its foot: the shadows end there, not at the picture's cut edge. */
 /* The leaf's cut left a faint strip beyond its own edge, which showed beside the post while the door stood open wider. */
