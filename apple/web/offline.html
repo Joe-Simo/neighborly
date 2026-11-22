@@ -14,5 +14,15 @@
   <p class="deck">Nothing is lost. Your team’s week will be here as soon as this device is back online.</p>
   <a class="again" href="https://kindhelps.com/app">Try again</a>
 </main>
+<script>
+/* The device's language, as the shell's own words (NativeWords) choose it; the words are set before the first paint. */
+if (/^es/i.test(navigator.language || "")) {
+  document.documentElement.lang = "es";
+  document.title = "Sin conexión";
+  document.querySelector("h1").innerHTML = "Ahora no hay<br>conexión.";
+  document.querySelector(".deck").textContent = "No se ha perdido nada. La semana de tu equipo estará aquí en cuanto este dispositivo vuelva a tener conexión.";
+  document.querySelector(".again").textContent = "Intentar de nuevo";
+}
+</script>
 </body>
 </html>

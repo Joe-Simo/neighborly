@@ -87,9 +87,9 @@
   .help-lines[data-shape="pair"] .help-line-row { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
 }
 @media (max-width: 850px) { .help-home { grid-template-columns: 1fr; gap: var(--space-24) 26px; } }
-/* The link sits in its line at the line's own height; on touch its reach comes from the shared ::after, capped so it never meets the lines above and below. */
-.live-app .help-timeline p .help-text-action[data-slot="button"] { min-height: 0; }
-.help-timeline p { --reach-y: 9px; }
+/* The link is at least 24px tall in its line; on touch the shared ::after reaches 10px above and below it to 44px, inside the 16px each line keeps clear. */
+.live-app .help-timeline p .help-text-action[data-slot="button"] { min-height: 24px; }
+.help-timeline p { --reach-y: 10px; }
 @media (max-width: 640px) {
   .help-timeline .help-sep { display: none; }
   .help-timeline .help-sep + [data-slot="button"] { display: flex; margin-block: 2px 0; }
