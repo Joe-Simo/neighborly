@@ -302,4 +302,19 @@ const serverTabs: Record<Language, string>[] = [
  * title back as the page wakes, so this is said again then.
  */
 export const tabInReadersLanguage = (title: string) =>
-  serverTabs.find((tab) => languages.some((language) => tab[language] === title))?.[entryLanguageNow()] ?? title;
+  serverTabs.find((tab) => languages.some((language) => tab[language] === title))?.[pageLanguageNow()] ?? title;
+
+/**
+ * The language the page says it is in (<html lang>): the door's before anyone is signed in (first-language.ts,
+ * PageLanguage), the member's own once their room is drawn (live-app.tsx). The tab is named in it, so it never
+ * disagrees with the words on the page, signing in or out.
+ */
+export const pageLanguageNow = (): Language => languages.find((language) => language === document.documentElement.lang) ?? entryLanguageNow();
+
+/**
+ * A sheet that named the tab puts back the one it found as it leaves, but only while the tab is still its own and the
+ * reader is still in the app: a room or another page that has named the tab since keeps its name.
+ */
+export function giveTabBack(found: string, mine: string) {
+  if (document.title === mine && /^\/app(\/|$)/.test(window.location.pathname)) document.title = tabInReadersLanguage(found);
+}

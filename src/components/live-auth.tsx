@@ -15,7 +15,7 @@ import { LiveField } from "@/components/workspace/primitives";
 import { carryTheCard } from "@/components/workspace/door";
 import { holdAndTurn } from "./courtyard-door";
 import { underneathIsReady } from "@/lib/room-whole";
-import { authWords, DrawnIn, entryLanguageNow, tabInReadersLanguage, useEntryLanguage, useJustLeft, type AuthError } from "./live-auth-words";
+import { authWords, DrawnIn, entryLanguageNow, giveTabBack, useEntryLanguage, useJustLeft, type AuthError } from "./live-auth-words";
 import { EntrySheet } from "./entry-sheet";
 
 export type LiveEntryIntent = "start" | "join" | "signin";
@@ -123,11 +123,9 @@ export function LiveAuth({
   const drawnIn = useContext(DrawnIn);
   useEffect(() => {
     if (behind || (drawnIn && drawnIn !== entryLanguageNow())) return;
-    const found = document.title;
-    document.title = `${authWords[entryLanguageNow()][flow === "signUp" ? "create" : "signIn"]} · Kind Helps`;
-    return () => {
-      document.title = tabInReadersLanguage(found);
-    };
+    const found = document.title, mine = `${authWords[entryLanguageNow()][flow === "signUp" ? "create" : "signIn"]} · Kind Helps`;
+    document.title = mine;
+    return () => giveTabBack(found, mine);
   }, [flow, language, behind, drawnIn]);
 
   // The sheet leaves with its answer given: on the web it is held over the page as it stands, and folds into the
