@@ -10,6 +10,7 @@ import { restWhatIsUnderneath, underneathIsReady } from "@/lib/room-whole";
 import { ROOM_WHOLE } from "@/components/workspace/room-sheet";
 import { roomTurn } from "@/components/workspace/room-turn";
 import "@/components/workspace/door.css";
+import { EASE_PAPER_LEAVE } from "@/lib/motion";
 
 /**
  * The paper's welcome for someone who has just come through the door: the sign-in sheet or the sample link.
@@ -99,8 +100,8 @@ const CARRY = 220;
  */
 function foldTheSheet(hold: HTMLElement) {
   const [top, foot] = hold.querySelectorAll<HTMLElement>(".door-fold-half");
-  foot.animate([{ transform: "rotateX(0deg)" }, { transform: "rotateX(-90deg)", visibility: "hidden" }], { duration: FOLD, easing: "cubic-bezier(0.5, 0, 0.9, 0.7)", fill: "forwards" });
-  const up = top.animate([{ transform: "none" }, { transform: `translateY(${-Math.round(window.innerHeight * 0.5 + 40)}px)` }], { duration: CARRY, delay: FOLD - 40, easing: "cubic-bezier(0.5, 0, 0.9, 0.6)", fill: "forwards" });
+  foot.animate([{ transform: "rotateX(0deg)" }, { transform: "rotateX(-90deg)", visibility: "hidden" }], { duration: FOLD, easing: EASE_PAPER_LEAVE, fill: "forwards" });
+  const up = top.animate([{ transform: "none" }, { transform: `translateY(${-Math.round(window.innerHeight * 0.5 + 40)}px)` }], { duration: CARRY, delay: FOLD - 40, easing: EASE_PAPER_LEAVE, fill: "forwards" });
   return up.finished.then(() => undefined);
 }
 /** The home story's sheet that the sweep came up over (paper-arrival.tsx) is let go, under the door's paper. */

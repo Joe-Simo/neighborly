@@ -2,6 +2,7 @@
 
 import { whenIdle } from "@/lib/idle";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { EASE_PAPER } from "@/lib/motion";
 
 /** The courtyard's own cut sheets (P26), back to front: the painting cut along its depth, its people on a sheet of their own. */
 const sheets = ["0", "1", "people", "2", "3", "4", "5"] as const;
@@ -60,7 +61,7 @@ export function CourtyardAssembly() {
       // (courtyard-slots, made from the sheets' alpha): a pop-up, each piece standing up into the slot it came from.
       // While a sheet stands it throws its hard shadow down onto the sheet behind: a dark copy of its own outline under it, moved and
       // faded on the compositor only, which tightens into the painting's own resting relief as it lands, so the swap is exact. No blur.
-      const timing = (index: number) => ({ duration: STAND, delay: index * NEXT, easing: "cubic-bezier(.2,.7,.2,1)", fill: "both" as const });
+      const timing = (index: number) => ({ duration: STAND, delay: index * NEXT, easing: EASE_PAPER, fill: "both" as const });
       const turns = [...element.querySelectorAll<HTMLElement>(".courtyard-rise")].flatMap((rise, index) => [
         rise.querySelector("img")!.animate([{ transform: "rotateX(60deg)" }, { transform: "none" }], timing(index)),
         rise.querySelector("i")!.animate([{ transform: "translateY(14px) rotateX(60deg)", opacity: .34 }, { transform: "none", opacity: 0 }], timing(index)),

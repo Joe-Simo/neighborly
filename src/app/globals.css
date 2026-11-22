@@ -3,6 +3,12 @@
 /* Registered with the first stylesheet: registered late (paper.css comes with the yes card), it restyles the whole page mid-scroll. */
 @property --paper-corner { syntax: "<color>"; inherits: true; initial-value: #e6e1d2; }
 /* Every framed control rests on a hairline contact shadow; pressed, the shadow goes into the paper instead. One token pair, every room and page. */
+:root {
+  /* Paper's one ease for every timed entrance, and the one curve for a leave (src/lib/motion.ts holds the same for script). Scroll-scrubbed motion has no curve. */
+  --ease-paper: cubic-bezier(.2,.7,.2,1);
+  --ease-paper-leave: cubic-bezier(.6,0,.9,.6);
+  --paper-card-ms: 260ms; --paper-sheet-ms: 320ms; --paper-carry-ms: 380ms;
+}
 :root { --press-rest: 0 1px 0 rgb(40 60 50 / 0.18); --relief-press: inset 0 1px 2px rgb(40 60 50 / 0.2); }
 /* Paper relief: one tone, one edge, one 1px shadow family in the page's green ink, three heights.
    A slip lies on paper, a card stands on the page, a sheet is laid over the room. */
@@ -1171,7 +1177,7 @@ summary:focus-visible,
    Lift: a row or card that opens something steps one height up while it is under the pointer or holds the keyboard
    (a row from flat to a slip, a card to a sheet), in 120ms. Menu items take no press. Reduce Motion: the end states
    are the same, reached at once. Disabled never presses. */
-[data-slot="button"] { transition-property: box-shadow, background-color, border-color, color; transition-duration: 120ms; transition-timing-function: var(--paper-ease, ease); }
+[data-slot="button"] { transition-property: box-shadow, background-color, border-color, color; transition-duration: 120ms; transition-timing-function: var(--paper-ease, var(--ease-paper)); }
 :is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"]:is([data-variant="default"], [data-variant="outline"], [data-variant="secondary"], [data-variant="destructive"]) { box-shadow: var(--press-rest); }
 [data-slot="button"]:is([data-variant="default"], [data-variant="outline"], [data-variant="secondary"], [data-variant="destructive"]):active:not(:disabled, [aria-disabled="true"], [data-disabled], [aria-haspopup], [role="menuitem"]) { box-shadow: var(--relief-press); transition-duration: 0s; }
 [data-slot="button"]:active { translate: none; transform: none; }
@@ -1190,7 +1196,7 @@ nav:is(.week-figures, .glance-tiles) a:focus-visible { box-shadow: 0 0 0 1px var
 .help-row:has(.help-row-open)::before, .live-commitment-row:has(.live-row-opens)::before {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   border-radius: 3px; background: var(--relief-paper); box-shadow: var(--relief-slip);
-  opacity: 0; transition: opacity 120ms var(--paper-ease, ease);
+  opacity: 0; transition: opacity 120ms var(--paper-ease, var(--ease-paper));
 }
 @media (hover: hover) {
   :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):hover { background: none; box-shadow: none; }

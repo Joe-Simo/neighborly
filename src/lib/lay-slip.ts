@@ -1,5 +1,6 @@
 /** Paper's one ease: quick to leave, slow to settle. */
-export const PAPER_EASE = "cubic-bezier(.2,.7,.2,1)";
+import { EASE_PAPER } from "@/lib/motion";
+export const PAPER_EASE = EASE_PAPER;
 const LAY = 620;
 
 /**

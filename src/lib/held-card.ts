@@ -1,4 +1,5 @@
 import "./held-card.css";
+import { EASE_PAPER_LEAVE } from "@/lib/motion";
 
 /** The home page's card, grown to the window and held over it while the sample opens. Kept on the body so it outlives the page that drew it. */
 export const HELD_CARD = "card-held";
@@ -11,7 +12,7 @@ export function dropTheHeldCard() {
   // With less motion asked for it is simply gone: one cut, nothing played.
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return held.remove();
   // The whole grown card lifts as one sheet, its paper, square and name together, so what is under it is seen from the first frame of the lift.
-  const leave = held.animate([{ transform: "none" }, { transform: `translateY(${-(held.getBoundingClientRect().height + 70)}px)` }], { duration: 220, easing: "cubic-bezier(0.5, 0, 0.9, 0.6)", fill: "forwards" });
+  const leave = held.animate([{ transform: "none" }, { transform: `translateY(${-(held.getBoundingClientRect().height + 70)}px)` }], { duration: 220, easing: EASE_PAPER_LEAVE, fill: "forwards" });
   leave.finished.then(() => held.remove(), () => held.remove());
 }
 

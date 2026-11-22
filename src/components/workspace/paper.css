@@ -17,7 +17,7 @@
 .live-app,
 .live-dialog,
 .live-mobile-menu {
-  --paper-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --paper-ease: var(--ease-paper);
   --paper: #f7f4ed;
   --paper-green: #365c46;
   --paper-plum: #6f5f93;
@@ -808,7 +808,7 @@
   color: var(--paper-ink, #283c32);
   font-size: 16px;
   line-height: 1.5;
-  animation: paper-rise 320ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)) backwards;
+  animation: paper-rise 320ms var(--paper-ease, var(--ease-paper)) backwards;
 }
 .live-error > div { flex: 1 1 260px; min-width: 0; }
 .live-error .live-error-recovery { margin-top: var(--space-4); font-size: 15px; color: #5d6657; }
@@ -1410,11 +1410,11 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 .paper-scene[data-kind="offline"] > b { display: block; --fold: #c8962e; }
 .paper-scene[data-kind="error"] > b { display: block; --fold: #6f5f93; }
 /* Laid once: the pile is set down from a little above, the top sheet last. Transform only. */
-.paper-scene > :is(i, .paper-vignette) { animation: paper-scene-lay 420ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)) backwards; }
+.paper-scene > :is(i, .paper-vignette) { animation: paper-scene-lay 420ms var(--paper-ease, var(--ease-paper)) backwards; }
 .paper-scene > :nth-child(2) { animation-delay: 50ms; }
 .paper-scene > :nth-child(3) { animation-delay: 100ms; }
 @keyframes paper-scene-lay { from { translate: 0 -10px; rotate: -3deg; } }
-.live-app .live-state .paper-vignette { animation: paper-scene-lay 420ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)) 100ms backwards; }
+.live-app .live-state .paper-vignette { animation: paper-scene-lay 420ms var(--paper-ease, var(--ease-paper)) 100ms backwards; }
 /* The scene stands to the left of its words, on the words' first line; on a narrow window, above them. */
 .live-app :is(.live-empty, .help-empty):has(> .paper-scene) { grid-template-columns: auto minmax(0, 1fr); gap: var(--space-32) 32px; align-items: start; }
 .live-app .live-state[data-lead] { grid-template-columns: 196px minmax(0, 1fr); }
@@ -1545,13 +1545,13 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
   --tw-ring-shadow: 0 0 #0000;
   box-shadow: var(--relief-sheet);
 }
-[data-slot="dropdown-menu-content"][data-state="open"] { animation: paper-rise-solid 220ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)) both; }
+[data-slot="dropdown-menu-content"][data-state="open"] { animation: paper-rise-solid 220ms var(--paper-ease, var(--ease-paper)) both; }
 [data-slot="dropdown-menu-content"][data-state="closed"] { animation: none; }
 [data-slot="dropdown-menu-content"] :is([data-slot="dropdown-menu-item"], [data-slot="dropdown-menu-radio-item"], [data-slot="dropdown-menu-checkbox-item"]) { min-height: 44px; border-radius: 4px; color: #283c32; font-size: 16px; }
 [data-slot="dropdown-menu-content"] :is([data-slot="dropdown-menu-item"], [data-slot="dropdown-menu-radio-item"], [data-slot="dropdown-menu-checkbox-item"]):is(:focus, [data-highlighted]) { background: #e7ecdc; color: #283c32; }
 @media (prefers-reduced-motion: reduce) { [data-slot="dropdown-menu-content"][data-state="open"] { animation: none; } }
 /* Sheets portalled outside the room (the month, a menu) take the room's ease too. */
-:is(.live-date-sheet, [data-slot="dropdown-menu-content"]) { --paper-ease: cubic-bezier(0.2, 0.7, 0.2, 1); }
+:is(.live-date-sheet, [data-slot="dropdown-menu-content"]) { --paper-ease: var(--ease-paper); }
 /* A sheet laid over the room (the month, a menu) is whole from its first frame and only rises. */
 @keyframes paper-rise-solid { from { transform: translateY(12px); } }
 .live-date-sheet:not(.live-date-bottom) { animation-name: paper-rise-solid; }
@@ -1569,7 +1569,7 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
   line-height: 1.5;
 }
 :is(.live-app, .live-dialog) .live-success.help-done:not([data-filed-from]),
-.live-error { animation: paper-rise-solid 320ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)) backwards; }
+.live-error { animation: paper-rise-solid 320ms var(--paper-ease, var(--ease-paper)) backwards; }
 .live-waiting { color: #7d5a17; }
 @media (prefers-reduced-motion: reduce) {
   :is(.live-app, .live-dialog) .live-success.help-done:not([data-filed-from]), .live-error { animation: none; }

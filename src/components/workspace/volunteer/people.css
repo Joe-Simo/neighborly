@@ -9,7 +9,7 @@
 /* A row the owner can open is one target: the name is the control, its reach is the whole row, and a
    quiet arrow at the end darkens when the row is under the pointer or holds the keyboard. The same
    pattern as the Neighbors list. */
-.people-row[data-opens] { position: relative; cursor: pointer; border-radius: 3px; transition: background-color 120ms var(--paper-ease, ease), box-shadow 120ms var(--paper-ease, ease); }
+.people-row[data-opens] { position: relative; cursor: pointer; border-radius: 3px; transition: background-color 120ms var(--paper-ease, var(--ease-paper)), box-shadow 120ms var(--paper-ease, var(--ease-paper)); }
 :is(.live-app, .live-dialog) .people-row-open { margin: 0; padding: 0; border: 0; background: none; font: inherit; letter-spacing: inherit; color: inherit; text-align: left; cursor: pointer; }
 .people-row-open::after { content: ""; position: absolute; inset: 0; }
 .live-app .people-row-open:focus-visible { outline: none; }
@@ -17,7 +17,7 @@
 /* The lift is one step, a slip: paper and its shadow together, the same under the pointer and with the keyboard. It
    replaces the flat tone's 12px wings (paper.css), which would stand beside the slip in another colour. */
 .people-row[data-opens]:has(.people-row-open:focus-visible) { background-color: var(--relief-paper); box-shadow: var(--relief-slip); }
-.people-row-go { flex: none; color: #9aa193; transition: color 120ms var(--paper-ease, ease); }
+.people-row-go { flex: none; color: #9aa193; transition: color 120ms var(--paper-ease, var(--ease-paper)); }
 .people-row[data-opens]:has(.people-row-open:focus-visible) .people-row-go { color: #283c32; }
 @media (hover: hover) {
   /* The lift is painted on the row itself: no stacking context, no layer of its own, no pseudo-element. */

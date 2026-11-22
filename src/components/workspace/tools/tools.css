@@ -140,7 +140,7 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 .tools-bundle i { position: absolute; left: 12px; right: 12px; bottom: 3px; height: 34px; border-radius: 2px; background: #fffdf7; border: 1px solid #d9d4c2; border-top: 3px solid #365c46; box-shadow: 0 2px 4px -2px #3b3a2455; transform-origin: 50% 100%; }
 .tools-bundle i:nth-child(1) { rotate: -13deg; left: 6px; right: 18px; border-top-color: #6f5f93; }
 .tools-bundle i:nth-child(2) { rotate: 11deg; left: 18px; right: 6px; border-top-color: #c8962e; }
-.tools-bundle[data-lifted] i { animation: tools-lift 460ms var(--paper-ease, ease-out); }
+.tools-bundle[data-lifted] i { animation: tools-lift 460ms var(--paper-ease, var(--ease-paper)); }
 .tools-bundle[data-lifted] i:nth-child(2) { animation-delay: 40ms; }
 .tools-bundle[data-lifted] i:nth-child(3) { animation-delay: 80ms; }
 @keyframes tools-lift { 45% { translate: 0 -10px; } }

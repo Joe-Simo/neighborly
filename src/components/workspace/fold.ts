@@ -1,5 +1,6 @@
 import { lessMotion } from "@/lib/less-motion";
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
+import { EASE_PAPER, EASE_PAPER_LEAVE } from "@/lib/motion";
 
 /**
  * How long a sheet stays after its yes, its corner green and its word showing, before it moves on:
@@ -139,7 +140,7 @@ function planClose(sheet: HTMLElement, after: "gone" | "put away", top: number):
   };
 }
 
-const fade = "cubic-bezier(0.6, 0, 0.9, 0.6)";
+const fade = EASE_PAPER_LEAVE;
 
 async function runClose({ sheet, held, from, to, lost = 0, unseen, carried, anchored: kept }: Plan) {
   if (held) {
@@ -154,7 +155,7 @@ async function runClose({ sheet, held, from, to, lost = 0, unseen, carried, anch
   if (unseen && !kept) window.scrollBy(0, -lost);
   const timing = { duration: unseen ? 0 : LEAVE, fill: "forwards" } as const;
   // The paper closes up with its words on it at full ink, cut off below as it goes; never faded. Once closed it is taken away in one cut.
-  await sheet.animate([from!, to!], { ...timing, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" }).finished;
+  await sheet.animate([from!, to!], { ...timing, easing: EASE_PAPER }).finished;
   sheet.animate([{ opacity: 0 }, { opacity: 0 }], { duration: 1, fill: "forwards" });
 }
 
@@ -253,7 +254,7 @@ export function openUp(sheet: HTMLElement, { stays = false }: { stays?: boolean 
     sheet.dataset.paperHeld = "";
     // Whole from its first frame: it comes down from under the top edge and is never drawn half faded over a row.
     sheet.style.animation = "none";
-    sheet.animate([{ transform: HELD_AWAY }, { transform: "none" }], { duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" });
+    sheet.animate([{ transform: HELD_AWAY }, { transform: "none" }], { duration: LEAVE, easing: EASE_PAPER });
     return;
   }
   openRoom(sheet);
@@ -338,7 +339,7 @@ function openRoom(sheet: HTMLElement) {
         : { ...shut, height: edge(style), marginTop: "0px", marginBottom: from, paddingTop: "0px", paddingBottom: "0px" },
       whole ? { marginTop, marginBottom } : { ...shut, height: `${height}px`, marginTop, marginBottom, paddingTop, paddingBottom },
     ],
-    { id: OPENING, duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
+    { id: OPENING, duration: LEAVE, easing: EASE_PAPER },
   );
   openings.set(sheet, move);
   const done = () => openings.get(sheet) === move && openings.delete(sheet);
@@ -553,7 +554,7 @@ export function useGrowsSmoothly(box: RefObject<HTMLElement | null>) {
     holdThePage();
     growing.current = paper.animate(
       [{ height: `${before.height}px`, overflow: "hidden" }, { height: `${now.height}px`, overflow: "hidden" }],
-      { id: GROWING, duration: LEAVE, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
+      { id: GROWING, duration: LEAVE, easing: EASE_PAPER },
     );
   });
 }

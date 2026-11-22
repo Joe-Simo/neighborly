@@ -8,12 +8,13 @@ import { useSampleDoor } from "./sample-link";
 import { writeCardWord } from "@/lib/card-for";
 import { HELD_CARD, dropTheHeldCard } from "@/lib/held-card";
 import { ROOM_WHOLE } from "@/lib/room-whole";
+import { EASE_PAPER } from "@/lib/motion";
 
 /** The card grows from the hand until it is the window's paper, and is held there until the door's sweep takes it over. */
 const GROW = 520;
 /** If nothing on the other side takes the card (an error, a visitor already inside), it is let go rather than held for ever. */
 const LONGEST = 12000;
-const EASE = "cubic-bezier(.3,.6,.2,1)";
+const EASE = EASE_PAPER;
 /** On a wide window the card starts slowly, so it is seen as the card, words and all, before it fills the window; a fast start covered the window in about 120ms. */
 const WIDE = "cubic-bezier(.55,0,.25,1)";
 /** The gold square rides the card until the paper's cut, and is at rest this far past it. */

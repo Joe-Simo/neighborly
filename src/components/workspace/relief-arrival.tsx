@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState, useSyncExternalStore, type Animatio
 import { ReliefPicture, reliefMoves, reliefSources, whenDecoded, type ReliefName } from "@/components/workspace/relief";
 import { ARRIVED, arrived, SIZES, unseen } from "@/components/workspace/relief-ahead";
 import { useRoomShown } from "@/components/workspace/room-sheet";
+import { EASE_PAPER } from "@/lib/motion";
 
 /** What each laying of a picture was told, by its id: it plays, or it does not, for as long as it stands. */
 const decided = new Map<string, boolean>();
@@ -77,7 +78,7 @@ export function ArrivingRelief({
         duration: 520,
         // A moment after the room is shown, and after the paper wave where there is one.
         delay: 380 + (parseFloat(style.getPropertyValue("--paper-wait")) || 0),
-        easing: style.getPropertyValue("--paper-ease").trim() || "ease-out",
+        easing: style.getPropertyValue("--paper-ease").trim() || EASE_PAPER,
         fill: "both",
       });
     });

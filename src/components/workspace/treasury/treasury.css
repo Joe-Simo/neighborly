@@ -465,7 +465,7 @@
 }
 /* The paid sheet closes up (foldLeaves) and its ledger row holds the mark for a moment. */
 .help-ledger tbody tr {
-  transition: background-color 400ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1));
+  transition: background-color 400ms var(--paper-ease, var(--ease-paper));
 }
 @media (hover: hover) { .help-ledger tbody tr[data-landed],
 .help-ledger tbody tr[data-landed]:hover {
