@@ -76,7 +76,7 @@ const books = {
     nextStep: {
       resolved: "Por el resultado, el asistente sugiere: nada más.",
       request: "Por el resultado, el asistente sugiere: empezar una petición.",
-      refer: "Por el resultado, el asistente sugiere: derivar a otro lugar.",
+      refer: "Por el resultado, el asistente sugiere: referir a otro lugar.",
       callAgain: "Por el resultado, el asistente sugiere: llamar más tarde.",
     },
     nextStepLead: "Por el resultado, el asistente sugiere:",

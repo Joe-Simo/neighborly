@@ -192,7 +192,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     notOnShelf: "Todavía no está en el estante.",
     amount: "Monto que se aprueba, en dólares",
     asked: "Pidió {amount}.",
-    askedPaidTo: "Pidió {amount}, que se pagan a {name}.",
+    askedPaidTo: "Pidió {amount}, para pagar a {name}.",
     amountNeeded: "Escribe el monto que se aprueba, en dólares.",
     tooManyPlaces: "Indica cuatro lugares como máximo.",
     note: "Nota sobre la decisión (opcional)",
