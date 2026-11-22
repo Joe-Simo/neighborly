@@ -1794,3 +1794,5 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 
 /* A room's deck is one to three lines: balanced, so no word is left alone at 390 (pretty is not in Safari 18). */
 .live-app .live-page-head .live-deck { text-wrap: balance; }
+/* With no team yet, the empty note spans the whole team grid instead of squeezing into the first card's column. */
+.live-teams > :is(.live-empty, .live-state) { grid-column: 1 / -1; }
