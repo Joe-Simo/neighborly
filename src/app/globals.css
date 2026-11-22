@@ -80,6 +80,9 @@
   border-color: var(--border);
 }
 html {
+  /* A side gutter's least width beside a notch: the inset and a focus ring's reach. With no inset it is 6px, so max(gutter, it) is the gutter. */
+  --safe-l: calc(env(safe-area-inset-left) + 6px);
+  --safe-r: calc(env(safe-area-inset-right) + 6px);
   background: var(--background);
   /* A control brought into view by focus or a jump stops clear of the notch and home bar, its ring too; with no inset, nothing changes. */
   scroll-padding: min(env(safe-area-inset-top) * 999, env(safe-area-inset-top) + 6px) min(env(safe-area-inset-right) * 999, env(safe-area-inset-right) + 6px) min(env(safe-area-inset-bottom) * 999, env(safe-area-inset-bottom) + 6px) min(env(safe-area-inset-left) * 999, env(safe-area-inset-left) + 6px);

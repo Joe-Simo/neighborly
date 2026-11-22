@@ -1,5 +1,8 @@
 /* The hall's open arch, as painted: the door into Kind Helps. Nothing is drawn on it; it takes the pointer, and the keyboard's one ink ring in its own shape. */
 .fresco-door{position:absolute;z-index:1;left:78.4%;top:20.3%;width:16.3%;height:47.4%;min-width:44px;min-height:44px;border-radius:50% 50% 0 0/30% 30% 0 0;cursor:pointer;pointer-events:auto;outline:none}
+/* Beside a notch the link stops that far plus its ring's reach (2px drawn 4px out) short of the window's edge, never under 44px, and the
+   painted door stays where it is (fresco-threshold.tsx gives how far the door passes the edge, in the painting's px). With no inset, as above. */
+.fresco-door{--door-cut:min(env(safe-area-inset-right) * 999, max(0px, var(--door-past, -10000px) + (env(safe-area-inset-right) + 8px) / var(--door-scale, 1)));width:max(min(16.3%, calc(44px / var(--door-scale, 1))), calc(16.3% - var(--door-cut)))}
 .fresco-door:focus-visible{outline:2px solid #293f32;outline-offset:4px}
 .fresco-stage:not([data-open=true]) .fresco-door{pointer-events:none;visibility:hidden}
 

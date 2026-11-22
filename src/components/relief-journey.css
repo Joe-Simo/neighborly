@@ -103,8 +103,8 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 @property --h{syntax:"<number>";inherits:false;initial-value:1}
 @property --q{syntax:"<number>";inherits:false;initial-value:0}
 .relief-panel{position:relative;min-height:160svh}
-.relief-hold{position:sticky;top:0;height:100svh;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:0;padding-left:7%}
-.relief-panel[data-side=left] .relief-hold{grid-template-columns:auto minmax(0,1fr);padding-left:0;padding-right:7%}
+.relief-hold{position:sticky;top:0;height:100svh;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:0;padding-left:max(7%,var(--safe-l))}
+.relief-panel[data-side=left] .relief-hold{grid-template-columns:auto minmax(0,1fr);padding-left:0;padding-right:max(7%,var(--safe-r))}
 .relief-panel[data-side=left] .relief-picture{order:-1;justify-self:start}
 .relief-words{position:relative;z-index:1;translate:0 var(--drop,0px)}
 /* Two pictures carry their weight in their upper half; they are set lower so what is painted, not the box, sits on the window's middle. */
@@ -160,7 +160,7 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .relief-panel[data-chapter=call] .relief-words{--drop:0px;grid-area:1/1;align-self:end;display:flex;align-items:last baseline;gap:4vw}
   .relief-panel[data-chapter=call] .relief-words p{margin:0}
   /* The visit: the door whole with both members' sleeves, as tall as the window allows and never drawn past the picture's own 1536 pixels; the heading stands tall across the paper beside it. */
-  .relief-panel[data-chapter=visit] .relief-hold{grid-template-columns:auto minmax(0,1fr);gap:0 4vw;padding-left:0;padding-right:7%}
+  .relief-panel[data-chapter=visit] .relief-hold{grid-template-columns:auto minmax(0,1fr);gap:0 4vw;padding-left:0;padding-right:max(7%,var(--safe-r))}
   .relief-panel[data-chapter=visit] .relief-picture{order:-1;justify-self:start;align-self:center;margin-bottom:0;width:min(43vw,76svh,825px);aspect-ratio:4/5;-webkit-mask:linear-gradient(to right,#000 95%,#0000);mask:linear-gradient(to right,#000 95%,#0000);clip-path:polygon(0 3%,30% 0,62% 2%,100% 0,100% 97%,70% 100%,36% 98%,0 100%)}
   /* Right of the door the picture is bare paper with one pale arc; the arc thins out at the picture's edge where it would otherwise be cut straight. */
   .relief-panel[data-chapter=visit] .relief-layers{width:186%;margin-left:-7.5%}
@@ -168,14 +168,14 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .relief-panel[data-chapter=visit] .relief-words h2{font-size:clamp(80px,12.5vw,200px)}
   /* The help: the envelope passing hand to hand across the whole window, off its right and its foot; the words stand on the picture's own bare paper at the upper left. */
   .relief-panel[data-chapter=help] .relief-hold{grid-template-columns:minmax(0,1fr);padding:0}
-  .relief-panel[data-chapter=help] .relief-words{--drop:0px;grid-area:1/1;align-self:start;margin:9svh 0 0 7vw;text-align:left}
+  .relief-panel[data-chapter=help] .relief-words{--drop:0px;grid-area:1/1;align-self:start;margin:9svh 0 0 max(7vw,var(--safe-l));text-align:left}
   .relief-panel[data-chapter=help] .relief-words p{max-width:13em}
   /* The head is as wide as its words, so its hinge turns about the words themselves, not the middle of an empty row. */
   .relief-panel[data-chapter=help] .relief-words h2{width:fit-content}
   .relief-panel[data-chapter=help] .relief-picture{grid-area:1/1;align-self:end;justify-self:end;width:min(100vw,172svh);aspect-ratio:2/1}
   .relief-panel[data-chapter=help] .relief-layers{width:125%;height:166.7%;margin:-16% 0 0 -25%}
   /* The year: the open book large at the left, close enough to read the page; the figures beside it. */
-  .relief-panel[data-chapter=year] .relief-hold{gap:0 4vw;padding-right:7%}
+  .relief-panel[data-chapter=year] .relief-hold{gap:0 4vw;padding-right:max(7%,var(--safe-r))}
   .relief-panel[data-chapter=year] .relief-words{margin-left:0}
   .relief-panel[data-chapter=year] .relief-picture{width:min(54vw,100svh);aspect-ratio:5/4}
   .relief-panel[data-chapter=year] .relief-layers{width:133%;height:116%;margin:-8% 0 0 -11%}
