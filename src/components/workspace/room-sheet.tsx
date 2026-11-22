@@ -2,6 +2,7 @@
 
 import { Component, createContext, useContext, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 import { ROOM_WHOLE } from "@/lib/room-whole";
+import { nextLook, unseen } from "@/lib/next-look";
 import { whenIdle } from "@/lib/idle";
 import { flushSync } from "react-dom";
 import { edgeTurn, roomTurn, type RoomTurn } from "@/components/workspace/room-turn";
@@ -520,7 +521,8 @@ export function useWholeRoom(area: string, column: RefObject<HTMLElement | null>
     if (said) setOpening(true);
     // The longest wait is counted only while there is a connection: every frame without one starts it again.
     let counted = began;
-    let frame = requestAnimationFrame(function look(now) {
+    // Looked at once a frame; in a hidden page, which draws none, whenever the page changes or is shown (next-look.ts).
+    let stop = nextLook(function look(now) {
       const element = column.current;
       const link = convex.connectionState();
       if (link.hasEverConnected && !link.isWebSocketConnected) counted = now;
@@ -548,9 +550,9 @@ export function useWholeRoom(area: string, column: RefObject<HTMLElement | null>
         flushSync(() => setOpening(true));
         letGo();
       }
-      frame = requestAnimationFrame(look);
+      stop = nextLook(look);
     });
-    return () => cancelAnimationFrame(frame);
+    return () => stop();
   }, [area, held, first, launch, column, convex]);
   // Once shown, the room is watched until it is at rest: `settled` (data-room-whole) is the room as it will stay.
   const [settled, setSettled] = useState<string | null>(null);
@@ -561,10 +563,12 @@ export function useWholeRoom(area: string, column: RefObject<HTMLElement | null>
     // work out every style in the room, and asked on every frame of a turn that was most of the frame.
     const since = performance.now();
     let left = false;
-    let frame = 0, rest = 0;
+    let stop = () => {}, rest = 0;
     let unidle = () => {};
     const look = (now: number) => {
       if (left) return;
+      // Nothing moves in a hidden page that anyone sees, and nothing there plays on to its end: what is moving is finished.
+      if (unseen()) for (const move of stillMoving(element)) move.finish();
       const moving = stillMoving(element);
       if (!moving.length || now - since >= LONGEST) {
         // At rest, the room is marked whole after the frame, never inside it: the render it brings is a task of its
@@ -579,13 +583,13 @@ export function useWholeRoom(area: string, column: RefObject<HTMLElement | null>
       const ends = Promise.all(moving.map((move) => move.finished.catch(() => undefined)));
       const late = new Promise((go) => setTimeout(go, Math.max(0, LONGEST - (now - since))));
       void Promise.race([ends, late]).then(() => {
-        if (!left) frame = requestAnimationFrame(look);
+        if (!left) stop = nextLook(look);
       });
     };
-    frame = requestAnimationFrame(look);
+    stop = nextLook(look);
     return () => {
       left = true;
-      cancelAnimationFrame(frame);
+      stop();
       window.clearTimeout(rest);
       unidle();
     };
