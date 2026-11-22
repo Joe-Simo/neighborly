@@ -83,7 +83,7 @@ export function helpPage(language: IntakeLanguage, view: HelpView, action = lang
 <html lang="${language}">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 ${status ? '<meta name="robots" content="noindex">' : ""}
 <title>${esc(title)}</title>
@@ -362,4 +362,8 @@ form:has(#safe-yes:checked) .when{display:none}
 @media(max-width:600px){.colophon{padding-bottom:calc(82px + 22vw + env(safe-area-inset-bottom))}}
 @media(min-width:901px){.colophon{flex-wrap:nowrap;min-height:clamp(92px,7.4vw,140px);gap:0 clamp(24px,3vw,48px);padding:0 7% env(safe-area-inset-bottom)}.colophon>span{flex:none}.colophon nav{flex:1 1 0;min-width:0;justify-content:center;gap:0 clamp(16px,2vw,28px)}.colophon .name{flex:none;min-height:44px;margin:0;font-size:clamp(48px,4.6vw,88px)}}
 @media(min-width:1600px){.colophon{font-size:16px}}
-@media(forced-colors:active){.colophon .name{text-shadow:none}}`;
+@media(forced-colors:active){.colophon .name{text-shadow:none}}
+body{padding-top:env(safe-area-inset-top)}
+.bar,.wall{padding-left:max(var(--gut,24px),calc(env(safe-area-inset-left) + 6px));padding-right:max(var(--gut,24px),calc(env(safe-area-inset-right) + 6px))}
+@media(max-width:559px){.bar,.wall{--gut:16px}}
+@media(max-width:900px){.colophon{padding-left:max(20px,calc(env(safe-area-inset-left) + 6px));padding-right:max(20px,calc(env(safe-area-inset-right) + 6px))}}`;
