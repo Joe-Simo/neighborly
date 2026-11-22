@@ -185,7 +185,7 @@ const laidAbove = (strip: HTMLDivElement | null) => {
   if (strip) openUp(strip, { stays: true });
 };
 
-function RoomFault({ onRetry }: { onRetry: () => void }) {
+export function RoomFault({ onRetry }: { onRetry: () => void }) {
   const words = useStateWords();
   return (
     <LiveState
