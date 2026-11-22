@@ -25,6 +25,9 @@ document.addEventListener("submit", (event) => {
   const pressed = event.submitter;
   if ((pressed instanceof HTMLButtonElement || pressed instanceof HTMLInputElement) && pressed.name) body.append(pressed.name, pressed.value);
   for (const button of Array.from(form.querySelectorAll("button"))) button.disabled = true;
+  // On a slow line the pressed button says it is sending (data-sending, in the page's language), so no one presses twice.
+  const label = pressed instanceof HTMLButtonElement ? pressed.textContent : null;
+  if (pressed instanceof HTMLButtonElement && pressed.dataset.sending) pressed.textContent = pressed.dataset.sending;
   fetch(target.toString(), { method: "POST", body, credentials: "same-origin" })
     .then(async (answer) => {
       const page = await answer.text();
@@ -36,6 +39,7 @@ document.addEventListener("submit", (event) => {
     })
     .catch(() => {
       for (const button of Array.from(form.querySelectorAll("button"))) button.disabled = false;
+      if (pressed instanceof HTMLButtonElement && label !== null) pressed.textContent = label;
       HTMLFormElement.prototype.submit.call(form);
     });
 });

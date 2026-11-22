@@ -143,14 +143,14 @@ function body(w: IntakeWords, view: HelpView, action: string): string {
     case "danger":
       return `${head(null, w.dangerSend.title)}${danger(w)}
 <form method="post" action="${esc(action)}">${hidden(view.values)}<input type="hidden" name="step" value="send-anyway">
-<p class="lines"><button class="btn" type="submit">${esc(w.dangerSend.send)}</button><button class="btn quiet" type="submit" name="step" value="edit">${esc(w.dangerSend.back)}</button></p>
+<p class="lines"><button class="btn" type="submit" data-sending="${esc(w.sending)}">${esc(w.dangerSend.send)}</button><button class="btn quiet" type="submit" name="step" value="edit">${esc(w.dangerSend.back)}</button></p>
 </form>`;
     case "code":
       return `${head(w.code.kicker, w.code.title, view.by === "email" ? w.code.deck(view.to) : w.code.deckPhone(view.to))}
 <form method="post" action="${esc(action)}" class="form">
 <input type="hidden" name="step" value="code">
 ${field(w.code.label, `<input class="code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]*" maxlength="7" required autofocus${view.wrong ? ' aria-invalid="true" aria-describedby="code-wrong"' : ""}>`, w.code.help, view.wrong ? ["code-wrong", w.code.wrong] : undefined)}
-<p class="lines"><button class="btn" type="submit">${esc(w.code.confirm)}</button></p>
+<p class="lines"><button class="btn" type="submit" data-sending="${esc(w.sending)}">${esc(w.code.confirm)}</button></p>
 </form>
 <form method="post" action="${esc(action)}" class="row"><input type="hidden" name="step" value="resend">${view.resent ? `<p class="said">${esc(w.code.sentAgain)}</p>` : `<button class="link" type="submit">${esc(w.code.again)}</button>`}
 <a class="link" href="${esc(action)}">${esc(w.code.other)}</a></form>
@@ -255,7 +255,7 @@ ${choices("safe", w.safe.legend, [["yes", w.safe.yes], ["no", w.safe.no]], v.saf
 ${choices("adult", w.adult.legend, [["yes", w.adult.yes], ["no", w.adult.no]], v.adult, false, e.adult ? w.errors.adult : undefined, firstWrong === "adult")}
 <noscript><p class="problem">${esc(w.noScript)}</p><p class="lines"><a class="btn" href="tel:211">${esc(w.away.call211)}</a></p></noscript>
 <p class="said">${esc(w.assistant)}</p>
-<p class="lines"><button class="btn" type="submit">${esc(w.send)}</button></p>
+<p class="lines"><button class="btn" type="submit" data-sending="${esc(w.sending)}">${esc(w.send)}</button></p>
 </form>`;
 }
 
