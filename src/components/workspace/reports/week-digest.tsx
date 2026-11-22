@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useMutation } from "convex/react";
 import { Mail } from "lucide-react";
@@ -7,6 +8,8 @@ import { useHour, useQuery } from "@/components/workspace/query";
 import { api } from "../../../../convex/_generated/api";
 import { Toggle } from "@/components/ui/toggle";
 import { useWorkspace } from "@/components/workspace/context";
+import { sayFailure } from "@/components/workspace/failure";
+import { LiveFailure } from "@/components/workspace/states";
 import { recordHref } from "@/components/workspace/help-line/format";
 import { formatMoney, type Language } from "@/lib/words";
 import "@/components/workspace/reports/week-digest.css";
@@ -59,8 +62,14 @@ export default function WeekDigest() {
   const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId });
   const found = useQuery(api.digest.week, allowed && at ? { churchId, at } : "skip");
   const setEmail = useMutation(api.digest.setDigestEmail);
+  // A change the backend refuses, or that cannot be sent, is said under the switch; the switch stays as it was.
+  const [failed, setFailed] = useState("");
   // Held until it is in (room-sheet.tsx), so the week never lands above a report already on screen.
   if (!found) return allowed === false ? null : <span hidden data-room-pending="" />;
+  const switchEmail = (on: boolean) => {
+    setFailed("");
+    setEmail({ churchId, on }).catch((cause: unknown) => setFailed(sayFailure(words.notices, cause, words.states.notSaved, words.states.offlineSave)));
+  };
   const { waiting, month, overdue } = found.digest;
   const money = (cents: number) => formatMoney(cents / 100, locale, cents % 100 === 0);
   const name = w.months[month.month - 1];
@@ -93,10 +102,11 @@ export default function WeekDigest() {
           {overdue.count > overdue.rows.length && <li>{w.more(overdue.count - overdue.rows.length)}</li>}
         </ul>
       )}
-      <Toggle variant="outline" pressed={found.emailed} onPressedChange={(on) => void setEmail({ churchId, on })}>
+      <Toggle variant="outline" pressed={found.emailed} onPressedChange={switchEmail}>
         <Mail aria-hidden="true" />
         {w.email}
       </Toggle>
+      {failed && <LiveFailure message={failed} kept="" />}
     </section>
   );
 }
