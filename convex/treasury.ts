@@ -475,10 +475,19 @@ export const reconciliation = query({
         else waiting.push(entry);
       }
     }
-    const deposits = (await Promise.all([...carried].map(async ([id, count]) => {
-      const deposit = await ctx.db.get("deposits", id);
-      return deposit ? [{ id, date: deposit.date, total: deposit.total, memo: deposit.memo, count }] : [];
-    }))).flat().sort((a, b) => a.date.localeCompare(b.date));
+    const made = await depositsOf(ctx, [...carried.keys()]);
+    // A deposit made after that day was not yet a line at the bank: its gifts still wait one by one.
+    const later = new Set([...carried.keys()].filter((id) => (made.get(id)?.date ?? "") > asOf || !made.has(id)));
+    if (later.size) {
+      waiting.push(...all.filter((entry) => entry.date <= asOf && entry.depositId && later.has(entry.depositId) && !(entry.clearedOn && entry.clearedOn <= asOf)));
+      waiting.sort((a, b) => a.date.localeCompare(b.date));
+    }
+    const deposits = [...carried]
+      .flatMap(([id, count]) => {
+        const deposit = made.get(id);
+        return deposit && !later.has(id) ? [{ id, date: deposit.date, total: deposit.total, memo: deposit.memo, count }] : [];
+      })
+      .sort((a, b) => a.date.localeCompare(b.date));
     const listed = waiting.slice(0, BANK_LIST_LIMIT);
     const lately = done.sort((a, b) => (b.clearedOn ?? "").localeCompare(a.clearedOn ?? "") || b.date.localeCompare(a.date)).slice(0, 8);
     const requests = await summaries(ctx, [...listed, ...lately]);
@@ -486,6 +495,12 @@ export const reconciliation = query({
     return { asOf, today: day, books, cleared, onItsWayIn, onItsWayOut, waitingCount: waiting.length + deposits.length, waiting: listed.map(view), lately: lately.map(view), deposits };
   },
 });
+
+/** The deposits some gifts went to the bank in, read once each. */
+async function depositsOf(ctx: Ctx, ids: Id<"deposits">[]) {
+  const found = await Promise.all([...new Set(ids)].map((id) => ctx.db.get("deposits", id)));
+  return new Map(found.flatMap((deposit) => (deposit ? [[deposit._id, deposit] as const] : [])));
+}
 
 /** A statement day an entry can have cleared on: a real day, not before the entry and not ahead of today. */
 async function statementDay(ctx: Ctx, churchId: Id<"churches">, clearedOn: string) {
@@ -505,6 +520,8 @@ export const setCleared = mutation({
     await neighborAccess(ctx, args.churchId);
     const entry = await ctx.db.get("ledgerEntries", args.entryId);
     if (!entry || entry.churchId !== args.churchId) throw new ConvexError("Entry not found.");
+    // A gift in a deposit cleared on the deposit's one line, so its mark goes on or off for the whole deposit.
+    if (entry.depositId) return markDeposit(ctx, args.churchId, entry.depositId, args.clearedOn);
     if (args.clearedOn === null) {
       await ctx.db.patch("ledgerEntries", entry._id, { clearedOn: undefined });
       return null;
@@ -526,7 +543,10 @@ export const clearThrough = mutation({
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
     const through = await statementDay(ctx, args.churchId, args.through);
-    const waiting = (await ledgerEntries(ctx, args.churchId)).filter((entry) => entry.date <= through && !entry.clearedOn);
+    const unmarked = (await ledgerEntries(ctx, args.churchId)).filter((entry) => entry.date <= through && !entry.clearedOn);
+    // A gift in a deposit made after that day had not reached the bank by then.
+    const made = await depositsOf(ctx, unmarked.flatMap((entry) => entry.depositId ?? []));
+    const waiting = unmarked.filter((entry) => !entry.depositId || (made.get(entry.depositId)?.date ?? through) <= through);
     const batch = waiting.slice(0, CLEAR_BATCH);
     for (const entry of batch) await ctx.db.patch("ledgerEntries", entry._id, { clearedOn: through });
     return { marked: batch.length, more: waiting.length > batch.length };
@@ -632,13 +652,16 @@ export const clearDeposit = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     await neighborAccess(ctx, args.churchId);
-    const { deposit, entries } = await depositEntries(ctx, args.churchId, args.depositId);
-    const clearedOn = args.clearedOn === null ? undefined : await statementDay(ctx, args.churchId, args.clearedOn);
-    if (clearedOn && clearedOn < deposit.date) throw new ConvexError("A deposit cannot clear the bank before the day it was made.");
-    for (const entry of entries) await ctx.db.patch("ledgerEntries", entry._id, { clearedOn });
-    return null;
+    return markDeposit(ctx, args.churchId, args.depositId, args.clearedOn);
   },
 });
+async function markDeposit(ctx: MutationCtx, churchId: Id<"churches">, depositId: Id<"deposits">, day: string | null) {
+  const { deposit, entries } = await depositEntries(ctx, churchId, depositId);
+  const clearedOn = day === null ? undefined : await statementDay(ctx, churchId, day);
+  if (clearedOn && clearedOn < deposit.date) throw new ConvexError("A deposit cannot clear the bank before the day it was made.");
+  for (const entry of entries) await ctx.db.patch("ledgerEntries", entry._id, { clearedOn });
+  return null;
+}
 
 /** Takes a deposit apart, so its gifts wait to be deposited again. Refused once the bank has shown it. */
 export const undoDeposit = mutation({
@@ -872,7 +895,7 @@ export const setHouseholdCap = mutation({
   returns: v.null(),
   handler: async (ctx, { churchId, cap }) => {
     await neighborAccess(ctx, churchId);
-    if (cap !== null && (!Number.isInteger(cap) || cap < 100 || cap > 100_000_000)) throw new ConvexError("The budget must be between $1 and $1,000,000.");
+    if (cap !== null && (!Number.isInteger(cap) || cap < 100 || cap > 100_000_000)) throw new ConvexError("The household limit must be between $1 and $1,000,000.");
     await ctx.db.patch("churches", churchId, { householdYearCap: cap ?? undefined });
     return null;
   },
