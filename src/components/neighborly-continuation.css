@@ -6,7 +6,7 @@
 .has-reveal [data-reveal]:has(a,button){translate:none}
 
 /* The ending: what Kind Helps is, and the way in. It closes on the name itself, set across the paper. */
-.neighborly-together{position:relative;z-index:1;isolation:isolate;display:flex;flex-direction:column;gap:clamp(28px,3.4vw,52px);padding:clamp(72px,12svh,128px) 7% 0;outline:0}
+.neighborly-together{position:relative;z-index:1;isolation:isolate;display:flex;flex-direction:column;gap:clamp(28px,3.4vw,52px);padding:clamp(72px,12svh,128px) max(7%,calc(env(safe-area-inset-right) + 6px)) 0 max(7%,calc(env(safe-area-inset-left) + 6px));outline:0}
 .neighborly-together-paper{position:absolute;inset:0;z-index:-1;background:center bottom/cover no-repeat;-webkit-mask-image:linear-gradient(transparent,#000 34%);mask-image:linear-gradient(transparent,#000 34%)}
 .neighborly-together-paper[data-settled=true]{background-image:url(/assets/paper-world/continuation.webp)}
 .neighborly-together h2{margin:0;font:400 clamp(40px,4.8cqw,88px)/var(--lead-2) 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-2)}
@@ -125,7 +125,7 @@
 }
 @media(min-width:901px){
   .neighborly-continuation{--foot:clamp(92px,7.4vw,140px)}
-  .neighborly-continuation .neighborly-colophon{box-sizing:border-box;min-height:var(--foot);flex-wrap:nowrap;align-items:center;gap:0 clamp(24px,3vw,48px);padding:0 0 env(safe-area-inset-bottom)}
+  .neighborly-continuation .neighborly-colophon{box-sizing:border-box;min-height:var(--foot);flex-wrap:nowrap;align-items:center;gap:0 clamp(24px,3vw,48px);padding:0 0 min(env(safe-area-inset-bottom) * 999, env(safe-area-inset-bottom) + 6px)}
   .neighborly-continuation .neighborly-colophon>span{flex:none}
   .neighborly-continuation .neighborly-colophon nav{flex:1 1 0;min-width:0;justify-content:center;gap:0 clamp(16px,2vw,28px)}
   .neighborly-continuation .neighborly-colophon nav a{display:inline-flex;align-items:center;min-height:44px}
