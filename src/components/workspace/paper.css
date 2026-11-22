@@ -355,7 +355,7 @@
     min-height: calc(60px + env(safe-area-inset-top));
     padding: calc(8px + env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 8px max(24px, env(safe-area-inset-left));
   }
-  .live-app .live-wordmark { font-size: 28px; letter-spacing: -0.045em; }
+  .live-app .live-wordmark { font-size: 26px; letter-spacing: -0.045em; }
   .live-app .live-account { display: none; }
 }
 /* ── Under 900px, phones and upright iPads alike: one bar. The wordmark on the left, Menu on the right.
@@ -457,6 +457,12 @@
   .live-app .live-main p:has(> :is(button, [data-slot="button"]):only-child):not(td *, th[scope="row"] *) { display: none !important; }
   /* A row is one record: it never splits across two sheets. */
   .live-app .live-main :is(.live-row, .help-row, tr) { break-inside: avoid; }
+}
+/* What is held in view on screen is the screen's: the app bar, the cut letters over the neighbor list and a sheet's
+   foot row of buttons are display:none on paper, and a sheet's held title prints once, where it stands. */
+@media print {
+  .live-app .live-header, .live-app .help-letter-head, .live-dialog .live-form-actions { display: none !important; }
+  .live-dialog-fixed [data-slot="dialog-header"] { position: static !important; box-shadow: none !important; }
 }
 
 /* The menu sheet fills the screen between the insets: its title, every room in a list that scrolls, and a foot that stays. */
@@ -633,7 +639,7 @@
 /* The reason under a figure: plum, the attention colour, because it is only there when something waits. Its room is kept when it is empty. */
 .week-figures a > small { min-height: 1lh; margin-top: -2px; font-size: 13px; line-height: 1.3; color: var(--help-plum, #6f5f93); }
 @media (max-width: 560px) { .week-figures a > small { min-height: 2lh; font-size: 13px; } }
-@media (max-width: 560px) { .week-figures a { padding: var(--space-16) 8px var(--space-16) 0; } .week-figures a > span:nth-child(2) { font-size: 14px; } }
+@media (max-width: 560px) { .week-figures a { padding: var(--space-16) 8px var(--space-16) 0; } .week-figures a > span:nth-child(2) { font-size: 13px; } }
 /* Your choice: the answer is the filled button; Details is a quiet link after it. */
 .live-request-section .live-row-actions { gap: var(--space-8) 16px; }
 .live-request-section .live-row-actions .tools-quiet { margin-left: 6px; }
@@ -1250,7 +1256,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 /* Saved while the room is open: pressed once into its place. */
 .week-quilt-piece[data-laid] { animation: week-piece-pressed 200ms var(--paper-ease) both; }
 @keyframes week-piece-pressed { from { transform: translateY(-3px) scale(1.08); } }
-.week-quilt figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) 16px; margin-top: var(--space-8); font-size: 14px; line-height: 1.4; color: var(--live-ink); }
+.week-quilt figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) 16px; margin-top: var(--space-8); font-size: 15px; line-height: 1.4; color: var(--live-ink); }
 /* The key's swatch is a piece of the quilt itself, set level and a little smaller, beside the count it names. */
 .week-quilt-key { display: inline-flex; align-items: center; gap: 8px; }
 .week-quilt-key > .week-quilt-piece { --size: 12px; margin: 0; rotate: none; translate: none; }
@@ -1473,9 +1479,9 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
   .live-app .live-section { margin-top: var(--space-40); }
   .live-app .live-section-head { margin-bottom: var(--space-16); }
   .live-app .live-main[data-room="help"] .live-section-head { gap: var(--space-8) 16px; }
-  .live-app .help-sheet h2 { font-size: 28px !important; margin-bottom: var(--space-8) !important; }
+  .live-app .help-sheet h2 { font-size: 26px !important; margin-bottom: var(--space-8) !important; }
   .live-app .help-sheet { padding: var(--space-24) 24px; }
-  .live-app .help-empty :is(h2, h3) { font-size: 28px; margin-bottom: var(--space-8); }
+  .live-app .help-empty :is(h2, h3) { font-size: 26px; margin-bottom: var(--space-8); }
   .live-app .live-empty :is(h1, h2, h3) { font-size: 24px; }
   .live-app .tools-leaf > h2 { font-size: 24px; margin-bottom: var(--space-8); }
   .live-app .help-row { column-gap: 16px; row-gap: var(--space-16); }
