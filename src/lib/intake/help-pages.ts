@@ -213,14 +213,15 @@ function field(label: string, control: string, help?: string, problem?: [id: str
   return `<label class="field${problem ? " wrong" : ""}"><span class="label">${esc(label)}</span>${help ? `<span class="help">${esc(help)}</span>` : ""}${control}${problem ? `<span class="problem" id="${problem[0]}">${esc(problem[1])}</span>` : ""}</label>`;
 }
 
-function choices(name: string, legend: string, options: [value: string, label: string, lang?: string][], picked: string[] | string | undefined, multiple: boolean, problem?: string) {
+function choices(name: string, legend: string, options: [value: string, label: string, lang?: string][], picked: string[] | string | undefined, multiple: boolean, problem?: string, first = false) {
   const on = (value: string) => (Array.isArray(picked) ? picked.includes(value) : picked === value);
-  return `<fieldset class="set${problem ? " wrong" : ""}"><legend>${esc(legend)}</legend><div class="chips">${options
+  // The fieldset names its problem, so a screen reader hears it with the question; the first problem on the page takes focus.
+  return `<fieldset class="set${problem ? " wrong" : ""}"${problem ? ` aria-describedby="e-${name}"` : ""}><legend>${esc(legend)}</legend><div class="chips">${options
     .map(
       ([value, label, lang], i) =>
-        `<label class="chip"${lang ? ` lang="${lang}"` : ""}><input type="${multiple ? "checkbox" : "radio"}" name="${name}" value="${value}" id="${name}-${value}"${on(value) ? " checked" : ""}${!multiple && i === 0 ? " required" : ""}><span>${esc(label)}</span></label>`,
+        `<label class="chip"${lang ? ` lang="${lang}"` : ""}><input type="${multiple ? "checkbox" : "radio"}" name="${name}" value="${value}" id="${name}-${value}"${on(value) ? " checked" : ""}${!multiple && i === 0 ? " required" : ""}${problem ? ' aria-invalid="true"' : ""}${first && i === 0 ? " autofocus" : ""}><span>${esc(label)}</span></label>`,
     )
-    .join("")}</div>${problem ? `<span class="problem">${esc(problem)}</span>` : ""}</fieldset>`;
+    .join("")}</div>${problem ? `<span class="problem" id="e-${name}">${esc(problem)}</span>` : ""}</fieldset>`;
 }
 
 function form(w: IntakeWords, v: HelpValues, e: HelpErrors, action: string, unplaced?: boolean) {
@@ -228,26 +229,30 @@ function form(w: IntakeWords, v: HelpValues, e: HelpErrors, action: string, unpl
   const bad = (key: keyof HelpErrors): [string, string] | undefined => (e[key] ? [`e-${key}`, w.errors[key]] : undefined);
   const wrong = (key: keyof HelpErrors) => (e[key] ? ` aria-invalid="true" aria-describedby="e-${key}"` : "");
   const any = Object.keys(e).length > 0;
+  // The first problem in page order takes focus when the page comes back, with or without script.
+  const order: (keyof HelpErrors | "unplaced")[] = ["needs", "reach", "phone", "email", "unplaced", "zip", "nearby", "safe", "when", "adult"];
+  const firstWrong = order.find((key) => (key === "unplaced" ? unplaced : e[key]));
+  const focus = (key: keyof HelpErrors | "unplaced") => (firstWrong === key ? " autofocus" : "");
   return `<form method="post" action="${esc(action)}" class="form" novalidate>
 <input type="hidden" name="step" value="send">
 ${any ? `<p class="summary" role="alert">${esc(w.errors.summary)}</p>` : ""}
-${choices("needs", w.need.label, NEEDS.map((kind) => [kind, w.need.kinds[kind]]), v.needs, true, e.needs ? w.errors.needs : undefined)}
+${choices("needs", w.need.label, NEEDS.map((kind) => [kind, w.need.kinds[kind]]), v.needs, true, e.needs ? w.errors.needs : undefined, firstWrong === "needs")}
 ${field(w.need.say, `<textarea name="said" rows="3" maxlength="500">${esc(v.said ?? "")}</textarea>`, w.need.sayHelp)}
-<fieldset class="set${e.reach ? " wrong" : ""}"><legend>${esc(w.reach.legend)}</legend><div class="pair">
-${field(w.reach.phone, `<input name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20"${val(v.phone)}${wrong("phone")}>`, undefined, bad("phone"))}
-${field(w.reach.email, `<input name="email" type="email" autocomplete="email" maxlength="120"${val(v.email)}${wrong("email")}>`, undefined, bad("email"))}
-</div>${e.reach ? `<span class="problem">${esc(w.errors.reach)}</span>` : `<span class="help">${esc(w.reach.oneOf)}</span>`}</fieldset>
+<fieldset class="set${e.reach ? " wrong" : ""}"${e.reach ? ' aria-describedby="e-reach"' : ""}><legend>${esc(w.reach.legend)}</legend><div class="pair">
+${field(w.reach.phone, `<input name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20"${val(v.phone)}${wrong("phone")}${focus("phone")}${focus("reach")}>`, undefined, bad("phone"))}
+${field(w.reach.email, `<input name="email" type="email" autocomplete="email" maxlength="120"${val(v.email)}${wrong("email")}${focus("email")}>`, undefined, bad("email"))}
+</div>${e.reach ? `<span class="problem" id="e-reach">${esc(w.errors.reach)}</span>` : `<span class="help">${esc(w.reach.oneOf)}</span>`}</fieldset>
 <div class="pair zipline">
-${field(w.place.zip, `<input class="zip" name="zip" inputmode="numeric" autocomplete="postal-code" pattern="[0-9]{5}" maxlength="5"${val(v.zip)}${wrong("zip")}${unplaced ? ' aria-invalid="true" aria-describedby="e-zip"' : ""}>`, w.place.zipHelp, unplaced ? ["e-zip", `${w.unknownZip.title} ${w.unknownZip.deck}`] : bad("zip"))}
+${field(w.place.zip, `<input class="zip" name="zip" inputmode="numeric" autocomplete="postal-code" pattern="[0-9]{5}" maxlength="5"${val(v.zip)}${wrong("zip")}${unplaced ? ' aria-invalid="true" aria-describedby="e-zip"' : ""}${focus("zip")}${focus("unplaced")}>`, w.place.zipHelp, unplaced ? ["e-zip", `${w.unknownZip.title} ${w.unknownZip.deck}`] : bad("zip"))}
 ${field(w.place.street, `<input name="street" autocomplete="street-address" maxlength="120"${val(v.street)}>`, w.place.streetHelp)}
 </div>
 <details class="noaddress"${v.nearby || e.nearby ? " open" : ""}><summary>${esc(w.place.noAddress)}</summary>
-${field(w.place.nearby, `<input name="nearby" maxlength="120"${val(v.nearby)}${wrong("nearby")}>`, w.place.nearbyHelp, bad("nearby"))}
+${field(w.place.nearby, `<input name="nearby" maxlength="120"${val(v.nearby)}${wrong("nearby")}${focus("nearby")}>`, w.place.nearbyHelp, bad("nearby"))}
 </details>
 ${choices("speaks", w.language, [["en", "English", "en"], ["es", "Español", "es"]], v.speaks, false)}
-${choices("safe", w.safe.legend, [["yes", w.safe.yes], ["no", w.safe.no]], v.safe, false, e.safe ? w.errors.safe : undefined)}
-<div class="when">${field(w.whenIfNo, `<input name="callAt" maxlength="60"${val(v.callAt)}${wrong("when")}>`, w.safe.whenHelp, bad("when"))}</div>
-${choices("adult", w.adult.legend, [["yes", w.adult.yes], ["no", w.adult.no]], v.adult, false, e.adult ? w.errors.adult : undefined)}
+${choices("safe", w.safe.legend, [["yes", w.safe.yes], ["no", w.safe.no]], v.safe, false, e.safe ? w.errors.safe : undefined, firstWrong === "safe")}
+<div class="when">${field(w.whenIfNo, `<input name="callAt" maxlength="60"${val(v.callAt)}${wrong("when")}${focus("when")}>`, w.safe.whenHelp, bad("when"))}</div>
+${choices("adult", w.adult.legend, [["yes", w.adult.yes], ["no", w.adult.no]], v.adult, false, e.adult ? w.errors.adult : undefined, firstWrong === "adult")}
 <noscript><p class="problem">${esc(w.noScript)}</p><p class="lines"><a class="btn" href="tel:211">${esc(w.away.call211)}</a></p></noscript>
 <p class="said">${esc(w.assistant)}</p>
 <p class="lines"><button class="btn" type="submit">${esc(w.send)}</button></p>
