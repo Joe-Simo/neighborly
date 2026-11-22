@@ -62,6 +62,14 @@ function errorKey(error: unknown, flow: Flow): AuthError {
   }
 }
 
+/** The field a refusal is about, so it is marked wrong, names the notice, and takes focus. */
+const FIELD_OF: Partial<Record<AuthError, "email" | "password" | "code">> = {
+  email: "email", exists: "email", noAccount: "email",
+  password: "password", short: "password", long: "password", leakedSignIn: "password", leaked: "password", common: "password",
+  code: "code", expired: "code",
+};
+const ERROR_ID = "live-auth-error";
+
 export function LiveAuth({
   intent = "signin",
   sampleEntry = false,
@@ -135,6 +143,24 @@ export function LiveAuth({
   );
 
   const focus = useFocusBack();
+  // A refusal about one field marks that field and points it at the notice, and the field takes focus once the form
+  // wakes (after useFocusBack, declared above, has put focus back on the pressed button).
+  useEffect(() => {
+    const name = error ? FIELD_OF[error] : undefined;
+    if (!name || pending) return;
+    const control = document.querySelector<HTMLInputElement>(`.live-form [name="${name}"]`);
+    if (!control) return;
+    const before = control.getAttribute("aria-describedby");
+    control.setAttribute("aria-invalid", "true");
+    control.setAttribute("aria-describedby", [ERROR_ID, before].filter(Boolean).join(" "));
+    control.focus();
+    return () => {
+      control.removeAttribute("aria-invalid");
+      const now = (control.getAttribute("aria-describedby") ?? "").split(" ").filter((id) => id && id !== ERROR_ID).join(" ");
+      if (now) control.setAttribute("aria-describedby", now);
+      else control.removeAttribute("aria-describedby");
+    };
+  }, [error, pending]);
 
   function choose(next: Flow) {
     // Another page is written on the sheet, and the pressed control goes with the old one.
@@ -359,14 +385,14 @@ export function LiveAuth({
   const kind = flow === "signUp" && intent !== "signin" ? intent : flow;
   const busy = pending || opening || given;
   /** The shared failure notice's look. LiveFailure itself reads the workspace's words, and nobody is in a workspace yet. */
-  const failure = (message: string) => (
-    <div role="alert" className="live-error live-failure" ref={(notice) => notice?.scrollIntoView({ block: "nearest" })}>
+  const failure = (message: string, id?: string) => (
+    <div role="alert" id={id} className="live-error live-failure" ref={(notice) => notice?.scrollIntoView({ block: "nearest" })}>
       <p>{message}</p>
     </div>
   );
   const messages = (
     <>
-      {error && failure(w.errors[error])}
+      {error && failure(w.errors[error], ERROR_ID)}
       {notice && (
         <div role="status" className="live-success paper-rise">
           {w.onItsWay}
@@ -432,7 +458,6 @@ export function LiveAuth({
               maxLength={12}
               required
               autoFocus
-              aria-invalid={error === "code" || error === "expired" || undefined}
               disabled={busy}
             />
           </LiveField>
