@@ -33,6 +33,7 @@ export const serverRefusalsEs: Record<string, string> = {
   "That team does not take requests from the web.": "Ese equipo no recibe peticiones por la web.",
   "That zip code is not on the Census list. Try the zip of the church itself.": "Ese código postal no está en la lista del Censo. Prueba el código postal de la iglesia.",
   "The sample conference does not take requests from the web.": "La conferencia de muestra no recibe peticiones por la web.",
+  "The sample's web requests can be closed, but not passed on, blocked or marked.": "Las peticiones web de la muestra se pueden cerrar, pero no pasar a otro equipo, bloquear ni marcar.",
   "This request has been passed on three times. Settle it by phone with your coordinators.": "Esta petición ya se pasó tres veces. Resuélvanla por teléfono con quienes coordinan.",
   "This request is no longer here.": "Esta petición ya no está aquí.",
   "This request was already called back.": "Ya se devolvió la llamada de esta petición.",

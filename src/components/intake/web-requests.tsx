@@ -46,7 +46,9 @@ export function WebRequests() {
   useEffect(() => {
     if (!data.church.sample) void seen({ churchId }).catch(() => undefined);
   }, [churchId, data.church.sample, seen]);
-  if (data.church.sample) return null;
+  // The sample conference takes nothing from the web, but shows its made-up requests as a team would see them, with
+  // only what the server lets it do to them (close); where it helps, partners and marks are a real team's alone.
+  const sample = !!data.church.sample;
   // Until both readings are in, the room is held (room-sheet.tsx), so the section never lands above calls already shown.
   if (settings === undefined || (at !== 0 && requests === undefined)) return <span hidden data-room-pending="" />;
   const held = requests?.waiting.filter((row) => row.stage === "held") ?? [];
@@ -57,7 +59,9 @@ export function WebRequests() {
       <div className="live-section-head">
         <h2 id="web-requests-title">{w.title}</h2>
       </div>
-      {editing ? (
+      {sample ? (
+        <div className="web-area"><p>{w.sample}</p></div>
+      ) : editing ? (
         <ServiceAreaForm
           language={words.locale}
           start={settings ? { address: settings.address, size: sizeFor(settings.miles), miles: settings.miles } : undefined}
@@ -88,24 +92,24 @@ export function WebRequests() {
           </div>
         </div>
       )}
-      {error && !editing && <LiveFailure message={error} />}
-      {settings && more && <AreaMore churchId={churchId} settings={settings} onDone={() => setMore(false)} />}
-      {settings && (
+      {!sample && error && !editing && <LiveFailure message={error} />}
+      {!sample && settings && more && <AreaMore churchId={churchId} settings={settings} onDone={() => setMore(false)} />}
+      {!sample && settings && (
         <label className="web-choice web-notify">
           <input type="checkbox" checked={settings.newRequestEmail} onChange={(event) => void save(() => setNewRequestEmail({ churchId, on: event.currentTarget.checked }))} />
           <span>{w.newRequestEmail}</span>
         </label>
       )}
-      {settings && <Partners churchId={churchId} />}
-      <Review churchId={churchId} />
+      {!sample && settings && <Partners churchId={churchId} />}
+      {!sample && <Review churchId={churchId} />}
       {held.length > 0 && (
         <div className="web-held">
           <p>{w.held(held.length)}</p>
           <Button type="button" onClick={() => void save(() => releaseAll({ churchId }))}>{w.releaseAll}</Button>
         </div>
       )}
-      {settings && (waiting.length ? (
-        <div className="live-list">{waiting.map((row) => <WebRow key={row.id} row={row} churchId={churchId} />)}</div>
+      {(settings || sample) && (waiting.length ? (
+        <div className="live-list">{waiting.map((row) => <WebRow key={row.id} row={row} churchId={churchId} sample={sample} />)}</div>
       ) : requests && <p className="live-muted">{w.none}</p>)}
       {requests && requests.passedOn.length > 0 && (
         <div className="web-traces">
@@ -117,7 +121,7 @@ export function WebRequests() {
   );
 }
 
-function WebRow({ row, churchId }: { row: Row; churchId: Id<"churches"> }) {
+function WebRow({ row, churchId, sample }: { row: Row; churchId: Id<"churches">; sample: boolean }) {
   const { words } = useWorkspace();
   const w = webWords(words.locale);
   const [open, setOpen] = useState<"pass" | "block" | "close" | "back" | "flag" | null>(null);
@@ -165,10 +169,10 @@ function WebRow({ row, churchId }: { row: Row; churchId: Id<"churches"> }) {
         </form>
       )}
       <div className="live-row-actions">
-        <Button type="button" variant="outline" onClick={() => setOpen(open === "pass" ? null : "pass")}>{w.passOn}</Button>
-        <Button type="button" variant="ghost" onClick={() => setOpen(open === "close" ? null : "close")}>{w.close}</Button>
-        <Button type="button" variant="ghost" onClick={() => setOpen(open === "block" ? null : "block")}>{w.block}</Button>
-        <Button type="button" variant="ghost" onClick={() => setOpen(open === "flag" ? null : "flag")}>{w.notGenuine}</Button>
+        {!sample && <Button type="button" variant="outline" onClick={() => setOpen(open === "pass" ? null : "pass")}>{w.passOn}</Button>}
+        <Button type="button" variant={sample ? "outline" : "ghost"} onClick={() => setOpen(open === "close" ? null : "close")}>{w.close}</Button>
+        {!sample && <Button type="button" variant="ghost" onClick={() => setOpen(open === "block" ? null : "block")}>{w.block}</Button>}
+        {!sample && <Button type="button" variant="ghost" onClick={() => setOpen(open === "flag" ? null : "flag")}>{w.notGenuine}</Button>}
       </div>
       {open === "pass" && (
         <form

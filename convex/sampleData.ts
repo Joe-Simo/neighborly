@@ -7,6 +7,9 @@ import type { Doc, Id, TableNames } from "./_generated/dataModel";
 import { WAITING_KEPT } from "./counts";
 import { rebuildNames } from "./knownNames";
 import { nameKey } from "./assistance";
+import { nextBusinessDay, statusKeyHash, webCallDoc } from "./intake";
+import { keyed } from "./intakeKeys";
+import { readSubmission } from "../src/lib/intake-rules";
 
 type TableName = TableNames;
 type Row = { table: TableName; doc: Doc<TableName> };
@@ -93,6 +96,20 @@ function visitNote(household: number, visit: number, kind: string, draw: number)
   ].join(" ");
 }
 const strangers = ["Wrong number.", "Asked for the pantry's hours.", "Asked how to volunteer.", "Calling for a relative in another parish; referred to that conference.", "Hung up before leaving a name."];
+/**
+ * The sample's two web requests, as the form would send them: made-up words, a phone in the reserved 555-01xx range,
+ * an email on the reserved .example domain, and an address from the documentation range (192.0.2.0/24). `ago` is how
+ * long before `now` the code was entered; `household` names the household whose phone it gives.
+ */
+const sampleWebRequests: readonly { id: string; ago: number; ip: string; household?: number; form: Record<string, unknown> }[] = [
+  { id: "web-1", ago: 3 * 3600000, ip: "192.0.2.41", form: { adult: true, kinds: ["utility", "food"], need: "Me llegó un aviso de corte de la luz. Somos cuatro en casa y nos falta comida hasta el viernes.", email: "web.sample.1@kindhelps.example", phone: "", zip: "10001", language: "es", safe: "yes" } },
+  { id: "web-2", ago: 26 * 3600000, ip: "192.0.2.77", household: 131, form: { adult: true, kinds: ["rent"], need: "Behind on this month's rent after my hours were cut. The landlord gave me until the 30th.", email: "web.sample.2@kindhelps.example", phone: "(101) 555-0131", zip: "10001", language: "en", safe: "yes", referredBy: "Parish office" } },
+];
+/** What the assistant read in the last two write-ups: a need the visit was not for, and the signs the note gives. */
+const readVisits = [
+  { kind: "food", signs: ["child"], note: "Met at the kitchen table. The bill we came for matches what was told to the help line. Three young children at home, and the cupboards were nearly bare; left the pantry hours and our number." },
+  { kind: "utility", signs: ["shutoff", "elder"], note: "Visited together. Her mother, 84, lives with her. The electric company's shut-off notice came on Monday, a second bill beside the one we came for. Payment goes to the payee directly." },
+] as const;
 
 /** A small fixed-seed generator, so the sample conference is the same every time it is loaded. */
 function generator(seed: number) {
@@ -525,6 +542,25 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
   await db.insert("neighborNotes", { churchId, neighborId: households[14], body: "The bill came after a leak under the sink. The landlord fixed the leak; the water bill is hers.", authorId: staff[2], createdAt: clock(now - 2 * DAY, callSlots) });
   await db.insert("neighborNotes", { churchId, neighborId: households[64], body: "Hours at the laundromat were cut in October. Mill Road Rentals has been patient so far.", authorId: staff[1], createdAt: clock(now - 9 * DAY, callSlots) });
   await db.insert("neighborNotes", { churchId, neighborId: households[63], body: "The furnace went out, so she heats with a space heater. Expects the light bill to run high.", authorId: staff[2], createdAt: clock(now - 12 * DAY, callSlots) });
+  // Two requests from the public web form, laid as intake.receive and intake.confirm lay a confirmed one: the
+  // person's words read the way the form reads them (readSubmission), the contacts kept only as the form's keyed
+  // hashes, and the call each became made by the same webCallDoc. Neither sample row is reachable from outside: the
+  // status keys are not 32 hex characters, so no status link opens them, and their .example email cannot take a code.
+  // One is new to the conference; the other gives the phone of household 131, the one household with it, so its call
+  // is marked as likely theirs, as intake.likelyHousehold marks it. Written by `now` alone, with no draw.
+  for (const web of sampleWebRequests) {
+    const read = readSubmission(web.form);
+    if (!read.ok) throw new Error(`A sample web request does not pass the form's own check: ${read.problems.join(", ")}`);
+    const { kinds, need, email, phone, zip, language, safe, referredBy } = read.value;
+    const confirmedAt = now - web.ago, createdAt = confirmedAt - 4 * 60000;
+    const request = { churchId, kind: kinds[0], kinds, need, phone, email, zip, language, safe, ...(referredBy ? { referredBy } : {}) };
+    const callId = await db.insert("calls", { ...webCallDoc(request, confirmedAt, owner), ...(web.household !== undefined ? { likelyNeighborId: households[web.household] } : {}) });
+    await db.insert("webRequests", {
+      ...request, stage: "received", statusKeyHash: await statusKeyHash(`sample:${web.id}`), codeHash: "", codeTries: 0,
+      contactHash: await keyed(email ? `email:${email}` : `phone:${phone}`), ...(phone ? { phoneHash: await keyed(`phone:${phone}`) } : {}), ipHash: await keyed(`ip:${web.ip}`),
+      createdAt, confirmedAt, firstContactBy: nextBusinessDay(confirmedAt, zone), callId,
+    });
+  }
 
   // This week's returned calls from people who are not a household here, so the help line shows how a call ends.
   const returned = [
@@ -619,6 +655,31 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
       if (act.visit) await db.patch("visits", act.visit.id, { completedAt: at });
     }
   }
+  // The last two visits written up carry what the assistant read in their notes, a need the visit was not for and
+  // its signs (drafts.readVisit keeps the same shape), so the written-up rows show everything they can: the pair, the
+  // date line, the note and the read-in. Chosen from the laid visits, never drawn, so no figure moves.
+  // In the order the visits room lists them (visits.board: the latest written up first), so they lead the list.
+  const writtenUp = [];
+  for (const laidVisit of laid.visits) {
+    if (laidVisit.scheduledAt < now - 90 * DAY || laidVisit.scheduledAt >= now) continue;
+    const visit = await db.get("visits", laidVisit.id);
+    if (visit) writtenUp.push(visit);
+  }
+  writtenUp.sort((a, b) => (b.completedAt ?? b.scheduledAt) - (a.completedAt ?? a.scheduledAt));
+  // Each read names a need the visit was not for, so a visit takes a read left that differs from its own kind: first
+  // the one the next visit could not take (its own kind), so the two reads land on the first two visits they can.
+  const left = [...readVisits];
+  const visitKinds: (string | null)[] = [];
+  for (const visit of writtenUp) visitKinds.push(visit.requestId ? ((await db.get("assistanceRequests", visit.requestId))?.kind ?? null) : null);
+  for (const [index, visit] of writtenUp.entries()) {
+    if (!left.length) break;
+    const kind = visitKinds[index];
+    const fits = left.filter((read) => kind && read.kind !== kind);
+    const found = fits.find((read) => read.kind === visitKinds[index + 1]) ?? fits[0];
+    if (!found) continue;
+    left.splice(left.indexOf(found), 1);
+    await db.patch("visits", visit._id, { notes: found.note, found: { kind: found.kind, signs: [...found.signs], at: (visit.completedAt ?? visit.scheduledAt) + 15 * 60000 } });
+  }
   await laying.patch("churches", churchId, { monthlyBudget: 300000, householdCount: figures.households, waitingCount: figures.waiting.length, waitingHouseholdIds: figures.waiting.slice(0, WAITING_KEPT) });
 
   return churchId;
@@ -674,7 +735,7 @@ export const load = internalMutation({
 });
 
 /** The tables a conference's rows sit in, reached by their `by_church` index. */
-const churchTables = ["ledgerEntries", "visits", "aiReads", "requestDrafts", "assistanceRequests", "calls", "neighbors", "auditEvents", "calendarFeeds", "payees", "invitations", "outbox", "meetings", "meetingResponses", "series", "deposits", "voucherStock", "ledgerKinds", "bankStatements", "neighborNotes", "referralAgencies", "announcements", "tasks", "timeOff", "availability", "requests", "commitments", "teamMembers", "teams", "memberships"] as const;
+const churchTables = ["ledgerEntries", "visits", "aiReads", "requestDrafts", "assistanceRequests", "calls", "neighbors", "auditEvents", "calendarFeeds", "payees", "invitations", "outbox", "meetings", "meetingResponses", "series", "deposits", "voucherStock", "ledgerKinds", "bankStatements", "neighborNotes", "webRequests", "referralAgencies", "announcements", "tasks", "timeOff", "availability", "requests", "commitments", "teamMembers", "teams", "memberships"] as const;
 
 /**
  * Every row of a sample conference, each read once: its own tables, the two reached only through a parent
@@ -689,6 +750,8 @@ async function sampleRows(ctx: MutationCtx, churchId: Id<"churches">) {
   for (const table of churchTables) {
     const found = table === "ledgerKinds"
       ? await ctx.db.query("ledgerKinds").withIndex("by_church_key", (q) => q.eq("churchId", churchId)).collect()
+      : table === "webRequests"
+      ? await ctx.db.query("webRequests").withIndex("by_church_stage", (q) => q.eq("churchId", churchId)).collect()
       : await ctx.db.query(table).withIndex("by_church", (q) => q.eq("churchId", churchId)).collect();
     for (const doc of found) rows.push({ table, doc });
     for (const doc of found) {
