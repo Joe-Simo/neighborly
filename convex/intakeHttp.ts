@@ -42,7 +42,11 @@ async function fromSite(request: Request) {
 }
 const reply = (status: number, body: Record<string, string | boolean>) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
-const address = (value: unknown) => (typeof value === "string" && /^[0-9a-fA-F:.]{2,64}$/.test(value) ? value : "unknown");
+/**
+ * The sender's address from the site, or, when there is none, a value of this request alone: an unknown sender is
+ * never counted, limited or blocked in a bucket shared with everyone else whose address is unknown.
+ */
+const address = (value: unknown) => (typeof value === "string" && /^[0-9a-fA-F:.]{2,64}$/.test(value) ? value : `unknown:${hex(random(12))}`);
 
 async function body(request: Request): Promise<Record<string, unknown> | null> {
   if (Number(request.headers.get("Content-Length") ?? "0") > 8192) return null;
@@ -75,7 +79,8 @@ export const submit = httpAction(async (ctx, request) => {
   // A street address is placed with the Census geocoder (the address alone is sent); without it, the zip's centre.
   const street = typeof input.street === "string" ? input.street.replace(/\s+/g, " ").trim().slice(0, 120) : "";
   const at = street && /^\d{5}$/.test(read.value.zip) ? await placeAddress(ctx, `${street}, ${read.value.zip}`) : null;
-  const device = typeof input.device === "string" && /^[\w-]{8,64}$/.test(input.device) ? input.device : `none:${ip}`;
+  // No device id: this request alone, never a shared "none" bucket.
+  const device = typeof input.device === "string" && /^[\w-]{8,64}$/.test(input.device) ? input.device : `none:${hex(random(12))}`;
   const { value } = read;
   const statusKey = hex(random(16));
   const link = statusLink(value.language, statusKey);
