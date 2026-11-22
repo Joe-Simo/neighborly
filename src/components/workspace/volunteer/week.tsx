@@ -52,7 +52,7 @@ export function WeekSection() {
           <div className="live-list">
             {data.announcements.map((item) => (
               <article className="live-row" key={item.id}>
-                <div>
+                <div className="live-announcement">
                   <h3>{keepNames(sampleSaid(item.title))}</h3>
                   <p className="live-prep">{sampleSaid(item.body)}</p>
                   <div className="live-meta">

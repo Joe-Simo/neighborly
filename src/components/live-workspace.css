@@ -219,6 +219,8 @@
   align-items: center;
   gap: var(--space-24) 24px;
 }
+/* An announcement with one very long word in it (a pasted link, a name without spaces) turns beside its button. */
+.live-announcement { min-width: 0; overflow-wrap: anywhere; }
 .live-row-main {
   min-width: 0;
   flex: 1;
@@ -247,8 +249,11 @@
   gap: var(--space-8) 8px;
   font-size: 13px;
   color: #466143;
-  /* Short, it stays on one line; a long one (a Spanish need with its amount, a long name) turns within the row. */
+  /* Short, it stays on one line; a long one (a Spanish need with its amount, a long name) turns within the row. It is
+     never squeezed narrower than its words beside a button: it drops to a line of its own first. */
   max-width: 100%;
+  min-width: min(100%, max-content);
+  overflow-wrap: anywhere;
 }
 .live-status:before {
   content: "";
