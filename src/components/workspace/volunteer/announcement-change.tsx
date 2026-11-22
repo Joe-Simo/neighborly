@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -60,10 +60,14 @@ export default function AnnouncementChange({
   const remove = useMutation(api.announcements.remove);
   const restore = useMutation(api.announcements.restore);
   const [busy, setBusy] = useState(false);
+  // A second press before busy has drawn sends nothing, as in the shell's perform.
+  const working = useRef(false);
   const [asking, setAsking] = useState(false);
   const [error, setError] = useState("");
 
   const run = async (work: () => Promise<unknown>) => {
+    if (working.current) return false;
+    working.current = true;
     setBusy(true);
     setError("");
     try {
@@ -73,6 +77,7 @@ export default function AnnouncementChange({
       setError(sayFailure(words.notices, problem, text.failed));
       return false;
     } finally {
+      working.current = false;
       setBusy(false);
     }
   };

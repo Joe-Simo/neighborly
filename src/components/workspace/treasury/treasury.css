@@ -481,11 +481,11 @@
 }
 /* From 600px up a button is a button: its own width, at the row's right. */
 @media (min-width: 600px) and (max-width: 850px) {
-  .treasury-waiting .help-row {
+  .treasury-waiting:not(.treasury-uncleared) .help-row {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
   }
-  .treasury-waiting .help-row > :nth-child(2) {
+  .treasury-waiting:not(.treasury-uncleared) .help-row > :nth-child(2) {
     grid-column: 2;
   }
   .treasury-sheet .help-actions {
@@ -514,14 +514,14 @@
 }
 
 /* Also waiting: the payee and the neighbor's name say whose each row is, so no monogram stands before them. */
-.treasury-waiting .help-row {
+.treasury-waiting:not(.treasury-uncleared) .help-row {
   grid-template-columns: minmax(0, 1fr) auto;
 }
 @media (max-width: 599px) {
-  .treasury-waiting .help-row {
+  .treasury-waiting:not(.treasury-uncleared) .help-row {
     grid-template-columns: minmax(0, 1fr);
   }
-  .treasury-waiting .help-row > :nth-child(2) {
+  .treasury-waiting:not(.treasury-uncleared) .help-row > :nth-child(2) {
     grid-column: 1;
   }
 }
@@ -707,3 +707,6 @@
 .treasury-check li > .help-assistant { display: flex; font-size: 13px; }
 /* Treasury is a dense room: its rows keep the 8-step, 16 between rows. */
 .treasury-waiting .help-row { padding-block: var(--space-16); }
+/* A long figure keeps its whole line: it shrinks to its column rather than running past it. */
+.help-figures.treasury-figures > div { container-type: inline-size; }
+.treasury-figures .count-up { font-size: min(1em, 17cqi); }
