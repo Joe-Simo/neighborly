@@ -39,3 +39,6 @@
 /* A web request has no date leaf, so its row is one column: its lines must not fall into the call rows' narrow date column. */
 .live-app .help-row.web-row { grid-template-columns: minmax(0, 1fr); }
 .live-app .help-row.web-row > * { grid-column: 1; }
+/* The list after the web requests (To call back, or its empty line) starts a section of its own: it keeps a
+   section's space above it, so its title and rule never sit on the last request's Close. */
+.live-app .web-requests + * { margin-top: var(--space-40); }
