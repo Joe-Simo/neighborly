@@ -75,25 +75,25 @@ export default function ReferralAgencies() {
                   }}
                 />
               ) : (
-                <>
-                  <div className="tools-agency">
-                    <strong>{row.name}</strong>
+                <div className="tools-agency">
+                  <strong>{row.name}</strong>
+                  <div className="tools-agency-line">
                     {row.phone && <span>{row.phone}</span>}
-                    {row.helpsWith && <span>{row.helpsWith}</span>}
+                    {removing === row.id ? (
+                      <>
+                        <span>{text.removeQuestion}</span>
+                        <button type="button" className="tools-agency-act" disabled={busy} onClick={() => void run(() => remove({ churchId, id: row.id }), text.removed).then(() => setRemoving(null))}>{text.removeSure}</button>
+                        <button type="button" className="tools-agency-act" onClick={() => setRemoving(null)}>{text.keep}</button>
+                      </>
+                    ) : (
+                      <>
+                        <button type="button" className="tools-agency-act" aria-label={`${text.edit}: ${row.name}`} onClick={() => { setRemoving(null); setEditing(row.id); }}>{text.edit}</button>
+                        <button type="button" className="tools-agency-act" aria-label={`${text.remove}: ${row.name}`} onClick={() => { setEditing(null); setRemoving(row.id); }}>{text.remove}</button>
+                      </>
+                    )}
                   </div>
-                  {removing === row.id ? (
-                    <div className="help-actions">
-                      <span className="tools-small">{text.removeQuestion}</span>
-                      <Button variant="outline" disabled={busy} onClick={() => void run(() => remove({ churchId, id: row.id }), text.removed).then(() => setRemoving(null))}>{text.removeSure}</Button>
-                      <Button variant="ghost" onClick={() => setRemoving(null)}>{text.keep}</Button>
-                    </div>
-                  ) : (
-                    <div className="help-actions">
-                      <Button variant="outline" aria-label={`${text.edit}: ${row.name}`} onClick={() => { setRemoving(null); setEditing(row.id); }}>{text.edit}</Button>
-                      <Button variant="ghost" aria-label={`${text.remove}: ${row.name}`} onClick={() => { setEditing(null); setRemoving(row.id); }}>{text.remove}</Button>
-                    </div>
-                  )}
-                </>
+                  {row.helpsWith && <span>{row.helpsWith}</span>}
+                </div>
               )}
             </li>
           ))}
