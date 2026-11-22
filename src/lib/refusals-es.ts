@@ -122,6 +122,7 @@ export const serverRefusalsEs: Record<string, string> = {
   "Only money that came in can be deposited.": "Solo se puede depositar dinero que entró.",
   "Only the owner can remove a person.": "Solo quien es responsable puede quitar a una persona.",
   "Owner access required.": "Esto lo puede hacer solo un responsable.",
+  "Announcement not found.": "No se encontró ese anuncio.",
   "Payments go to the landlord, utility or store, never to the neighbor. Change who is paid on the request first.":
     "Se le paga al arrendador, a la compañía de servicios o a la tienda, nunca al vecino. Primero cambia en la petición a quién se le paga.",
   "Pending request not found.": "No se encontró esa petición en espera.",

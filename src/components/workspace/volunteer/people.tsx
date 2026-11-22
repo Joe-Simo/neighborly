@@ -88,7 +88,7 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
 }
 
 export function PeopleSection() {
-  const { data, pending, isOwner, confirm: setConfirmation, words, sampleSaid } = useWorkspace();
+  const { data, pending, isOwner, confirm: setConfirmation, words, sampleSaid, now, openAction } = useWorkspace();
   const roles: Record<string, string> = words.people.roles;
   const text = words.rooms.peopleRoom;
   const sheets = words.rooms.sheets;
@@ -245,7 +245,9 @@ export function PeopleSection() {
             // Rows like the people above, in the same columns. No folded corner: this wait is on someone else.
             <div className="live-list people-invitations">
               {data.invitations.map((invite) => {
-                const waits = invite.status === "pending";
+                // A pending link past its day cannot be used: it says so, in ochre, and offers a new one.
+                const expired = invite.status === "pending" && invite.expiresAt !== undefined && invite.expiresAt <= now;
+                const waits = invite.status === "pending" && !expired;
                 const role = invitedAs[invite.role] ?? text.invitations.invitedAsOther(invite.role.toLowerCase());
                 return (
                   <div className="live-row live-person-row people-row people-invited" key={invite.id}>
@@ -262,12 +264,17 @@ export function PeopleSection() {
                     </div>
                     <div className="live-meta">
                       <span className="people-role-wide">{role}</span>
-                      <span data-waits={waits ? "" : undefined} data-joined={invite.status === "accepted" ? "" : undefined}>
-                        {waits ? text.invitations.waiting : invite.status === "accepted" ? text.invitations.joined : invite.status}
+                      <span data-waits={waits || expired ? "" : undefined} data-joined={invite.status === "accepted" ? "" : undefined}>
+                        {expired ? text.invitations.expired : waits ? text.invitations.waiting : invite.status === "accepted" ? text.invitations.joined : invite.status}
                       </span>
                     </div>
                     <div className="live-row-actions">
-                      {waits && (
+                      {expired && (
+                        <Button variant="ghost" size="sm" data-opens="" disabled={pending} onClick={() => openAction("invite")}>
+                          {text.invitations.sendNew}
+                        </Button>
+                      )}
+                      {(waits || expired) && (
                         <Button
                           variant="ghost"
                           size="sm"

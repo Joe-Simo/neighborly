@@ -9,7 +9,7 @@ import { join } from "node:path";
  */
 const week = ["volunteer/week.tsx", "volunteer/commitment-rows.tsx", "week-note/week-note.tsx", "week-note/assistant-limits.tsx"];
 /** What a press on each control does, by its handler. */
-const opens = ["showCommitment(item, event.currentTarget)", "setOpen(true)", "setOpen(!open)", "setPrinting(true)"];
+const opens = ["showCommitment(item, event.currentTarget)", "setOpen(true)", "setOpen(!open)", "setPrinting(true)", "setChanging(item)"];
 const writes = [
   // A yes or a no to a request to cover.
   "void respond(request, true, event.currentTarget)",

@@ -183,6 +183,8 @@ export function en(set: WordSet) {
       quietDetail:
         "No commitments are scheduled in the next seven days. Later dates are in Commitments.",
       fromGroup: `From your ${t.group}`,
+      changeAnnouncement: "Edit or remove",
+      changeAnnouncementLabel: (title: string) => `Edit or remove: ${title}`,
       noAnnouncementsTitle: `All quiet from the ${t.group}.`,
       noAnnouncementsDetail: "News from your coordinators will show up here.",
     },

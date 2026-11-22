@@ -53,6 +53,8 @@ export const en = (t: Terms, place: string) => ({
     /** A role this table does not know, shown as it is kept. */
     invitedAsOther: (role: string) => `Invited as ${role}`,
     waiting: "Waiting for them to join",
+    expired: "Link expired — send a new one",
+    sendNew: "Send a new invitation",
     joined: "Joined",
     revoke: "Revoke invitation",
     revokeLabel: (email: string) => `Revoke invitation to ${email}`,
@@ -201,6 +203,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       invitedAs: { owner: "Invitación como responsable", coordinator: "Invitación como coordinador", member: "Invitación como miembro" },
       invitedAsOther: (role) => `Invitación como ${role}`,
       waiting: "Esperando a que se una",
+      expired: "El enlace venció — envía uno nuevo",
+      sendNew: "Enviar una invitación nueva",
       joined: "Ya se unió",
       revoke: "Anular la invitación",
       revokeLabel: (email) => `Anular la invitación para ${email}`,

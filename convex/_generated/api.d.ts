@@ -11,6 +11,7 @@
 import type * as access from "../access.js";
 import type * as aiReads from "../aiReads.js";
 import type * as announcementFanout from "../announcementFanout.js";
+import type * as announcements from "../announcements.js";
 import type * as area from "../area.js";
 import type * as assistance from "../assistance.js";
 import type * as calendar from "../calendar.js";
@@ -70,6 +71,7 @@ declare const fullApi: ApiFromModules<{
   access: typeof access;
   aiReads: typeof aiReads;
   announcementFanout: typeof announcementFanout;
+  announcements: typeof announcements;
   area: typeof area;
   assistance: typeof assistance;
   calendar: typeof calendar;
