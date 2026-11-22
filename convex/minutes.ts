@@ -39,6 +39,8 @@ export const sheet = query({
     balance: v.number(),
     members: v.array(v.object({ id: v.id("memberships"), name: v.string() })),
     kept: v.object({ reflection: v.string(), minutes: v.string(), attended: v.array(v.id("memberships")), savedAt: v.union(v.number(), v.null()), sentAt: v.union(v.number(), v.null()) }),
+    /** Why the minutes cannot be emailed, the same test `send` makes: "sample" in the sample conference, "off" when no email is set up. Null when they can be. */
+    emailOff: v.union(v.literal("sample"), v.literal("off"), v.null()),
   }),
   handler: async (ctx, { churchId, meetingId }) => {
     await neighborAccess(ctx, churchId);
@@ -61,6 +63,7 @@ export const sheet = query({
       balance: ledger.reduce((sum, entry) => sum + (entry.kind === "income" ? entry.amount : -entry.amount), 0),
       members: members.filter(one => one.active && !one.removedAt).map(one => ({ id: one._id, name: one.name })).sort((a, b) => a.name.localeCompare(b.name)),
       kept: { reflection: meeting.reflection ?? "", minutes: meeting.minutes ?? "", attended: meeting.attended ?? [], savedAt: meeting.minutesSavedAt ?? null, sentAt: meeting.minutesSentAt ?? null },
+      emailOff: (await isSampleChurch(ctx, churchId)) ? ("sample" as const) : deliveryConfiguration() ? null : ("off" as const),
     };
   },
 });

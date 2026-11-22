@@ -32,7 +32,7 @@ const said = {
     none: "None.", decide: "Decide",
     minutes: "Minutes", minutesHelp: "Members get these by email with every neighbor’s name and address taken out.",
     attended: "Who came",
-    save: "Save the minutes", saved: "Saved.", print: "Print", send: "Email to members", sent: "Emailed to members.", notSent: "Email is not switched on here, so nothing was sent.",
+    save: "Save the minutes", saved: "Saved.", print: "Print", send: "Email to members", sent: "Emailed to members.", notSent: "Email is not switched on here, so nothing was sent.", emailSample: "Email is off for the sample.", emailOff: "Email is not switched on here yet.", saveFirst: "Save the minutes first, then email them.",
     status: { approved: "approved", paid: "paid", declined: "declined", closed: "closed", open: "open" } as Record<string, string>,
     kinds: { rent: "Rent", utility: "Utility", food: "Food", voucher: "Voucher", other: "Other" } satisfies Record<Kind, string>,
     places: { home: "home", prison: "prison", hospital: "hospital", eldercare: "nursing home", other: "in person" } satisfies Record<Place, string>,
@@ -45,7 +45,7 @@ const said = {
     none: "Ninguna.", decide: "Decidir",
     minutes: "Acta", minutesHelp: "Los miembros la reciben por correo sin los nombres ni direcciones de las personas que ayudamos.",
     attended: "Quién vino",
-    save: "Guardar el acta", saved: "Guardada.", print: "Imprimir", send: "Enviar a los miembros", sent: "Enviada a los miembros.", notSent: "El correo no está activado aquí, así que no se envió nada.",
+    save: "Guardar el acta", saved: "Guardada.", print: "Imprimir", send: "Enviar a los miembros", sent: "Enviada a los miembros.", notSent: "El correo no está activado aquí, así que no se envió nada.", emailSample: "El correo está desactivado en el ejemplo.", emailOff: "El correo todavía no está activado aquí.", saveFirst: "Guarda primero el acta y luego envíala.",
     status: { approved: "aprobada", paid: "pagada", declined: "rechazada", closed: "cerrada", open: "abierta" } as Record<string, string>,
     kinds: { rent: "Renta", utility: "Servicios", food: "Comida", voucher: "Vales", other: "Otra ayuda" } satisfies Record<Kind, string>,
     places: { home: "en casa", prison: "en prisión", hospital: "en el hospital", eldercare: "en un asilo", other: "en persona" } satisfies Record<Place, string>,
@@ -82,6 +82,9 @@ function Agenda({ churchId, meetingId, language, leave, day }: { churchId: Id<"c
   const { pending, error, save } = useSave();
   if (!sheet) return <LiveWaiting when />;
   const present = attended ?? sheet.kept.attended;
+  // Email the members is off in the sample and where no email is set up, and waits for saved minutes: one muted line says which.
+  const emailWhy = sheet.emailOff === "sample" ? w.emailSample : sheet.emailOff === "off" ? w.emailOff : "";
+  const sendWhy = emailWhy || (sheet.kept.savedAt ? "" : w.saveFirst);
   const money = (cents: number) => formatMoney(cents / 100, language, cents % 100 === 0);
   return (
     <form
@@ -142,6 +145,7 @@ function Agenda({ churchId, meetingId, language, leave, day }: { churchId: Id<"c
       {error && <LiveFailure message={error} />}
       {done && <p role="status">{done}</p>}
       <div className="live-form-actions">
+        {sendWhy && <p id="meeting-send-why" className="meeting-send-why">{sendWhy}</p>}
         <LiveWaiting when={pending} />
         <Button type="button" variant="ghost" onClick={() => {
           // The print rule holds only while this sheet is printing, so no other page's print is blanked by it.
@@ -150,7 +154,7 @@ function Agenda({ churchId, meetingId, language, leave, day }: { churchId: Id<"c
           window.addEventListener("afterprint", () => delete root.dataset.print, { once: true });
           window.print();
         }}><Printer aria-hidden="true" />{w.print}</Button>
-        <Button type="button" variant="outline" disabled={pending || !sheet.kept.savedAt} onClick={async () => {
+        <Button type="button" variant="outline" disabled={pending || Boolean(sendWhy)} aria-describedby={sendWhy ? "meeting-send-why" : undefined} onClick={async () => {
           const outcome = await save(() => send({ churchId, meetingId }));
           if (outcome.saved) setDone(outcome.result === "sent" ? w.sent : w.notSent);
         }}><Send aria-hidden="true" />{w.send}</Button>
