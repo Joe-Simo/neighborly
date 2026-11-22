@@ -1,5 +1,5 @@
 import type { FunctionReturnType } from "convex/server";
-import { api } from "../../convex/_generated/api";
+import type { api } from "../../convex/_generated/api";
 
 /** This week of the sample as the seed has it: public, read from no row, and holding nothing a visitor typed. */
 export type FirstRoom = NonNullable<FunctionReturnType<typeof api.demo.firstRoom>>;
@@ -17,8 +17,9 @@ export function askFirstRoom() {
   const hour = Math.floor(Date.now() / HOUR) * HOUR;
   if (!url || asked?.hour === hour) return;
   // The backend's client is loaded only now, so the home page does not carry it for visitors who never come near the card.
-  const answer = import("convex/browser")
-    .then(({ ConvexHttpClient }) => new ConvexHttpClient(url).query(api.demo.firstRoom, { at: hour }))
+  // So is the function reference: convex/_generated/api is convex/server's anyApi, which pulls in its validators.
+  const answer = Promise.all([import("convex/browser"), import("../../convex/_generated/api")])
+    .then(([{ ConvexHttpClient }, { api }]) => new ConvexHttpClient(url).query(api.demo.firstRoom, { at: hour }))
     .catch(() => null);
   const asking: NonNullable<typeof asked> = { hour, answer };
   asked = asking;
