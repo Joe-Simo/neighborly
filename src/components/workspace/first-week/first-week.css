@@ -4,7 +4,7 @@
 .live-app .first-week-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12) 12px; margin-bottom: var(--space-8); }
 .live-app .first-week-head h2 { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: var(--caps-track); text-transform: uppercase; color: var(--live-muted); }
 /* Its glyph lines up with the page's edge; beside a notch the button keeps inside the gutter so its ring stays clear. */
-.live-app .first-week-away { width: 44px; height: 44px; margin-right: min(0px, calc(-12px + env(safe-area-inset-right) * 999)); color: var(--live-muted); }
+.live-app .first-week-away { width: 44px; height: 44px; color: var(--live-muted); }
 .live-app .first-week-slips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-16) 16px; margin: 0; padding: 0; list-style: none; }
 .live-app .first-week-slip { background: var(--relief-paper); border: 1px solid var(--relief-edge); border-radius: 3px; box-shadow: var(--relief-slip); }
 .live-app .first-week-slip[data-done] { --paper-corner: var(--paper-green); }
