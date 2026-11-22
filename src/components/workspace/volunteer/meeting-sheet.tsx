@@ -147,14 +147,14 @@ function Agenda({ churchId, meetingId, language, leave, day }: { churchId: Id<"c
       <div className="live-form-actions">
         {sendWhy && <p id="meeting-send-why" className="meeting-send-why">{sendWhy}</p>}
         <LiveWaiting when={pending} />
-        <Button type="button" variant="ghost" onClick={() => {
+        <Button type="button" variant="ghost" data-foot-aside onClick={() => {
           // The print rule holds only while this sheet is printing, so no other page's print is blanked by it.
           const root = document.documentElement;
           root.dataset.print = "meeting";
           window.addEventListener("afterprint", () => delete root.dataset.print, { once: true });
           window.print();
         }}><Printer aria-hidden="true" />{w.print}</Button>
-        <Button type="button" variant="outline" disabled={pending || Boolean(sendWhy)} aria-describedby={sendWhy ? "meeting-send-why" : undefined} onClick={async () => {
+        <Button type="button" variant="outline" data-foot-aside disabled={pending || Boolean(sendWhy)} aria-describedby={sendWhy ? "meeting-send-why" : undefined} onClick={async () => {
           const outcome = await save(() => send({ churchId, meetingId }));
           if (outcome.saved) setDone(outcome.result === "sent" ? w.sent : w.notSent);
         }}><Send aria-hidden="true" />{w.send}</Button>

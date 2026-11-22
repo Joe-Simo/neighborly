@@ -1761,5 +1761,18 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 [data-live-tight] .live-dialog.live-dialog-fixed .live-form-actions.live-form-actions { padding-block: var(--space-8); }
 [data-live-short] .live-dialog.live-dialog-fixed .live-form-actions.live-form-actions { position: static; }
 
+/* Every foot row is end-aligned, primary last. A side action marked data-foot-aside (Print, Email, Download) is not
+   the row's answer: from 600px it stands at the row's start, in the same line; under 600px it takes its own line above
+   the answer, end-aligned. A note in the row (meeting-send-why) stays on top of both. */
+.live-form-actions { justify-content: flex-end; }
+@media (min-width: 600px) {
+  .live-form-actions > [data-foot-aside]:first-of-type { margin-inline-end: auto; }
+}
+@media (max-width: 599px) {
+  .live-form-actions:has(> [data-foot-aside])::after { content: ""; order: -1; flex-basis: 100%; height: 0; }
+  .live-form-actions > [data-foot-aside] { order: -2; }
+  .live-form-actions > .meeting-send-why { order: -3; }
+}
+
 /* A neighbor's name that opens their request reaches 44px to the touch without moving a letter. */
 .live-app .help-row h3 > .help-row-open { display: inline-block; padding-block: 11px; margin-block: -11px; }

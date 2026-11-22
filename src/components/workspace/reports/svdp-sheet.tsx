@@ -87,7 +87,7 @@ export default function SvdpSheet({ report }: { report: YearReport }) {
             </div>
           </div>
           <div className="live-form-actions">
-            <Button type="button" variant="ghost" onClick={download}><Download aria-hidden="true" />{w.download}</Button>
+            <Button type="button" variant="ghost" data-foot-aside onClick={download}><Download aria-hidden="true" />{w.download}</Button>
             <Button type="button" onClick={print}><Printer aria-hidden="true" />{w.print}</Button>
           </div>
         </LiveDialog>
