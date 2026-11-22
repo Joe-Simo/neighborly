@@ -18,7 +18,7 @@ const said = {
   en: {
     yours: "Yours",
     whole: "The conference at a glance",
-    visits: "Yours, next 7 days",
+    visits: "Next 7 days",
     visitsLine: (next: string) => (next ? `Next ${next}` : "Nothing of yours in the next 7 days"),
     asks: (n: number) => (n ? `${n} home visit${n === 1 ? "" : "s"} waiting for your answer` : ""),
     tasks: "Your tasks",
@@ -48,7 +48,7 @@ const said = {
   es: {
     yours: "Lo tuyo",
     whole: "La conferencia de un vistazo",
-    visits: "Lo tuyo, próximos 7 días",
+    visits: "Próximos 7 días",
     visitsLine: (next: string) => (next ? `Lo próximo: ${next}` : "Nada tuyo en los próximos 7 días"),
     asks: (n: number) => (n ? (n === 1 ? "1 visita espera tu respuesta" : `${n} visitas esperan tu respuesta`) : ""),
     tasks: "Tus tareas",
