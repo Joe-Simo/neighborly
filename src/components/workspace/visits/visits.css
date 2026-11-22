@@ -91,6 +91,7 @@
     serif;
   letter-spacing: -0.025em;
   margin: 0 0 var(--space-8);
+  overflow-wrap: break-word;
 }
 .visits-paper-when {
   font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
