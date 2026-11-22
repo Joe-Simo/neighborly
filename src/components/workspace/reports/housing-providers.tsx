@@ -72,7 +72,7 @@ function HousingProviders({ year, read, lines }: { year: number; read: ReadHousi
                   <small>{w.payments(line.payments)}</small>
                 </th>
                 {line.months.map((cents, index) => (
-                  <td key={report.months[index]}>{cents ? money(cents, language) : "–"}</td>
+                  <td key={report.months[index]}>{cents ? money(cents, language) : <span className="housing-none">–</span>}</td>
                 ))}
                 <td>{money(line.total, language)}</td>
               </tr>

@@ -1006,7 +1006,10 @@
 .housing-body { min-width: 0; max-width: 100%; }
 .housing-note { margin: var(--space-8) 0; color: var(--live-ink); }
 .housing-scroll { width: 0; min-width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; padding: var(--space-4) 0; margin: var(--space-16) 0; border-top: 1px solid var(--live-line); }
-.housing-table { border-collapse: collapse; font-variant-numeric: tabular-nums; min-width: 100%; }
+.housing-table { border-collapse: collapse; font-feature-settings: "lnum" 1, "tnum" 1; min-width: 100%; }
+/* Every figure cell: tabular, right-aligned, so dollars stand digit under digit; an empty month is a quiet dash. */
+.housing-table td { font-feature-settings: "lnum" 1, "tnum" 1; text-align: right; }
+.housing-table td .housing-none { color: var(--live-muted); }
 .housing-table th, .housing-table td { padding: var(--space-8); border-bottom: 1px solid var(--live-line); text-align: right; white-space: nowrap; color: var(--live-ink); }
 .housing-table th[scope="row"], .housing-table thead th:first-child { text-align: left; position: sticky; left: 0; background: var(--help-sheet); }
 .housing-table th small { display: block; color: var(--live-muted); font-weight: 400; }
