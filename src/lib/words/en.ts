@@ -1,14 +1,6 @@
 import { measured as m } from "../jev-set";
 import { refusals } from "../refusals";
 import { nextStep, notFound, sayLikeEnglish, serverRefusalPatternsEs, serverRefusalsEs, serverRefusalsPlain } from "../refusals-es";
-import * as helpLineWords from "./rooms/help-line";
-import * as helpLineFormsWords from "./rooms/help-line-forms";
-import * as neighborsWords from "./rooms/neighbors";
-import * as visitsRoomWords from "./rooms/visits";
-import * as treasuryWords from "./rooms/treasury";
-import * as reportsWords from "./rooms/reports";
-import * as toolsWords from "./rooms/tools";
-import * as peopleRoomWords from "./rooms/people";
 import * as sheetsWords from "./rooms/sheets";
 import * as firstDaysWords from "./rooms/first-days";
 import type { Language, Terms, WordSet } from "./sets";
@@ -44,6 +36,8 @@ export function en(set: WordSet) {
   const Place = place.charAt(0).toUpperCase() + place.slice(1);
   return {
     locale: "en" as Language,
+    /** What this reader calls the whole place they signed in to; a room's own words (./rooms) are written with it. */
+    place,
     terms: t,
     menu: {
       week: "This week",
@@ -641,14 +635,6 @@ export function en(set: WordSet) {
     },
     /** Each room that keeps its own table (./rooms): the rooms a leader works in. */
     rooms: {
-      helpLine: helpLineWords.en(t, place),
-      helpLineForms: helpLineFormsWords.en(t, place),
-      neighbors: neighborsWords.en(t, place),
-      visitsRoom: visitsRoomWords.en(t, place),
-      treasury: treasuryWords.en(t, place),
-      reports: reportsWords.en(t, place),
-      tools: toolsWords.en(t, place),
-      peopleRoom: peopleRoomWords.en(t, place),
       sheets: sheetsWords.en(t, place),
       firstDays: firstDaysWords.en(t, place),
     },

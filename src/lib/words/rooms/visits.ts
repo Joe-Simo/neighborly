@@ -1,3 +1,4 @@
+import { roomBook } from "./book";
 import type { Terms } from "../sets";
 import { counter } from "../numbers";
 const enN = counter("en");
@@ -390,3 +391,6 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     },
   };
 };
+
+/** This room's words for one reader's book: `visitsWords(words)`. */
+export const visitsWords = roomBook(en, es);

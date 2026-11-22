@@ -56,6 +56,7 @@ import {
   useVisitDates,
 } from "@/components/workspace/visits/format";
 import { VisitSheet } from "@/components/workspace/visits/visit-sheet";
+import { visitsWords } from "@/lib/words/rooms/visits";
 
 const WEEK = 7 * 24 * 3600000;
 type Step =
@@ -66,7 +67,7 @@ type Step =
 export function VisitsSection() {
   const { words } = useWorkspace();
   return (
-    <HelpRoom loading={words.rooms.visitsRoom.opening}>
+    <HelpRoom loading={visitsWords(words).opening}>
       <Visits />
     </HelpRoom>
   );
@@ -74,7 +75,7 @@ export function VisitsSection() {
 
 function Visits() {
   const { data, now, setHeadAction, words, sampleSaid } = useWorkspace();
-  const text = words.rooms.visitsRoom;
+  const text = visitsWords(words);
   const format = useVisitDates();
   const churchId = data.church.id;
   const sheetId = useSearchParams().get("sheet");
@@ -290,7 +291,7 @@ function Visits() {
 }
 
 type Fresh = { id: Id<"visits">; pair?: string[] };
-type VisitText = Words["rooms"]["visitsRoom"];
+type VisitText = ReturnType<typeof visitsWords>;
 
 /** Under "Renee can’t go": who the new visitor goes with, by name when the other seat is still held. */
 function replaceDeck(text: VisitText, visit: Visit, leaving: Visit["visitors"][number]) {
@@ -312,7 +313,7 @@ function Pair({
 }) {
   const { words, sampleSaid } = useWorkspace();
   // "{first} and {second}", written whole in each language: its words are laid around the two names.
-  const [before, between, after] = words.rooms.visitsRoom.pair.split(/\{\w+\}/);
+  const [before, between, after] = visitsWords(words).pair.split(/\{\w+\}/);
   return (
     <span className={joining ? "help-person visits-join" : "help-person"}>
       {names.map((name) => (
@@ -428,7 +429,7 @@ function VisitsView({
   onWriteUp: (visit: Visit) => void;
   onReplace: (visit: Visit, leaving: Visit["visitors"][number]) => void;
 }) {
-  const text = words.rooms.visitsRoom;
+  const text = visitsWords(words);
   const suggested = asked ?? asking ?? board.suggested;
   const coming = board.scheduled.filter((visit) => visit.scheduledAt >= now);
   const toWriteUp = board.scheduled.filter((visit) => visit.scheduledAt < now);

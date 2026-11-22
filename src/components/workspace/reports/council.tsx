@@ -17,6 +17,7 @@ import { councilCsv, councilFileName, figureOrder, isMoney } from "@/components/
 import { councilWords } from "@/components/workspace/reports/council-words";
 import { sayRefused } from "@/lib/refusals";
 import type { Language } from "@/lib/words/sets";
+import { reportsWords } from "@/lib/words/rooms/reports";
 
 /** The room's way of saying an amount (lines.ts), handed in so this chunk does not share that module with the room. */
 export type CouncilMoney = (cents: number, language: Language) => string;
@@ -184,7 +185,7 @@ function CouncilYearTable({ councilId, year, money }: { councilId: Id<"councils"
     if (!report) return;
     const name = councilFileName(report);
     saveFile(new Blob([councilCsv(report, w)], { type: "text/csv;charset=utf-8" }), name);
-    startTransition(() => setDone(words.rooms.reports.saved(name)));
+    startTransition(() => setDone(reportsWords(words).saved(name)));
   }
 
   return (

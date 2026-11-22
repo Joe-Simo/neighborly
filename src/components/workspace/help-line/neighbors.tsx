@@ -30,6 +30,7 @@ import {
   HelpLoading,
   HelpRoom,
 } from "@/components/workspace/help-line/room";
+import { neighborsWords } from "@/lib/words/rooms/neighbors";
 
 export function NeighborsSection() {
   const address = useSearchParams();
@@ -56,7 +57,7 @@ export function NeighborsSection() {
 
 function Neighbors() {
   const { data, format, setHeadAction, words } = useWorkspace();
-  const text = words.rooms.neighbors;
+  const text = neighborsWords(words);
   const router = useRouter();
   const churchId = data.church.id;
   const [search, setSearch] = useState("");
@@ -139,7 +140,7 @@ type Row = NeighborList["rows"][number];
 /** What a household is waiting on: its open request, and the visit set for it. */
 function Asks({ neighbor, format }: { neighbor: Row; format: Workspace["format"] }) {
   const { words } = useWorkspace();
-  const text = words.rooms.neighbors;
+  const text = neighborsWords(words);
   return (
     <>
       {neighbor.openRequest && (
@@ -169,7 +170,7 @@ function NeighborRow({
   format: Workspace["format"];
 }) {
   const { words } = useWorkspace();
-  const text = words.rooms.neighbors;
+  const text = neighborsWords(words);
   const size = neighbor.adults + neighbor.children;
   // A row says the name and the street, never the phone: that is inside the record, where each opening is logged.
   return (
@@ -219,7 +220,7 @@ function NeighborListView({
   onAdd: () => void;
 }) {
   const { words } = useWorkspace();
-  const text = words.rooms.neighbors;
+  const text = neighborsWords(words);
   const add = (
     <Button variant="outline" onClick={onAdd}>
       {text.add}

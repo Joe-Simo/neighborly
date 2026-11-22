@@ -1,11 +1,3 @@
-import * as helpLineWords from "./rooms/help-line";
-import * as helpLineFormsWords from "./rooms/help-line-forms";
-import * as neighborsWords from "./rooms/neighbors";
-import * as visitsRoomWords from "./rooms/visits";
-import * as treasuryWords from "./rooms/treasury";
-import * as reportsWords from "./rooms/reports";
-import * as toolsWords from "./rooms/tools";
-import * as peopleRoomWords from "./rooms/people";
 import * as sheetsWords from "./rooms/sheets";
 import * as firstDaysWords from "./rooms/first-days";
 import { measured as m } from "../jev-set";
@@ -43,6 +35,7 @@ export function es(set: WordSet): Words {
   const place = set === "vincentian" ? "conferencia" : "espacio";
   return {
     locale: "es",
+    place,
     terms: t,
     menu: {
       week: "Esta semana",
@@ -626,14 +619,6 @@ export function es(set: WordSet): Words {
     },
     /** Each room that keeps its own table (./rooms): the rooms a leader works in. */
     rooms: {
-      helpLine: helpLineWords.es(t, place),
-      helpLineForms: helpLineFormsWords.es(t, place),
-      neighbors: neighborsWords.es(t, place),
-      visitsRoom: visitsRoomWords.es(t, place),
-      treasury: treasuryWords.es(t, place),
-      reports: reportsWords.es(t, place),
-      tools: toolsWords.es(t, place),
-      peopleRoom: peopleRoomWords.es(t, place),
       sheets: sheetsWords.es(t, place),
       firstDays: firstDaysWords.es(t, place),
     },

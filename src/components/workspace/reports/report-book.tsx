@@ -10,6 +10,7 @@ import { useWorkspace } from "@/components/workspace/context";
 import { placeTurn, setTurnGeometry, turnGeometry, type TurnGeometry } from "@/lib/page-turn";
 import { fill } from "@/lib/words/fill";
 import { count, kindLabels, longSpanLabel, money, periodLabel, type YearReport } from "@/components/workspace/reports/lines";
+import { reportsWords } from "@/lib/words/rooms/reports";
 
 /** A turn by keys or arrows takes this long; a drag follows the hand. */
 const TURN = 620;
@@ -26,7 +27,7 @@ const views = (pages: number, facing: boolean): View[] =>
 
 function usePages(report: YearReport, groupName: string, sample: boolean) {
   const { words, sampleSaid } = useWorkspace();
-  const w = words.rooms.reports;
+  const w = reportsWords(words);
   const b = w.book;
   const kinds = kindLabels(words);
   const period = `${periodLabel(report, words)}: ${longSpanLabel(report, words, !report.closed)}`;
@@ -196,7 +197,7 @@ function NoteRow({ span, notes }: { span: number; notes: string[] }) {
 
 /** One sheet as it is printed: its title, its body and its number at the foot. */
 function Sheet({ page, at, of, label }: { page: { title?: string; body: ReactNode }; at: number; of: number; label: string }) {
-  const pageOf = useWorkspace().words.rooms.reports.book.page;
+  const pageOf = reportsWords(useWorkspace().words).book.page;
   return (
     <article className="book-sheet" aria-label={label}>
       {page.title && <h3>{page.title}</h3>}
@@ -215,7 +216,7 @@ function Sheet({ page, at, of, label }: { page: { title?: string; body: ReactNod
  */
 export function ReportBook({ report, groupName, sample = false }: { report: YearReport; groupName: string; sample?: boolean }) {
   const { words } = useWorkspace();
-  const b = words.rooms.reports.book;
+  const b = reportsWords(words).book;
   const pages = usePages(report, groupName, sample);
   const [facing, setFacing] = useState(false);
   useLayoutEffect(() => {

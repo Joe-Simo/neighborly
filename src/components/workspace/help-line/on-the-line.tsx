@@ -3,6 +3,7 @@
 import { RoomAside } from "@/components/workspace/aside";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
 import type { Calls } from "@/components/workspace/help-line/format";
+import { helpLineWords } from "@/lib/words/rooms/help-line";
 
 type Turn = { id: string; when: string; name: string | null };
 type Owner = { name: string | null; calls: number };
@@ -40,7 +41,7 @@ export function owners(waiting: Calls["waiting"]): Owner[] {
 
 /** The Help line's side column on a wide screen: who is on the line today, and who is calling back. */
 export function OnTheLine({ turns, calling }: { turns: Turn[]; calling: Owner[] }) {
-  const text = useWorkspace().words.rooms.helpLine.aside;
+  const text = helpLineWords(useWorkspace().words).aside;
   return (
     <RoomAside title={text.title}>
       {turns.length ? (

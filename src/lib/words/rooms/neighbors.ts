@@ -1,3 +1,4 @@
+import { roomBook } from "./book";
 import type { Terms } from "../sets";
 import { counter } from "../numbers";
 const enN = counter("en");
@@ -473,3 +474,6 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     save: "Agregar nota",
   },
 });
+
+/** This room's words for one reader's book: `neighborsWords(words)`. */
+export const neighborsWords = roomBook(en, es);

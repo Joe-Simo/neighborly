@@ -11,6 +11,7 @@ import {
   type Refusal,
 } from "@/components/workspace/treasury/form-parts";
 import type { LedgerEntry } from "@/components/workspace/treasury/labels";
+import { treasuryWords } from "@/lib/words/rooms/treasury";
 
 /** One entry, and the only change the ledger allows: taking it back with a new entry. */
 export function EntryDetail({
@@ -20,7 +21,7 @@ export function EntryDetail({
   entry: LedgerEntry;
   onReverse: (reason: string) => Promise<Refusal>;
 }) {
-  const w = useWorkspace().words.rooms.treasury.entry;
+  const w = treasuryWords(useWorkspace().words).entry;
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);

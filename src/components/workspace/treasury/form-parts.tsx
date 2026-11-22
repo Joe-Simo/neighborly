@@ -4,13 +4,14 @@ import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { LiveFailure, LiveWaiting, SaveLabel } from "@/components/workspace/states";
+import { treasuryWords } from "@/lib/words/rooms/treasury";
 
 /** What a form's submit resolves to: a message when the entry was refused, null when it was recorded. */
 export type Refusal = string | null;
 
 /** A refused entry, said inside its form. The form's own button sends it again. */
 export function FormError({ message }: { message: string }) {
-  const w = useWorkspace().words.rooms.treasury;
+  const w = treasuryWords(useWorkspace().words);
   return <LiveFailure message={message} kept={w.kept} />;
 }
 
@@ -23,7 +24,7 @@ export function FormActions({
   onCancel: () => void;
   children: ReactNode;
 }) {
-  const w = useWorkspace().words.rooms.treasury;
+  const w = treasuryWords(useWorkspace().words);
   return (
     <div className="live-form-actions">
       <LiveWaiting when={saving} />

@@ -4,13 +4,14 @@ import { sampleYear } from "@/lib/sample-year";
 import { weekWords } from "@/lib/week-words";
 import { words } from "@/lib/words";
 import { formatCount, formatMoney } from "@/lib/words/numbers";
+import { reportsWords } from "@/lib/words/rooms/reports";
 
 export { contentType, size };
 export const alt = weekWords.en.days[2].alt;
 
 /** How it was made: the title, and the sample year's totals as the report adds them up. */
 export default function Image() {
-  const said = words("en", "vincentian").rooms.reports;
+  const said = reportsWords(words("en", "vincentian"));
   return card({
     head: madeWords.en.title,
     art: "assets/home/relief-help-1536.webp",

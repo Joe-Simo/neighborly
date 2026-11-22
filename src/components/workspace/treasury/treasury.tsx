@@ -43,6 +43,7 @@ import {
   type Payable,
   type Shelf,
 } from "@/components/workspace/treasury/labels";
+import { treasuryWords } from "@/lib/words/rooms/treasury";
 
 type Open =
   | { is: "payment"; request: Payable }
@@ -65,7 +66,7 @@ const answered = <T,>(value: T | Error | undefined) =>
 
 export function TreasurySection() {
   const { data, setHeadAction, words, sampleSaid } = useWorkspace();
-  const w = words.rooms.treasury;
+  const w = treasuryWords(words);
   const churchId = data.church.id;
   const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId });
   const [month, setMonth] = useState<string>();

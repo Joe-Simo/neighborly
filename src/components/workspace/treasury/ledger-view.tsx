@@ -30,6 +30,8 @@ import {
 } from "@/components/workspace/treasury/labels";
 import { handOver, type Paid } from "@/components/workspace/treasury/paid-moment";
 import "./treasury.css";
+import { reportsWords } from "@/lib/words/rooms/reports";
+import { treasuryWords } from "@/lib/words/rooms/treasury";
 
 const neighborHref = (id: string) =>
   `/app/neighbors?neighbor=${encodeURIComponent(id)}`;
@@ -50,7 +52,7 @@ function NeighborLink({ id, name, after }: { id: string; name: string; after?: s
  */
 function PaidLine({ paid }: { paid: Paid }) {
   const { words, sampleSaid } = useWorkspace();
-  const room = words.rooms.treasury;
+  const room = treasuryWords(words);
   const w = room.ledger.paid;
   const line = useRef<HTMLDivElement>(null);
   const left = paid.request.remaining - paid.amount;
@@ -138,7 +140,7 @@ export function LedgerView({
 }) {
   const { data, words, sampleSaid } = useWorkspace();
   const far = useFarScreen();
-  const room = words.rooms.treasury;
+  const room = treasuryWords(words);
   const w = room.ledger;
   // A new row lands in the ledger by growing into it; the request after a paid one opens its own room, once.
   const table = useRef<HTMLDivElement>(null);
@@ -152,7 +154,7 @@ export function LedgerView({
   const month = monthLabel(words.locale, ledger.month, ledger.today);
   const monthAlone = monthTitle(words.locale, ledger.month, ledger.today);
   // The printed ledger's foot, as the printed year's: whose books and which month, the day printed and the page.
-  const foot = words.rooms.reports.foot;
+  const foot = reportsWords(words).foot;
   const printedOn = formatDate(words.locale, Date.parse(`${ledger.today}T12:00:00Z`), { dateStyle: "long", timeZone: "UTC" });
   const pageFoot = printFoot({
     pages: ["treasury"],

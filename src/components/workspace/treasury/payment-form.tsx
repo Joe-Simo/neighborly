@@ -14,6 +14,7 @@ import {
   type Refusal,
 } from "@/components/workspace/treasury/form-parts";
 import type { Payable } from "@/components/workspace/treasury/labels";
+import { treasuryWords } from "@/lib/words/rooms/treasury";
 
 type Payment = {
   amount: number;
@@ -33,7 +34,7 @@ export function PaymentForm({
   onSubmit: (payment: Payment) => Promise<Refusal>;
   onCancel: () => void;
 }) {
-  const room = useWorkspace().words.rooms.treasury;
+  const room = treasuryWords(useWorkspace().words);
   const w = room.payment;
   const [amount, setAmount] = useState(centsToInput(request.remaining));
   const [date, setDate] = useState(today);

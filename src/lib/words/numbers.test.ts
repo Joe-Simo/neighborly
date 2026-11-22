@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { formatCount, formatMoney, words } from ".";
+import { neighborsWords } from "@/lib/words/rooms/neighbors";
 
 describe("numbers are written the reader's way", () => {
   test("a count groups its thousands in both languages", () => {
@@ -13,7 +14,7 @@ describe("numbers are written the reader's way", () => {
     expect(formatMoney(450, "es", true)).toBe("$450");
   });
   test("the neighbors room counts households with a separator", () => {
-    expect(words("es").rooms.neighbors.list.households(27400)).toBe("27,400 hogares");
-    expect(words("en").rooms.neighbors.list.households(27400)).toBe("27,400 households");
+    expect(neighborsWords(words("es")).list.households(27400)).toBe("27,400 hogares");
+    expect(neighborsWords(words("en")).list.households(27400)).toBe("27,400 households");
   });
 });

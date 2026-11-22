@@ -32,12 +32,13 @@ import { useSave } from "@/components/workspace/help-line/use-save";
 import { words as wordsFor } from "@/lib/words";
 import { fill } from "@/lib/words/fill";
 import { decisionLines } from "@/lib/repeat-words";
+import { helpLineFormsWords } from "@/lib/words/rooms/help-line-forms";
 
 /** English, for a sheet laid outside the workspace shell. */
 const english = wordsFor();
 /** The person's words inside the shell, English outside it. Never throws. */
 const useWords = () => useWorkspaceIfAny()?.words ?? english;
-type PayeeKind = keyof typeof english.rooms.helpLineForms.request.payees;
+type PayeeKind = keyof ReturnType<typeof helpLineFormsWords>["request"]["payees"];
 
 type ChurchId = Id<"churches">;
 const pick = <Key extends string>(labels: Record<Key, string>, value: string) =>
@@ -102,7 +103,7 @@ export function CallForm({
   const record = useMutation(api.assistance.recordCall);
   const readUrgency = useAction(api.drafts.readUrgency);
   const { pending, error, save } = useSave();
-  const w = useWords().rooms.helpLineForms.call;
+  const w = helpLineFormsWords(useWords()).call;
   // With words to draft from and a call back owed, going on to the draft is the main way forward.
   const [said, setSaid] = useState(false);
   const [owed, setOwed] = useState(true);
@@ -256,7 +257,7 @@ export function ReturnForm({
 }) {
   const markReturned = useMutation(api.assistance.markReturned);
   const { pending, error, save } = useSave();
-  const w = useWords().rooms.helpLineForms.call;
+  const w = helpLineFormsWords(useWords()).call;
   return (
     <form
       className="live-form help-form"
@@ -310,7 +311,7 @@ export function RequestForm({
   const update = useMutation(api.assistance.updateRequest);
   const { pending, error, save } = useSave();
   const words = useWords();
-  const w = words.rooms.helpLineForms.request;
+  const w = helpLineFormsWords(words).request;
   const [kind, setKind] = useState(start?.kind ?? "rent");
   // The shelf's kind that is chosen; null means a kind the shelf does not hold yet, named by hand.
   const [choice, setChoice] = useState<string | null>();
@@ -562,7 +563,7 @@ export function DecideForm({
   const voucher = approving ? request.voucher : null;
   const shelf = useShelf(churchId, !!voucher);
   const all = useWords();
-  const w = all.rooms.helpLineForms.decide;
+  const w = helpLineFormsWords(all).decide;
   const lines = repeat ? decisionLines(all.locale, repeat) : [];
   // What the shelf holds of the voucher asked for, as its own whole sentence after what was asked.
   const held = voucher && shelf ? onShelf(shelf, voucher.item) : null;
@@ -727,7 +728,7 @@ export function CloseForm({
     request.voucher ? "skip" : { churchId },
   );
   const { pending, error, save } = useSave();
-  const w = useWords().rooms.helpLineForms.close;
+  const w = helpLineFormsWords(useWords()).close;
   const paid = payable?.find((row) => row.requestId === request.id)?.paid ?? 0;
   const back = takingBack(request);
   const effect = request.voucher
@@ -789,7 +790,7 @@ export function NeighborForm({
   const create = useMutation(api.neighbors.create);
   const update = useMutation(api.neighbors.update);
   const { pending, error, save } = useSave();
-  const w = useWords().rooms.helpLineForms.neighbor;
+  const w = helpLineFormsWords(useWords()).neighbor;
   const [typed, setTyped] = useState({
     name: neighbor?.name ?? call?.callerName ?? "",
     phone: neighbor?.phone ?? call?.phone ?? "",
@@ -1014,7 +1015,7 @@ export function RemoveForm({
 }) {
   const remove = useMutation(api.neighbors.remove);
   const { pending, error, save } = useSave();
-  const w = useWords().rooms.helpLineForms.remove;
+  const w = helpLineFormsWords(useWords()).remove;
   const [typed, setTyped] = useState("");
   const agrees = nameKey(typed) === nameKey(neighbor.name);
   return (

@@ -1,6 +1,7 @@
 "use client";
 
 import { keepTitle } from "@/lib/words/titles";
+import { peopleWords } from "@/lib/words/rooms/people";
 import { lazy, Suspense, useState, type FormEvent } from "react";
 import { useAction } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
@@ -41,8 +42,8 @@ export function LiveCreateForm({
   // Every form here speaks the reader's language: the members' from the shared tables, the leaders' from this room's.
   const { sampleSaid } = useWorkspace();
   const words = useWorkspace().words;
-  const { actions, tasks, rooms } = words;
-  const text = rooms.peopleRoom.form;
+  const { actions, tasks } = words;
+  const text = peopleWords(words).form;
   const form = actions.announcementForm;
   // Adding a commitment opens from Commitments, a member's room, so its form speaks the reader's language too.
   const own = kind === "commitment" ? actions.commitmentForm : null;

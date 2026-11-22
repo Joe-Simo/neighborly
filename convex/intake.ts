@@ -154,13 +154,14 @@ export const receive = internalMutation({
     if (partner) {
       if (!(await bump(ctx, `partner:${partner._id}`, DAY, LIMITS.partnerPerDay, now))) return { result: "slow" as const, ...partnerPhone };
     } else if (!(await bump(ctx, `ip:${args.ipHash}`, HOUR, LIMITS.ipPerHour, now)) || !(await bump(ctx, `device:${args.deviceHash}`, HOUR, LIMITS.devicePerHour, now))) return { result: "slow" as const };
-    // The unverified door is the open one, so it is narrow: one a day per device and per network.
-    if (unverified && (!(await bump(ctx, `unv-ip:${args.ipHash}`, DAY, 1, now)) || !(await bump(ctx, `unv-device:${args.deviceHash}`, DAY, 1, now)))) return { result: "slow" as const };
     // A partner's request goes to the partner's own team; anyone else's goes where it is routed.
     const routed: Routed = partner ? { kind: "team", churchId: partner.churchId, checkArea: false } : await route(ctx, args.zip, args.at);
     if (routed.kind === "unknown") return { result: "unknown_zip" as const };
     if (routed.kind === "none") return { result: "no_team" as const };
     if (routed.kind === "full") return { result: "full" as const };
+    // The unverified door is the open one, so it is narrow: one a day per device and per network. Counted only once a
+    // team serves the zip, so a mistyped or out-of-area zip does not spend the day's one ask.
+    if (unverified && (!(await bump(ctx, `unv-ip:${args.ipHash}`, DAY, 1, now)) || !(await bump(ctx, `unv-device:${args.deviceHash}`, DAY, 1, now)))) return { result: "slow" as const };
     const churchId = routed.churchId;
     const church = await ctx.db.get("churches", churchId);
     if (!church) return { result: "no_team" as const };

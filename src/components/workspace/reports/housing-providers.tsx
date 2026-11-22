@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { housingCsv, housingFileName, type HousingReport, type ReportLines } from "@/components/workspace/reports/housing-lines";
 import { housingWords } from "@/components/workspace/reports/housing-words";
+import { reportsWords } from "@/lib/words/rooms/reports";
 
 /** The Housing Provider Summary under the year: closed until asked for, so nothing moves while the year loads. */
 /** Reads the summary for a year, or nothing while `asked` is false; the room passes its own (reports.tsx). */
@@ -44,7 +45,7 @@ function HousingProviders({ year, read, lines }: { year: number; read: ReadHousi
     if (!report) return;
     const name = housingFileName(report, data.church.name);
     saveFile(new Blob([housingCsv(report, data.church.name, data.church.sample, words, lines)], { type: "text/csv;charset=utf-8" }), name);
-    startTransition(() => setDone(words.rooms.reports.saved(name)));
+    startTransition(() => setDone(reportsWords(words).saved(name)));
   }
 
   if (report.landlords.length === 0) return <p className="housing-note">{w.empty}</p>;

@@ -9,13 +9,13 @@ import { useWorkspace } from "@/components/workspace/context";
 import { readNeighborRows, type NeighborRow } from "@/components/workspace/tools/neighbor-rows";
 import { mostRows } from "@/components/workspace/tools/member-rows";
 import { droppedAt, fileProblem, inBatches, linesOf, readSoFar, SheetImportView, useRecordsOffered, type LeftOut, type SheetStep, type SheetWords } from "@/components/workspace/tools/sheet-import";
-import type { Words } from "@/lib/words";
+import { toolsWords } from "@/lib/words/rooms/tools";
 
 type Checked = FunctionReturnType<typeof api.importExport.checkNeighbors>;
 type Imported = FunctionReturnType<typeof api.importExport.importNeighbors>;
 type Problem = Exclude<(Checked[number] | Imported[number])["outcome"], "ready" | "added">;
 
-type ToolsWords = Words["rooms"]["tools"];
+type ToolsWords = ReturnType<typeof toolsWords>;
 /** The sheet's own lines in the person's language. The sample file is made-up data and stays as it is. */
 const neighborWords = (text: ToolsWords["neighbors"]): SheetWords => ({
   id: "neighbors-import",
@@ -38,7 +38,7 @@ function neighborsLeftOut(rows: (Checked[number] | Imported[number])[], reasons:
 /** For the neighbors room. Renders nothing for anyone who may not open neighbor records; the backend refuses them too. */
 export function NeighborsImport() {
   const { data, words } = useWorkspace();
-  const tools = words.rooms.tools;
+  const tools = toolsWords(words);
   const churchId = data.church.id;
   const allowed = useRecordsOffered();
   const convex = useConvex();

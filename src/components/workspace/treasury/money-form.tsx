@@ -19,6 +19,7 @@ import {
   type IncomeSource,
   type SpendingKind,
 } from "@/components/workspace/treasury/labels";
+import { treasuryWords } from "@/lib/words/rooms/treasury";
 
 /** One of the conference's own kinds, or a new one being named in this form. */
 type OwnKind = { id: string; direction: "in" | "out"; name: string };
@@ -71,7 +72,7 @@ export function MoneyForm({
   onCancel: () => void;
 }) {
   const { words, sampleSaid } = useWorkspace();
-  const room = words.rooms.treasury;
+  const room = treasuryWords(words);
   const w = room.money;
   const [choice, setChoice] = useState<Choice>({
     direction: "in",
