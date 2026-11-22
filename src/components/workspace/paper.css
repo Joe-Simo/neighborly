@@ -1738,3 +1738,6 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 }
 [data-live-tight] .live-dialog.live-dialog-fixed .live-form-actions.live-form-actions { padding-block: var(--space-8); }
 [data-live-short] .live-dialog.live-dialog-fixed .live-form-actions.live-form-actions { position: static; }
+
+/* A neighbor's name that opens their request reaches 44px to the touch without moving a letter. */
+.live-app .help-row h3 > .help-row-open { display: inline-block; padding-block: 11px; margin-block: -11px; }
