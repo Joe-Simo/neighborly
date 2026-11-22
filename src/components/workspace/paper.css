@@ -1479,7 +1479,7 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
   .live-app .live-section { margin-top: var(--space-40); }
   .live-app .live-section-head { margin-bottom: var(--space-16); }
   .live-app .live-main[data-room="help"] .live-section-head { gap: var(--space-8) 16px; }
-  .live-app .help-sheet h2 { font-size: 26px !important; margin-bottom: var(--space-8) !important; }
+  .live-app .help-sheet.help-sheet.help-sheet h2 { font-size: 26px; margin-bottom: var(--space-8); }
   .live-app .help-sheet { padding: var(--space-24) 24px; }
   .live-app .help-empty :is(h2, h3) { font-size: 26px; margin-bottom: var(--space-8); }
   .live-app .live-empty :is(h1, h2, h3) { font-size: 24px; }
