@@ -1030,3 +1030,9 @@
 .council-list small { color: var(--live-muted); }
 .council-code { font-size: 15px; overflow-wrap: anywhere; user-select: all; }
 @media print { .council-section { display: none; } }
+
+/* A section the page is taken to stops 16px under whatever head is held at the top (the bar under 900px, nothing
+   above it), and the giant figures keep room for their own tops: at a line-height under 1 a Newsreader figure's
+   ascent rises out of its box, where a held head or the window's edge would cut it. */
+.report :is(.live-section, .report-book, [id]) { scroll-margin-top: calc(var(--live-bar, 0px) + 16px); }
+.report-hours-figure, .report-year-paid > .report-year-pile { padding-top: 0.16em; }
