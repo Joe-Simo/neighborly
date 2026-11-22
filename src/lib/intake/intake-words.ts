@@ -173,7 +173,7 @@ const es: IntakeWords = {
   deck: "Una persona voluntaria de una iglesia cerca de ti te llamará o te escribirá. Es gratis y no necesitas cuenta.",
   need: {
     label: "¿Con qué necesitas ayuda?",
-    kinds: { rent: "Renta", utilities: "Luz, agua o gas", food: "Comida", vouchers: "Ropa o muebles", other: "Otra cosa" },
+    kinds: { rent: "Alquiler", utilities: "Luz, agua o gas", food: "Comida", vouchers: "Ropa o muebles", other: "Otra cosa" },
     say: "En pocas palabras",
     sayHelp: "Por ejemplo: «El recibo de luz es de $145 y la cortan el viernes».",
     pick: "Elige al menos una.",

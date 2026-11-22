@@ -42,7 +42,7 @@ const said = {
       begin: "Saldo inicial", end: "Saldo final",
       r1: "Donativos de miembros", r2: "Colectas de la parroquia y alcancía de los pobres", r3a: "Recaudación: obras especiales", r3b: "Recaudación: tiendas", r3c: "Recaudación: eventos especiales y otros",
       r4: "Otras contribuciones de SVdP (hermanamiento recibido)", r5a: "Subvenciones gubernamentales", r5b: "Fondos para desastres", r5c: "Fondos de campaña de capital", r5d: "Otros fondos restringidos", r5e: "Ingresos varios", rTotal: "Total de ingresos",
-      e6: "Ayuda a quienes servimos", e6rent: "de ello, renta y prevención de desalojo", e6utility: "de ello, servicios", e6food: "de ello, comida", e6other: "de ello, otra ayuda", e7: "Contribuciones para desastres",
+      e6: "Ayuda a quienes servimos", e6rent: "de ello, alquiler y prevención de desalojo", e6utility: "de ello, servicios", e6food: "de ello, comida", e6other: "de ello, otra ayuda", e7: "Contribuciones para desastres",
       e8: "Hermanamiento enviado (nacional e internacional juntos)", e10: "Contribuciones a consejos superiores (cuotas)", e11a: "Gasto de operación: obras especiales", e11b: "Gasto de operación: tiendas", e11c: "Gasto de operación: eventos especiales",
       e11d: "Gasto de operación: otros", eTotal: "Total de gastos",
       vA: "Visitas a domicilio", vB: "Visitas a prisiones", vC: "Visitas a hospitales", vD: "Visitas a personas mayores", vE: "Otras visitas en persona",

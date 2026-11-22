@@ -47,7 +47,7 @@ const said = {
     attended: "Quién vino",
     save: "Guardar el acta", saved: "Guardada.", print: "Imprimir", send: "Enviar a los miembros", sent: "Enviada a los miembros.", notSent: "El correo no está activado aquí, así que no se envió nada.", emailSample: "El correo está desactivado en el ejemplo.", emailOff: "El correo todavía no está activado aquí.", saveFirst: "Guarda primero el acta y luego envíala.",
     status: { approved: "aprobada", paid: "pagada", declined: "rechazada", closed: "cerrada", open: "abierta" } as Record<string, string>,
-    kinds: { rent: "Renta", utility: "Servicios", food: "Comida", voucher: "Vales", other: "Otra ayuda" } satisfies Record<Kind, string>,
+    kinds: { rent: "Alquiler", utility: "Servicios", food: "Comida", voucher: "Vales", other: "Otra ayuda" } satisfies Record<Kind, string>,
     places: { home: "en casa", prison: "en prisión", hospital: "en el hospital", eldercare: "en un asilo", other: "en persona" } satisfies Record<Place, string>,
   },
 } satisfies Record<Language, unknown>;
