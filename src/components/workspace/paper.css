@@ -1796,3 +1796,6 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 .live-app .live-page-head .live-deck { text-wrap: balance; }
 /* With no team yet, the empty note spans the whole team grid instead of squeezing into the first card's column. */
 .live-teams > :is(.live-empty, .live-state) { grid-column: 1 / -1; }
+/* A calendar opened in place on the page sits inside the room, whose tables pad and rule every cell: the
+   calendar's own days take none of that, so on a phone its seven columns fit the screen and no rule runs between weeks. */
+.live-app .live-date-sheet .rdp-month_grid :is(td, th) { padding: 0; border: 0; }
