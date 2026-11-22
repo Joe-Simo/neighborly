@@ -99,7 +99,7 @@ export const nightly = internalMutation({
 const HOUR = 3_600_000, DAY = 24 * HOUR;
 const seedKey = v.string();
 const firstRoomCommitment = v.object({ id: seedKey, teamId: seedKey, title: v.string(), start: v.number(), end: v.number(), location: v.string(), preparation: v.string(), assigneeId: v.union(seedKey, v.null()), version: v.number(), status: v.string(), coordinatorName: v.string() });
-const firstRoomAnnouncement = v.object({ id: seedKey, title: v.string(), body: v.string(), authorName: v.string(), createdAt: v.number() });
+const firstRoomAnnouncement = v.object({ id: seedKey, title: v.string(), body: v.string(), authorName: v.string(), createdAt: v.number(), canChange: v.optional(v.boolean()) });
 /**
  * This week of the sample conference, for anyone, before any sign-in: what the room draws while the visitor's
  * session is still being made. It is built from the seed alone for the hour asked (see sampleData.seeded):
@@ -125,7 +125,7 @@ export const firstRoom = query({
     tasks: v.array(v.object({ id: seedKey, title: v.string(), dueAt: v.union(v.number(), v.null()), assigneeId: v.union(seedKey, v.null()), complete: v.boolean() })),
     meetings: v.array(v.object({ id: seedKey, title: v.string(), start: v.number(), end: v.number(), location: v.string(), fanoutStatus: v.union(v.literal("processing"), v.literal("complete")), responsesLimitedToSelf: v.boolean(), responses: v.array(v.object({ personId: seedKey, response: v.string() })) })),
     announcements: v.array(firstRoomAnnouncement),
-    invitations: v.array(v.object({ id: seedKey, email: v.string(), role: v.string(), status: v.string() })),
+    invitations: v.array(v.object({ id: seedKey, email: v.string(), role: v.string(), status: v.string(), expiresAt: v.optional(v.number()) })),
     firstRequests: v.array(v.object({ id: seedKey, commitmentId: seedKey, recipientId: seedKey, status: v.string(), commitment: v.union(firstRoomCommitment, v.null()) })),
     firstAnnouncements: v.array(firstRoomAnnouncement),
     /** What drafts.weekNote answers the sample's owner for the hour asked. */
@@ -149,7 +149,7 @@ export const firstRoom = query({
     const most = <Row>(table: string, found: Row[]) => ({ table, rows: found.slice(0, 200), over: found.length > 200 });
     const shown = { commitments: most("commitments", rows("commitments")), requests: most("requests", rows("requests")), announcements: most("announcements", rows("announcements")) };
     const commitment = (shift: (typeof shown.commitments.rows)[number]) => ({ id: shift._id, teamId: shift.teamId, title: shift.title, start: shift.start, end: shift.end, location: shift.location, preparation: shift.preparation, assigneeId: shift.assigneeId, version: shift.version, status: shift.cancelled ? "cancelled" : shift.assigneeId ? "accepted" : "open", coordinatorName: name(shift.coordinatorId) });
-    const announcement = (note: (typeof shown.announcements.rows)[number]) => ({ id: note._id, title: note.title, body: note.body, authorName: name(note.authorId), createdAt: note.createdAt });
+    const announcement = (note: (typeof shown.announcements.rows)[number]) => ({ id: note._id, title: note.title, body: note.body, authorName: name(note.authorId), createdAt: note.createdAt, canChange: true });
     const request = (asking: (typeof shown.requests.rows)[number]) => ({ id: asking._id, commitmentId: asking.commitmentId, recipientId: asking.recipientId, status: asking.status });
     const responses = rows("meetingResponses");
     // The week note, worked out as drafts.weekNote does, from the hour asked to seven days on.
@@ -177,7 +177,7 @@ export const firstRoom = query({
       tasks: rows("tasks").map((task) => ({ id: task._id, title: task.title, dueAt: task.dueAt, assigneeId: task.assigneeId, complete: task.complete })),
       meetings: rows("meetings").map((meeting) => ({ id: meeting._id, title: meeting.title, start: meeting.start, end: meeting.end, location: meeting.location, fanoutStatus: meeting.fanoutStatus, responsesLimitedToSelf: true, responses: responses.filter((response) => response.meetingId === meeting._id && response.memberId === me._id).map((response) => ({ personId: response.memberId, response: response.response })) })),
       announcements: shown.announcements.rows.map(announcement),
-      invitations: rows("invitations").map((invitation) => ({ id: invitation._id, email: invitation.email, role: invitation.role, status: invitation.status })),
+      invitations: rows("invitations").map((invitation) => ({ id: invitation._id, email: invitation.email, role: invitation.role, status: invitation.status, expiresAt: invitation.expiresAt })),
       firstRequests: rows("requests").reverse().slice(0, 25).map((asking) => {
         const shift = rows("commitments").find((found) => found._id === asking.commitmentId);
         return { ...request(asking), commitment: shift ? commitment(shift) : null };

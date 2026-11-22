@@ -178,6 +178,8 @@ export function es(set: WordSet): Words {
       quietDetail:
         "No hay compromisos en los próximos siete días. Las fechas posteriores están en Compromisos.",
       fromGroup: set === "vincentian" ? "De tu conferencia" : "De tu grupo",
+      changeAnnouncement: "Editar o quitar",
+      changeAnnouncementLabel: (title) => `Editar o quitar: ${title}`,
       noAnnouncementsTitle: set === "vincentian" ? "Todo tranquilo en la conferencia." : "Todo tranquilo en el grupo.",
       noAnnouncementsDetail: "Los avisos de tus coordinadores aparecerán aquí.",
     },

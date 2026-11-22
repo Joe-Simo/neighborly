@@ -200,7 +200,11 @@ export function LiveWorkspace({
   const now = useSyncExternalStore(noChange, openedAt, () => 0);
   // The sample says so once, in its mark, not also in its name.
   const churchName = data.church.sample ? data.church.name.replace(/\s*\(sample\)\s*$/i, "") : data.church.name;
+  // A second press (or Enter) before the first save has drawn its pending state sends nothing: one announcement, one email.
+  const performing = useRef(false);
   async function perform(command: LiveCommand, success?: string, back?: { command: LiveCommand; said: string; returnTo?: HTMLElement }) {
+    if (performing.current) return false;
+    performing.current = true;
     setPending(true);
     setSaveFrom(openDialog);
     setError("");
@@ -235,6 +239,7 @@ export function LiveWorkspace({
       setError(sayRefused(words.notices, said));
       return false;
     } finally {
+      performing.current = false;
       setPending(false);
     }
   }

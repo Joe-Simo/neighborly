@@ -80,8 +80,8 @@ const dashboardReturn = v.object({
   timeOff:v.array(v.object({ id:v.id("timeOff"),personId:v.id("memberships"),start:text,end:text,note:text })),
   tasks:v.array(v.object({id:v.id("tasks"),title:text,dueAt:v.union(v.number(),v.null()),assigneeId:v.union(v.id("memberships"),v.null()),complete:v.boolean()})),
   meetings:v.array(v.object({id:v.id("meetings"),title:text,start:v.number(),end:v.number(),location:text,fanoutStatus:v.union(v.literal("processing"),v.literal("complete")),responsesLimitedToSelf:v.boolean(),responses:v.array(v.object({personId:v.id("memberships"),response:text}))})),
-  announcements:v.array(v.object({id:v.id("announcements"),title:text,body:text,authorName:text,createdAt:v.number()})),
-  invitations:v.array(v.object({id:v.id("invitations"),email:text,role:text,status:text})),
+  announcements:v.array(v.object({id:v.id("announcements"),title:text,body:text,authorName:text,createdAt:v.number(),canChange:v.optional(v.boolean())})),
+  invitations:v.array(v.object({id:v.id("invitations"),email:text,role:text,status:text,expiresAt:v.optional(v.number())})),
 });
 // Without a conference named, the first one the account belongs to: the sample door asks this way, so the room's
 // question goes out with the sign-in check instead of after it. The same one memberships read either way.
@@ -118,8 +118,8 @@ export const dashboard = query({ args:{churchId:v.optional(churchId)},returns:da
     timeOff:timeOff.filter(t=>me.role==="owner"||coordinatedMembers.includes(t.memberId)||t.memberId===me._id).map(t=>({id:t._id,personId:t.memberId,start:t.start,end:t.end,note:t.memberId===me._id?t.note:""})),
     tasks:tasks.map(t=>({id:t._id,title:t.title,dueAt:t.dueAt,assigneeId:t.assigneeId,complete:t.complete})),
     meetings:meetingSummaries,
-    announcements:announcements.map(a=>({id:a._id,title:a.title,body:a.body,authorName:name(a.authorId),createdAt:a.createdAt})),
-    invitations:me.role==="owner"?invitations.map(i=>({id:i._id,email:i.email,role:i.role,status:i.status})):[],
+    announcements:announcements.filter(a=>!a.removedAt).map(a=>({id:a._id,title:a.title,body:a.body,authorName:name(a.authorId),createdAt:a.createdAt,canChange:me.role==="owner"||a.authorId===me._id})),
+    invitations:me.role==="owner"?invitations.map(i=>({id:i._id,email:i.email,role:i.role,status:i.status,expiresAt:i.expiresAt})):[],
   };
 }});
 export const execute = mutation({args:{churchId,command},returns:v.null(),handler:async(ctx,{churchId,command:c})=>{

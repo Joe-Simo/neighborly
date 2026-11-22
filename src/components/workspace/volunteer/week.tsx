@@ -1,7 +1,7 @@
 "use client";
 
 import { AssistantGuide } from "@/components/workspace/week-note/assistant-limits";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { WeeklyRota } from "@/components/workspace/tools/weekly-rota";
@@ -24,12 +24,16 @@ import {
   comingUp,
 } from "@/components/workspace/volunteer/commitment-rows";
 
+// Editing or removing an announcement is its own chunk: the week's first load does not carry it.
+const AnnouncementChange = lazy(() => import("@/components/workspace/volunteer/announcement-change"));
+
 export function WeekSection() {
   const { data, now, format, words, isOwner, sampleSaid, keepNames } = useWorkspace();
   // The owner alone, nothing made yet: one first-week state stands in for the empty lists, and the head carries "Invite someone".
   const firstDays = isBrandNew(data);
   const first = words.rooms.firstDays.week;
   const [printing, setPrinting] = useState(false);
+  const [changing, setChanging] = useState<(typeof data.announcements)[number] | null>(null);
   const incoming = incomingRequests(data);
   const { held, fresh, requests } = useAcceptedArrival();
   // Once the note has been kept short for a request, it stays short for this visit: answering the last
@@ -55,6 +59,13 @@ export function WeekSection() {
                     {item.authorName} · {format(item.createdAt)}
                   </div>
                 </div>
+                {item.canChange && (
+                  <div className="live-row-actions">
+                    <Button variant="ghost" size="sm" data-opens="" aria-label={words.week.changeAnnouncementLabel(item.title)} onClick={() => setChanging(item)}>
+                      {words.week.changeAnnouncement}
+                    </Button>
+                  </div>
+                )}
               </article>
             ))}
           </div>
@@ -117,6 +128,11 @@ export function WeekSection() {
       <p className="!mt-14 !mb-0 [.live-empty+&]:!mt-6">
         <AssistantGuide />
       </p>
+      {changing && (
+        <Suspense fallback={null}>
+          <AnnouncementChange item={changing} onClose={() => setChanging(null)} />
+        </Suspense>
+      )}
       {printing && (
         <LiveDialog title={words.week.printWeek} className="tools-rota-dialog" onClose={() => setPrinting(false)}>
           <WeeklyRota titled={false} />
