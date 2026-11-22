@@ -181,6 +181,7 @@ export const serverRefusalsEs: Record<string, string> = {
   "This person is not in the conference.": "Esta persona no está en la conferencia.",
   "This payment is already recorded.": "Este pago ya está anotado.",
   "This request has already been decided.": "Esta petición ya se decidió.",
+  "A payment is recorded on this request. Reverse it in the treasury first.": "Ya hay un pago anotado en esta petición. Primero anúlalo en la tesorería.",
   "This request has too many ledger entries to add up.": "Esta petición tiene demasiados movimientos en el libro para sumarlos.",
   "This request is already finished.": "Esta petición ya está cerrada.",
   "This visit is already written up or was canceled.": "Esta visita ya tiene sus notas o se canceló.",

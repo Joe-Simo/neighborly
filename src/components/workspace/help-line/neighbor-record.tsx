@@ -232,6 +232,7 @@ export function NeighborRecord({
   const [back, setBack] = useState<WayBack>();
   const [undoRefused, setUndoRefused] = useState("");
   const takeBackNote = useMutation(api.neighbors.takeBackNote);
+  const undoDecision = useMutation(api.assistance.undoDecision);
   const close = () => {
     setStep(null);
     moveOn();
@@ -462,7 +463,7 @@ export function NeighborRecord({
             decision={step.kind === "approve" ? "approved" : "declined"}
             onSaved={() => {
               if (step.kind === "approve") setApprovedNow(step.request.id);
-              finish(step.kind === "approve" ? text.done.approved(neighbor.name) : text.done.declined(neighbor.name));
+              finish(step.kind === "approve" ? text.done.approved(neighbor.name) : text.done.declined(neighbor.name), step.request.voucher ? undefined : { run: () => undoDecision({ churchId, requestId: step.request.id }), said: text.done.undone(neighbor.name) });
             }}
           />
         </LiveDialog>
@@ -479,7 +480,7 @@ export function NeighborRecord({
             churchId={churchId}
             request={step.request}
             onSaved={() =>
-              finish(forms.takingBack(step.request) ? text.done.takenBack(neighbor.name) : text.done.closed(neighbor.name))
+              forms.takingBack(step.request) ? finish(text.done.takenBack(neighbor.name)) : finish(text.done.closed(neighbor.name), { run: () => undoDecision({ churchId, requestId: step.request.id }), said: text.done.undone(neighbor.name) })
             }
           />
         </LiveDialog>

@@ -102,6 +102,7 @@ export const en = (t: Terms, place: string) => ({
       declined: (name: string) => `Request declined. ${name}’s record is up to date.`,
       closed: (name: string) => `Request closed. ${name}’s record is up to date.`,
       takenBack: (name: string) => `Voucher taken back. ${name}’s record is up to date.`,
+      undone: (name: string) => `Request put back as it was. ${name}’s record is up to date.`,
     },
     figures: {
       year: "Help this year",
@@ -333,6 +334,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       declined: (name) => `Petición no aprobada. El registro de ${name} está al día.`,
       closed: (name) => `Petición cerrada. El registro de ${name} está al día.`,
       takenBack: (name) => `Vale retirado. El registro de ${name} está al día.`,
+      undone: (name) => `La petición quedó como estaba. El registro de ${name} está al día.`,
     },
     figures: {
       year: "Ayuda este año",

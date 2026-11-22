@@ -76,6 +76,7 @@ describe("who may use the help line and requests", () => {
         () => caller.mutation(api.assistance.updateRequest, { churchId, requestId, ...rent, amountRequested: 40000 }),
         () => caller.mutation(api.assistance.decide, { churchId, requestId, decision: "approved", amountApproved: 40000, note: "" }),
         () => caller.mutation(api.assistance.closeRequest, { churchId, requestId, note: "Resolved." }),
+        () => caller.mutation(api.assistance.undoDecision, { churchId, requestId }),
         () => caller.query(api.assistance.drafts, { churchId }),
         () => caller.mutation(api.assistance.keepDraft, { churchId, callId, draft: { kind: null, amountRequested: null, payeeKind: null, payeeName: "", quote: "", notes: [], verification: "review" } }),
         () => caller.mutation(api.assistance.discardDraft, { churchId, callId }),
