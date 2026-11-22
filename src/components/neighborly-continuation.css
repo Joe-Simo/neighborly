@@ -44,8 +44,8 @@
 /* On a phone the four links stand two and two, never three and one left alone. */
 @media (max-width:560px){.neighborly-colophon nav{display:grid;grid-template-columns:repeat(2,max-content)}}
 @media(max-width:900px){
-  .neighborly-together{padding-inline:20px}
-  .neighborly-trust{margin-inline:-20px;padding:64px 20px}
+  .neighborly-together{padding-left:max(20px,var(--safe-l));padding-right:max(20px,var(--safe-r))}
+  .neighborly-trust{margin-left:calc(-1 * max(20px,var(--safe-l)));margin-right:calc(-1 * max(20px,var(--safe-r)));padding:64px max(20px,var(--safe-r)) 64px max(20px,var(--safe-l))}
   .neighborly-together h2 em{margin-left:0}
   .neighborly-together-bottom{grid-template-columns:minmax(0,1fr);grid-template-rows:none}
   .neighborly-together-statement{grid-column:auto;grid-row:auto;max-width:22ch;font-size:clamp(24px,6.6vw,34px)}
@@ -58,7 +58,7 @@
 /* The close: the opening picture again, the card now in the open hand, and the words where the first headline stood. */
 .neighborly-close{position:relative;container-type:inline-size;margin-inline:-8.14%;height:min(100svh,100vw / 1.40625);color:#253e31}
 /* Under 900px the section's own padding is 20px, so the band reaches the screen's edges and no further. After the rule above, so it wins. */
-@media(max-width:900px){.neighborly-close{margin-inline:-20px}}
+@media(max-width:900px){.neighborly-close{margin-left:calc(-1 * max(20px,var(--safe-l)));margin-right:calc(-1 * max(20px,var(--safe-r)))}}
 .neighborly-close-art{position:absolute;inset:0;-webkit-mask-image:linear-gradient(transparent,#000 9%,#000 93%,transparent);mask-image:linear-gradient(transparent,#000 9%,#000 93%,transparent)}
 .neighborly-close-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 28%}
 /* The band's words start on the same left edge as the foot's line and the name below them: the page's 7%. */
@@ -74,7 +74,7 @@
   .neighborly-close-words{position:static;width:auto;padding:8px 7% 0}
   .neighborly-together h2{font-size:clamp(48px,7.4vw,76px)}
 }
-@media(max-width:900px){.neighborly-close-words{padding-inline:20px}}
+@media(max-width:900px){.neighborly-close-words{padding-left:max(20px,var(--safe-l));padding-right:max(20px,var(--safe-r))}}
 @media(max-width:700px) and (orientation:portrait),(max-width:480px){
   /* A phone held upright: the tall picture, the words on its open paper as on the first screen. */
   .neighborly-close-art{-webkit-mask-image:linear-gradient(transparent,#000 5%,#000 96%,transparent);mask-image:linear-gradient(transparent,#000 5%,#000 96%,transparent)}

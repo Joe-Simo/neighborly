@@ -51,5 +51,5 @@
 
 /* The public foot under the page, one per language, the reader's shown. */
 .lost-door-foot{padding:0 max(7%,calc(env(safe-area-inset-right) + 6px)) 0 max(7%,calc(env(safe-area-inset-left) + 6px))}
-@media(max-width:900px){.lost-door-foot.neighborly-continuation{padding-inline:20px;background:#f5f3ec}}
+@media(max-width:900px){.lost-door-foot.neighborly-continuation{padding-left:max(20px,var(--safe-l));padding-right:max(20px,var(--safe-r));background:#f5f3ec}}
 :root:lang(es) .lost-door-foot[lang="en"],:root:not(:lang(es)) .lost-door-foot[lang="es"]{display:none}
