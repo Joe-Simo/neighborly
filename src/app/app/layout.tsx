@@ -4,8 +4,9 @@ import "@/components/workspace/paper.css";
 import "@/components/workspace/shell-ios.css";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ClerkProvider } from "@clerk/nextjs";
+import { clerkAppearance } from "@/lib/clerk-appearance";
 import { LiveFrame } from "@/components/live-frame";
-import { LiveClerk } from "@/components/live-clerk";
 import { protect } from "@/lib/sample-ticket";
 import { LiveProviders } from "@/components/live-providers";
 import { doorEarly } from "@/lib/door-early";
@@ -41,13 +42,19 @@ export default function LiveAppLayout({
       <link rel="preload" as="image" href="/launch/mark-240.png" imageSrcSet="/launch/mark-240.png 1x, /launch/mark-480.png 2x, /launch/mark-720.png 3x" fetchPriority="high" />
       {/* Before the first paint: may the server's sign-in sheet show at once (lib/door-early.ts)? */}
       <script dangerouslySetInnerHTML={{ __html: `var l=(${doorEarly})();if(l)document.documentElement.dataset.doorEarly=l` }} />
-      {/* Clerk's client provider, so the frame needs no Suspense boundary: it is in the first HTML and hydrates with the
-          page, where a streamed boundary is revealed and hydrated only on an animation frame (live-clerk.tsx). */}
-      <LiveClerk>
+      {/* Clerk's server provider, with no Suspense boundary around it or inside it. It awaits (its keyless check), and in
+          a boundary that wait made React stream the frame in after the first HTML, revealed and hydrated only on an
+          animation frame: a page that says it is visible but draws nothing (a window behind another) stood on
+          "Opening…" with Clerk never started. With no boundary the wait is the server's alone, so the frame is in the
+          first HTML and hydrates with the page. Imported here it also hands the browser Clerk's App Router provider
+          alone; imported from a client component, Clerk's provider brings the Pages Router's with it, in every room's
+          first load. The door's forms are our own (useSignIn, useSignUp), so Clerk's prebuilt screens are never drawn:
+          their bundle is not asked for. Clerk waits for it before it starts the session, which held a cold room for its whole download. */}
+      <ClerkProvider prefetchUI={false} appearance={clerkAppearance} signInUrl="/app" signUpUrl="/app?intent=start" afterSignOutUrl="/app">
         <LiveProviders>
           <LiveFrame sampleEntry={Boolean(process.env.DEMO_CLERK_USER_ID)}>{children}</LiveFrame>
         </LiveProviders>
-      </LiveClerk>
+      </ClerkProvider>
       <PaperArrival />
       {/* Nothing in the app opens without scripts, and the launch sheet's line would say "Opening…" for ever. That
           reader is told so on the same paper, under the same mark, and shown the way back. Which language they read
