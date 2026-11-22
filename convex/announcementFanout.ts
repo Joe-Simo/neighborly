@@ -6,7 +6,7 @@ import { queueAnnouncementEmail } from "./notificationEvents";
 export const process = internalMutation({
  args:{announcementId:v.id("announcements"),cursor:v.union(v.string(),v.null())},returns:v.null(),
  handler:async(ctx,{announcementId,cursor})=>{
-  const announcement=await ctx.db.get("announcements",announcementId);if(!announcement)return null;
+  const announcement=await ctx.db.get("announcements",announcementId);if(!announcement||announcement.removedAt)return null;
   const page=await ctx.db.query("memberships").withIndex("by_church",q=>q.eq("churchId",announcement.churchId)).paginate({cursor,numItems:40});
   for(const member of page.page){
    // People who joined after it was posted see it on the home page instead.

@@ -92,4 +92,14 @@ describe("undoing a decision from its line", () => {
     await expect(as(ids.owner).mutation(api.assistance.undoDecision, { churchId, requestId: late })).rejects.toThrow("can no longer be undone");
     expect((await row(late))?.status).toBe("declined");
   });
+  test("closing a voucher request before any voucher was given can be undone, as the line offers", async () => {
+    const { ids, as, row, church } = await setup();
+    const churchId = ids.church;
+    const coats = { kind: "voucher", summary: "Two children need winter coats.", amountRequested: 0, payeeKind: "vendor", payeeName: "", voucher: { item: "Winter coat", quantity: 2 } } as const;
+    const requestId = await as(ids.owner).mutation(api.assistance.createRequest, { churchId, neighborId: ids.rosa, ...coats });
+    await as(ids.owner).mutation(api.assistance.closeRequest, { churchId, requestId, note: "Found coats elsewhere." });
+    await as(ids.owner).mutation(api.assistance.undoDecision, { churchId, requestId });
+    expect((await row(requestId))?.status).toBe("open");
+    expect((await church())?.waitingCount).toBe(1);
+  });
 });
