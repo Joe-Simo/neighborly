@@ -147,6 +147,16 @@ async function summaries(ctx: Ctx, entries: Entry[]) {
   return new Map((await Promise.all(ids.map((id) => ctx.db.get("assistanceRequests", id)))).flatMap((request) => (request ? [[request._id, request.summary] as const] : [])));
 }
 const depositRow = v.object({ id: v.id("deposits"), date: v.string(), total: v.number(), memo: v.string(), /** How many gifts went to the bank together. */ count: v.number() });
+/** An entry on the bank screen, with the deposit it went to the bank in, if any. */
+const bankRow = v.object({
+  ...entryFields,
+  depositId: v.union(v.null(), v.id("deposits")),
+  /** The day that deposit was made: the entry cannot clear before it. */
+  depositDate: v.union(v.null(), v.string()),
+  depositTotal: v.union(v.null(), v.number()),
+  /** How many gifts went to the bank together in that deposit. */
+  depositCount: v.union(v.null(), v.number()),
+});
 const ledgerRow = v.object({ ...entryFields, neighbor: neighborLink, /** The balance after this entry. */ balance: v.number() });
 
 /** One month of the ledger with the balance after every entry, newest first, and the balance today. */
@@ -446,9 +456,9 @@ export const reconciliation = query({
     onItsWayOut: v.number(),
     waitingCount: v.number(),
     /** Entries not yet cleared by that day, oldest first; at most 300 are listed. */
-    waiting: v.array(v.object(entryFields)),
+    waiting: v.array(bankRow),
     /** The entries cleared most recently, newest first, so a slip can be undone. */
-    lately: v.array(v.object(entryFields)),
+    lately: v.array(bankRow),
     /** Deposits the bank has not shown by that day. Each is one line on a statement, so its entries are left out of waiting. */
     deposits: v.array(depositRow),
   }),
@@ -491,7 +501,19 @@ export const reconciliation = query({
     const listed = waiting.slice(0, BANK_LIST_LIMIT);
     const lately = done.sort((a, b) => (b.clearedOn ?? "").localeCompare(a.clearedOn ?? "") || b.date.localeCompare(a.date)).slice(0, 8);
     const requests = await summaries(ctx, [...listed, ...lately]);
-    const view = (entry: Entry) => entryView(entry, (entry.requestId && requests.get(entry.requestId)) ?? null, reversed.has(entry._id));
+    const shown = [...listed, ...lately].flatMap((entry) => entry.depositId ?? []);
+    const theirs = await depositsOf(ctx, shown);
+    const counts = new Map(all.flatMap((entry) => (entry.depositId && theirs.has(entry.depositId) ? [entry.depositId] : [])).reduce((map, id) => map.set(id, (map.get(id) ?? 0) + 1), new Map<Id<"deposits">, number>()));
+    const view = (entry: Entry) => {
+      const deposit = entry.depositId ? theirs.get(entry.depositId) : undefined;
+      return {
+        ...entryView(entry, (entry.requestId && requests.get(entry.requestId)) ?? null, reversed.has(entry._id)),
+        depositId: deposit?._id ?? null,
+        depositDate: deposit?.date ?? null,
+        depositTotal: deposit?.total ?? null,
+        depositCount: deposit ? (counts.get(deposit._id) ?? 0) : null,
+      };
+    };
     return { asOf, today: day, books, cleared, onItsWayIn, onItsWayOut, waitingCount: waiting.length + deposits.length, waiting: listed.map(view), lately: lately.map(view), deposits };
   },
 });

@@ -413,6 +413,21 @@ describe("a deposit beside the statement day", () => {
     expect((await entries()).map((row) => row.clearedOn)).toEqual([day(3), day(3)]);
   });
 
+  test("each listed entry carries its deposit, so the screen can say when it was made and name the whole deposit", async () => {
+    const { ids, as, income } = await setup();
+    const owner = as(ids.owner);
+    const a = await income(64000, day(6)), b = await income(2500, day(5), "Donation"), c = await income(1000, day(5), "Donation");
+    const depositId = await owner.mutation(api.treasury.recordDeposit, { churchId: ids.church, entryIds: [a, b], date: day(2) });
+    const before = await owner.query(api.treasury.reconciliation, { churchId: ids.church, asOf: day(4) });
+    const byId = new Map(before.waiting.map((row) => [row.id, row]));
+    expect(byId.get(a)).toMatchObject({ depositId, depositDate: day(2), depositTotal: 66500, depositCount: 2 });
+    expect(byId.get(b)).toMatchObject({ depositId, depositDate: day(2) });
+    expect(byId.get(c)).toMatchObject({ depositId: null, depositDate: null, depositTotal: null, depositCount: null });
+    await owner.mutation(api.treasury.clearDeposit, { churchId: ids.church, depositId, clearedOn: day(1) });
+    const after = await owner.query(api.treasury.reconciliation, { churchId: ids.church });
+    expect(after.lately.find((row) => row.id === a)).toMatchObject({ depositId, depositDate: day(2), depositTotal: 66500, depositCount: 2 });
+  });
+
   test("marking everything through a day leaves a gift whose deposit was made later", async () => {
     const { ids, as, income, entries } = await setup();
     const owner = as(ids.owner);

@@ -218,6 +218,8 @@ export const en = (t: Terms, place: string) => ({
       deposit: (amount: string) => `${amount} deposit`,
       carried: (count: number) => (count === 1 ? "1 gift carried to the bank together" : `${enN(count)} gifts carried to the bank together`),
       mark: "Mark cleared",
+      /** A gift whose deposit was made after the statement day: it cannot have cleared by then. */
+      deposited: (day: string) => `Deposited ${day}`,
       markLabel: (what: string) => `Mark cleared: ${what}`,
       emptyTitle: "Everything has cleared.",
       /** Nothing has ever been written down: there is nothing to have cleared. */
@@ -231,6 +233,8 @@ export const en = (t: Terms, place: string) => ({
       onStatement: (day: string) => `On the ${day} statement`,
       undo: "Mark not cleared",
       undoLabel: (what: string) => `Mark not cleared: ${what}`,
+      /** A gift's mark is its deposit's mark: taking it off names the whole deposit. */
+      deposit: (count: number) => (count === 1 ? "Deposit of {day}, 1 gift, {total}" : `Deposit of {day}, ${enN(count)} gifts, {total}`),
     },
     matched: { title: "Statements matched", by: "Matched by {name} on {day}" },
     done: {
@@ -482,6 +486,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       deposit: (amount) => `Depósito de ${amount}`,
       carried: (count) => (count === 1 ? "1 donativo llevado al banco" : `${esN(count)} donativos llevados juntos al banco`),
       mark: "Marcar que ya pasó",
+      deposited: (day) => `Depositado el ${day}`,
       markLabel: (what) => `Marcar que ya pasó por el banco: ${what}`,
       emptyTitle: "Todo ya pasó por el banco.",
       firstTitle: "Todavía no ha entrado ni salido dinero.",
@@ -494,6 +499,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       onStatement: (day) => `En el estado de cuenta del ${day}`,
       undo: "Marcar que aún no pasa",
       undoLabel: (what) => `Marcar que aún no pasa por el banco: ${what}`,
+      deposit: (count) => (count === 1 ? "Depósito del {day}, 1 donativo, {total}" : `Depósito del {day}, ${esN(count)} donativos, {total}`),
     },
     matched: { title: "Estados de cuenta comparados", by: "Comparado por {name} el {day}" },
     done: {

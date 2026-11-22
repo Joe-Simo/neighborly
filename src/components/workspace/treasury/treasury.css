@@ -710,3 +710,9 @@
 /* A long figure keeps its whole line: it shrinks to its column rather than running past it. */
 .help-figures.treasury-figures > div { container-type: inline-size; }
 .treasury-figures .count-up { font-size: min(1em, 17cqi); }
+/* A gift whose deposit was made after the statement day waits in words, not with a mark it cannot take. */
+.treasury-deposited {
+  align-self: center;
+  margin: 0;
+  color: var(--help-ochre-ink);
+}
