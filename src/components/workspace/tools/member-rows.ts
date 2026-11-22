@@ -1,4 +1,5 @@
 import Papa from "papaparse";
+import { csvText } from "@/lib/csv";
 
 export type MemberRow = { line: number; name: string; email: string; role: string };
 type MemberSheet = { rows: MemberRow[] } | { error: string };
@@ -38,7 +39,7 @@ export function readMemberRows(text: string): MemberSheet {
 
 /** The private invitation links as a spreadsheet, for the owner to pass on by hand. */
 export function invitationLinksCsv(people: { name: string; email: string; token: string }[], origin: string) {
-  return Papa.unparse({
+  return csvText({
     fields: ["Name", "Email", "Private invitation link"],
     data: people.map((person) => [person.name, person.email, `${origin}/app?invite=${encodeURIComponent(person.token)}`]),
   });

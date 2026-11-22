@@ -64,7 +64,7 @@ const en = {
     sentAgain: "A new code is on its way",
     other: "Use a different phone or email",
     held: "Until it's confirmed, no one sees your request. If it isn't confirmed in 24 hours, it's deleted.",
-    wrong: "That code doesn't match. Check the newest email and try again.",
+    wrong: "That code doesn't match, or it has run out. Check the newest email and try again, or send a new code.",
   },
   sent: {
     kicker: "Request received",
@@ -225,7 +225,7 @@ const es: IntakeWords = {
     sentAgain: "Va en camino un código nuevo",
     other: "Usar otro teléfono o correo",
     held: "Hasta que lo confirmes, nadie ve tu petición. Si no se confirma en 24 horas, se borra.",
-    wrong: "Ese código no coincide. Revisa el correo más reciente y vuelve a intentarlo.",
+    wrong: "Ese código no coincide o ya venció. Revisa el correo más reciente y vuelve a intentarlo, o pide un código nuevo.",
   },
   sent: {
     kicker: "Petición recibida",

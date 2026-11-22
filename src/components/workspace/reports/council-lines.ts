@@ -1,4 +1,4 @@
-import Papa from "papaparse";
+import { csvText } from "@/lib/csv";
 import type { CouncilFigures, CouncilYear } from "../../../../convex/councils";
 import type { CouncilWords } from "@/components/workspace/reports/council-words";
 
@@ -13,7 +13,7 @@ export const isMoney = (key: keyof CouncilFigures) => moneyFigures.has(key);
 /** The council's year as a spreadsheet: a row per figure, a column per conference, all conferences last. Money in dollars. */
 export function councilCsv(report: CouncilYear, w: CouncilWords) {
   const cell = (key: keyof CouncilFigures, value: number) => (isMoney(key) ? (value / 100).toFixed(2) : String(value));
-  return Papa.unparse([
+  return csvText([
     [w.fileTitle(report.council, report.year)],
     [],
     ["", ...report.conferences.map((row) => row.name), w.total],

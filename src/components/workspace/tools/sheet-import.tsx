@@ -4,7 +4,7 @@ import { LiveLoading } from "@/components/workspace/primitives";
 import "./tools.css";
 import { LiveFailure } from "@/components/workspace/states";
 import { useEffect, useId, useRef, type ReactNode } from "react";
-import Papa from "papaparse";
+import { csvText } from "@/lib/csv";
 import { CircleCheck, FileUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
@@ -98,7 +98,7 @@ function LeftOutRows({ rows, download }: { rows: LeftOut[]; download?: boolean }
         ))}
       </div>
       {download && (
-        <a className="tools-sample" download="left-out-lines.csv" href={`data:text/csv;charset=utf-8,${encodeURIComponent(Papa.unparse({ fields: [text.columns.line, text.columns.name, text.columns.why], data: rows.map((row) => [row.line, row.name, row.reason]) }))}`}>
+        <a className="tools-sample" download="left-out-lines.csv" href={`data:text/csv;charset=utf-8,${encodeURIComponent(csvText({ fields: [text.columns.line, text.columns.name, text.columns.why], data: rows.map((row) => [row.line, row.name, row.reason]) }))}`}>
           {text.downloadLeftOut}
         </a>
       )}

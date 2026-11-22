@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { DateTime } from "luxon";
 import { type MutationCtx } from "./_generated/server";
 import { internalMutation } from "./functions";
+import { TAKE_BACK_DAYS } from "./assistance";
 import type { Doc, Id, TableNames } from "./_generated/dataModel";
 import { WAITING_KEPT } from "./counts";
 import { rebuildNames } from "./knownNames";
@@ -287,6 +288,7 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
   const spentByMonth = new Map<string, number>();
   const book: { id: Id<"ledgerEntries">; kind: "income" | "expense"; amount: number; date: string; category: string }[] = [];
   const vouchersGiven: { requestId: Id<"assistanceRequests">; time: number; item: string }[] = [];
+  let lastPaid: { at: number; neighborId: Id<"neighbors">; callId: Id<"calls">; by: Id<"memberships"> } | undefined;
   const entry = async (kind: "income" | "expense", time: number, amount: number, category: string, payee: string, memo: string, links: { requestId?: Id<"assistanceRequests">; neighborId?: Id<"neighbors">; checkNumber?: string } = {}) => {
     if (kind === "expense") spentByMonth.set(isoDay(time).slice(0, 7), (spentByMonth.get(isoDay(time).slice(0, 7)) ?? 0) + amount);
     const id = await db.insert("ledgerEntries", { churchId, kind, amount, date: isoDay(time), category, payee, memo, ...links, recordedBy: owner, createdAt: time });
@@ -351,6 +353,7 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
       random.pick(staff);
       const requestId = await db.insert("assistanceRequests", { churchId, neighborId, callId, kind: need.kind, summary, amountRequested, amountApproved, ...(voucher ? { voucher } : {}), status: outcome, decisionNote: outcome === "declined" ? "Referred to the county program, which covers this in full." : outcome === "closed" ? "Neighbor resolved it before the visit." : granted ? "Approved after the home visit." : "", decidedBy: decidedAt ? owner : undefined, decidedAt, payeeKind: need.payeeKind, payeeName, source: index % 8 === 3 ? "ai_draft" : "person", createdBy: taker, createdAt: takenAt });
       if (voucher && outcome === "paid") vouchersGiven.push({ requestId, time: decidedAt ?? takenAt, item: voucher.item });
+      if (outcome === "paid" && decidedAt !== undefined && decidedAt > (lastPaid?.at ?? 0)) lastPaid = { at: decidedAt, neighborId, callId, by: taker };
       if (outcome !== "closed") {
         const first = random.between(0, visitors.length - 1);
         const pair = [visitors[first], visitors[(first + random.between(1, visitors.length - 1)) % visitors.length]];
@@ -590,6 +593,14 @@ async function fill(db: SampleDb, visitor?: Owner, now = Date.now()): Promise<Id
     db.insert("voucherStock", { churchId, date: isoDay(time), change, item, note, ...(requestId ? { requestId } : {}), recordedBy: owner, createdAt: time });
   await shelf(start + DAY, 40, "Furniture voucher", "From the conference thrift store");
   await shelf(start + DAY, 40, "Clothing voucher", "From the conference thrift store");
+  // One voucher is always given recently enough to be taken back (TAKE_BACK_DAYS), so the sample shows that action on a
+  // record: if the draws left none, the household paid most recently is also given a clothing voucher two days ago. It is
+  // laid after every draw and carries no amount, so the closed year and every total stay as pinned.
+  if (lastPaid && !vouchersGiven.some((given) => given.time >= now - (TAKE_BACK_DAYS - 5) * DAY)) {
+    const at = now - 2 * DAY;
+    const requestId = await db.insert("assistanceRequests", { churchId, neighborId: lastPaid.neighborId, callId: lastPaid.callId, kind: "voucher", summary: "Winter coats for the children", amountRequested: 0, amountApproved: 0, voucher: { item: "Clothing voucher", quantity: 1 }, status: "paid", decisionNote: "Approved after the home visit.", decidedBy: owner, decidedAt: at, payeeKind: "vendor", payeeName: "", source: "person", createdBy: lastPaid.by, createdAt: at - DAY });
+    vouchersGiven.push({ requestId, time: at, item: "Clothing voucher" });
+  }
   for (const given of vouchersGiven) await shelf(Math.min(given.time, now), -1, given.item, "Given on a request", given.requestId);
   // This week as a leader would find it: some calls already called back and visits already written up, spread
   // over the days so far. Relabelled from the open year's last three weeks only, never drawn, so the closed year,

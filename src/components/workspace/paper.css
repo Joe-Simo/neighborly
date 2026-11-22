@@ -1786,3 +1786,6 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 /* Widows and rag: heads and dialog titles balance their lines, body copy avoids a lone last word. Workspace-wide. */
 :is(.live-app, .live-dialog) :is(h1, h2, h3, [data-slot="dialog-title"]) { text-wrap: balance; }
 :is(.live-app, .live-dialog) :is(p, li, dd, figcaption, blockquote) { text-wrap: pretty; }
+
+/* A room's deck is one to three lines: balanced, so no word is left alone at 390 (pretty is not in Safari 18). */
+.live-app .live-page-head .live-deck { text-wrap: balance; }

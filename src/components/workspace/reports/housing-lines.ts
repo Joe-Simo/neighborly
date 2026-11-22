@@ -1,4 +1,4 @@
-import Papa from "papaparse";
+import { csvText } from "@/lib/csv";
 import type { FunctionReturnType } from "convex/server";
 import type { api } from "../../../../convex/_generated/api";
 import type { Words } from "@/lib/words";
@@ -17,7 +17,7 @@ const dollars = (cents: number) => (cents / 100).toFixed(2);
 /** The landlord summary as a spreadsheet: one row per landlord, a column per month, the year to date last. */
 export function housingCsv(report: HousingReport, groupName: string, sample: boolean, words: Words, lines: ReportLines) {
   const w = housingWords(words.locale);
-  return Papa.unparse([
+  return csvText([
     [groupName, w.fileTitle(report.year), lines.longSpanLabel(report, words)],
     ...(sample ? [[words.rooms.reports.rows.csv.sample]] : []),
     [],
