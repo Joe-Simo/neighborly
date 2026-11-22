@@ -13,6 +13,7 @@
     "test:unit": "bun test src",
     "test:backend": "vitest run convex",
     "a11y": "bun scripts/a11y.mts",
+    "member-switch": "bun scripts/member-switch.mts",
     "budget": "bun scripts/budget.mts",
     "size": "bun scripts/size-budget.mts",
     "words-whole": "bun scripts/words-whole.mts"
