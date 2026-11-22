@@ -38,6 +38,8 @@ const en = {
   backToSignIn: "Back to sign in",
   sample: "Look around a sample conference",
   sampleOpening: "Opening the sample conference…",
+  /** The workspace's own "Fill this in." (states.needed in lib/words), said here too so the door never waits on a book. */
+  needed: "Fill this in.",
   sampleResetting: "Setting the sample up fresh. One moment.",
   leaveSample: "Leave the sample",
   /** In the app, while the sheet waits to turn off the room it opens. */
@@ -134,6 +136,7 @@ const es: AuthWords = {
   backToSignIn: "Volver a iniciar sesión",
   sample: "Recorrer una muestra",
   sampleOpening: "Abriendo la conferencia de muestra…",
+  needed: "Completa esto.",
   sampleResetting: "Estamos dejando la muestra como nueva. Un momento.",
   leaveSample: "Salir de la muestra",
   opening: "Abriendo…",

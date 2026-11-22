@@ -10,6 +10,8 @@ type Book = { readonly [key: string]: Leaf | Book | RegExp | ReadonlyArray<unkno
 function phrases(book: Book, path = ""): [string, string][] {
   return Object.entries(book).flatMap(([key, value]) => {
     const at = path ? `${path}.${key}` : key;
+    // Refusals: Spanish has a sentence or pattern for each, English says most as the backend did ("refusals …" below).
+    if (at === "notices.refused" || at === "notices.refusedLike") return [];
     if (typeof value === "string") return [[at, value] as [string, string]];
     if (typeof value === "function")
       return [0, 1, 4].map((count) => [`${at}(${count})`, (value as (count: number) => string)(count)] as [string, string]);
@@ -75,11 +77,11 @@ describe("words", () => {
 
 describe("refusals a member can meet", () => {
   test("each one is said in both languages, and the backend throws it by name, never written out", async () => {
-    const { refusals } = await import("../refusals");
+    const { refusals, sayRefused } = await import("../refusals");
     const backend = (await Promise.all(["workspace.ts", "pages.ts"].map((file) => Bun.file(`${import.meta.dir}/../../../convex/${file}`).text()))).join("\n");
     for (const [key, sentence] of Object.entries(refusals)) {
       // A refusal for something no longer there adds its next step.
-      expect(words("en").notices.refused[sentence], `en ${key}`).toBe(serverRefusalsPlain[sentence]?.en ?? (notFound.test(sentence) ? `${sentence} ${nextStep.en}` : sentence));
+      expect(sayRefused(words("en").notices, sentence), `en ${key}`).toBe(serverRefusalsPlain[sentence]?.en ?? (notFound.test(sentence) ? `${sentence} ${nextStep.en}` : sentence));
       for (const language of ["es"] as const) {
         const said = words(language).notices.refused[sentence];
         expect(said, `${language} ${key}`).toBeTruthy();
@@ -183,3 +185,21 @@ describe("refusals thrown by way of a helper, a choice or a name", () => {
   });
 });
 
+describe("the door's own copies of the workspace's words", () => {
+  test("say what the workspace's book says, in each language", async () => {
+    const { authWords } = await import("../../components/live-auth-words");
+    for (const language of ["en", "es"] as const) {
+      expect(authWords[language].opening, language).toBe(words(language).states.opening);
+      expect(authWords[language].needed, language).toBe(words(language).states.needed);
+    }
+  });
+});
+
+describe("the Spanish book", () => {
+  test("is not reached from the English one, so English readers never download it", async () => {
+    const english = await Bun.file(`${import.meta.dir}/en.ts`).text();
+    expect(english).not.toMatch(/from "\.\.\/refusals-es"|from "\.\/es"/);
+    const index = await Bun.file(`${import.meta.dir}/index.ts`).text();
+    expect(index).not.toMatch(/^import .* from "\.\/es";?$/m);
+  });
+});

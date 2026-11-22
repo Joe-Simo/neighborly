@@ -6,15 +6,14 @@ import { Button } from "@/components/ui/button";
 import type { LiveArea } from "@/components/workspace/areas";
 import { useWorkspaceIfAny } from "@/components/workspace/context";
 import { stateWords, wrongControl } from "@/components/workspace/failure";
-import { useEntryLanguage } from "@/components/live-auth-words";
-import { words as wordsFor } from "@/lib/words";
+import { authWords, useEntryLanguage } from "@/components/live-auth-words";
 import { useLaunchCarried } from "@/components/workspace/room-sheet";
 
 /** "Opening…" in the reader's language: the room's own words inside the workspace, the door's language before it. */
 function useOpening() {
   const workspace = useWorkspaceIfAny();
   const [language] = useEntryLanguage();
-  return (workspace?.words ?? wordsFor(language)).states.opening;
+  return workspace?.words.states.opening ?? authWords[language].opening;
 }
 
 /** A short wait inside a room, a form or a dialog: one quiet line. */
@@ -60,7 +59,8 @@ export function LiveRoomLoading({
   label?: string;
   children?: ReactNode;
 }) {
-  const opening = useOpening();
+  const workspace = useWorkspaceIfAny();
+  const said = label ?? workspace?.words.states.opening;
   // One wait, one line: this screen carries on the line of the launch screen it replaces, and the room that follows
   // carries on this one's, in the same place (room-sheet.tsx).
   const line = useRef<HTMLParagraphElement>(null);
@@ -70,7 +70,14 @@ export function LiveRoomLoading({
       <LaunchMark />
       <div className="paper-loading-words">
         <p className="paper-loading-label" role="status" ref={line}>
-          <span className="text-balance">{label ?? opening}</span>
+          {said !== undefined ? <span className="text-balance">{said}</span> : (
+            // Before the rooms, the line is drawn in both languages, by the server too, and the page's own language
+            // (said by its head before the first paint, first-language.ts) shows one: a Spanish reader never reads "Opening…".
+            <>
+              <span className="text-balance" lang="en" data-said="en">{authWords.en.opening}</span>
+              <span className="text-balance" lang="es" data-said="es">{authWords.es.opening}</span>
+            </>
+          )}
         </p>
         {children}
       </div>
