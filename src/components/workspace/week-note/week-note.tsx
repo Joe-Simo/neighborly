@@ -189,7 +189,7 @@ function WeekNoteView({ counts, monday, brief, waiting = false, onDone }: { coun
   const callDetail = lines.find((line) => line.area === "help-line")?.parts.slice(1) ?? [];
   const also = weekLines(text, counts, 6).filter((line) => !figures.some((figure) => figure.area === line.area));
   return (
-    <div className={`grid transition-[grid-template-rows,opacity,translate] duration-300 ease-[cubic-bezier(0.2,0.7,0.2,1)] ${leaving ? "-translate-y-2 grid-rows-[0fr] overflow-hidden opacity-0" : "grid-rows-[1fr]"} ${waiting ? held : ""}`} aria-hidden={waiting || undefined} inert={waiting}>
+    <div className={`grid transition-[grid-template-rows,opacity,translate] duration-300 ease-(--ease-paper) ${leaving ? "-translate-y-2 grid-rows-[0fr] overflow-hidden opacity-0" : "grid-rows-[1fr]"} ${waiting ? held : ""}`} aria-hidden={waiting || undefined} inert={waiting}>
       <div className="min-h-0">
         <section className="help-sheet after:!hidden" aria-labelledby={waiting ? undefined : "week-note"}>
           <p className={`help-sheet-label !text-[var(--live-muted)] ${waiting ? "invisible" : ""}`}>

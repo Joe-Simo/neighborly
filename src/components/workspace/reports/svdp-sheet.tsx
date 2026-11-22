@@ -1,5 +1,6 @@
 "use client";
 
+import { saveFile } from "@/lib/save-file";
 import { useState } from "react";
 import Papa from "papaparse";
 import { Download, Printer } from "lucide-react";
@@ -16,7 +17,7 @@ const said = {
     open: "National annual report",
     title: (year: number) => `Conference Annual Report, fiscal year ${year}`,
     deck: "The Society’s national form, filled from your records. Lines Kind Helps does not keep say so; fill them in by hand.",
-    line: "Line", what: "What it asks", value: "From your records", note: "Note",
+    section: "Section", line: "Line", what: "What it asks", value: "From your records", note: "Note",
     print: "Print the form", download: "Download as a spreadsheet",
     signed: "Conference president", treasurer: "Conference treasurer", date: "Date",
     stillOpen: "The year is still running: these figures are so far.",
@@ -25,7 +26,7 @@ const said = {
     open: "Informe anual nacional",
     title: (year: number) => `Informe anual de la conferencia, año fiscal ${year}`,
     deck: "El formulario nacional de la Sociedad, lleno con tus registros. Las líneas que Kind Helps no guarda lo dicen; llénalas a mano.",
-    line: "Línea", what: "Lo que pide", value: "Según tus registros", note: "Nota",
+    section: "Sección", line: "Línea", what: "Lo que pide", value: "Según tus registros", note: "Nota",
     print: "Imprimir el formulario", download: "Descargar como hoja de cálculo",
     signed: "Presidencia de la conferencia", treasurer: "Tesorería de la conferencia", date: "Fecha",
     stillOpen: "El año sigue en curso: estas cifras son hasta ahora.",
@@ -45,10 +46,8 @@ export default function SvdpSheet({ report }: { report: YearReport }) {
 
   function download() {
     const rows = sections.flatMap((section) => section.lines.map((line) => [section.title, line.code, line.line, line.value === null ? notTracked(locale) : "cents" in line.value ? (line.value.cents / 100).toFixed(2) : line.value.count, line.note ?? ""]));
-    const text = Papa.unparse([[data.church.name, title, period], [], [w.line, w.line, w.what, w.value, w.note], ...rows]);
-    const address = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
-    Object.assign(document.createElement("a"), { href: address, download: `svdp-annual-report-${report.year}.csv` }).click();
-    URL.revokeObjectURL(address);
+    const text = Papa.unparse([[data.church.name, title, period], [], [w.section, w.line, w.what, w.value, w.note], ...rows]);
+    saveFile(new Blob([text], { type: "text/csv;charset=utf-8" }), `svdp-annual-report-${report.year}.csv`);
   }
   function print() {
     const root = document.documentElement;
@@ -88,7 +87,7 @@ export default function SvdpSheet({ report }: { report: YearReport }) {
             </div>
           </div>
           <div className="live-form-actions">
-            <Button type="button" variant="ghost" onClick={download}><Download aria-hidden="true" />{w.download}</Button>
+            <Button type="button" variant="ghost" data-foot-aside onClick={download}><Download aria-hidden="true" />{w.download}</Button>
             <Button type="button" onClick={print}><Printer aria-hidden="true" />{w.print}</Button>
           </div>
         </LiveDialog>

@@ -1,5 +1,6 @@
 "use client";
 
+import { saveFile } from "@/lib/save-file";
 import { startTransition, useEffect, useState, type FormEvent } from "react";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
@@ -9,6 +10,7 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { LiveField, LiveLoading } from "@/components/workspace/primitives";
+import { HousingFrame } from "@/components/workspace/reports/housing-providers";
 import { useHour, useQuery } from "@/components/workspace/query";
 import { LiveFailure } from "@/components/workspace/states";
 import { councilCsv, councilFileName, figureOrder, isMoney } from "@/components/workspace/reports/council-lines";
@@ -171,9 +173,7 @@ function CouncilYearTable({ councilId, year, money }: { councilId: Id<"councils"
   function save() {
     if (!report) return;
     const name = councilFileName(report);
-    const address = URL.createObjectURL(new Blob([councilCsv(report, w)], { type: "text/csv;charset=utf-8" }));
-    Object.assign(document.createElement("a"), { href: address, download: name }).click();
-    URL.revokeObjectURL(address);
+    saveFile(new Blob([councilCsv(report, w)], { type: "text/csv;charset=utf-8" }), name);
     startTransition(() => setDone(words.rooms.reports.saved(name)));
   }
 
@@ -181,7 +181,7 @@ function CouncilYearTable({ councilId, year, money }: { councilId: Id<"councils"
     <>
       <p className="housing-note">{report.closed ? w.year(report.year) : `${w.year(report.year)}, ${w.soFar}`}</p>
       {report.updating && <p className="housing-note" role="status">{w.updating}</p>}
-      <div className="housing-scroll" tabIndex={0} role="region" aria-label={w.title}>
+      <HousingFrame label={w.title}>
         <table className="housing-table">
           <thead>
             <tr>
@@ -204,7 +204,7 @@ function CouncilYearTable({ councilId, year, money }: { councilId: Id<"councils"
             ))}
           </tbody>
         </table>
-      </div>
+      </HousingFrame>
       <div className="live-row-actions">
         <Button variant="outline" onClick={save}>
           <Download size={17} aria-hidden="true" /> {w.download}

@@ -84,7 +84,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       meetingPlanned: (title) => `Reunión planeada. ${title}`,
       commitmentCanceled: (title) => `Compromiso cancelado. ${title}`,
       markedReady: (name) => `${name} ya puede servir.`,
-      markedNotReady: (name) => `Se quitó la marca para servir a ${name}.`,
+      markedNotReady: (name) => `Se marcó que ${name} aún no puede servir.`,
       accessRemoved: (name) => `${name} ya no puede iniciar sesión.`,
       accessRestored: (name) => `${name} ya puede iniciar sesión de nuevo.`,
       inviteWithdrawn: (email) => `Se anuló la invitación a ${email}.`,

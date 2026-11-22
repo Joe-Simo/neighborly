@@ -1,6 +1,6 @@
 .neighborly-continuation{--ink:#293f32;position:relative;isolation:isolate;color:var(--ink);background:#eee7d7}
 .neighborly-continuation a:focus-visible,.neighborly-continuation button:focus-visible{outline:2px solid #283c32;outline-offset:3px}
-.has-reveal [data-reveal]{translate:0 16px;transition:translate .5s cubic-bezier(.2,.7,.2,1)}
+.has-reveal [data-reveal]{translate:0 16px;transition:translate .5s var(--ease-paper)}
 .has-reveal [data-reveal].is-visible,.has-reveal [data-reveal]:focus-within{translate:none}
 /* Interactive targets never move under a pointer. */
 .has-reveal [data-reveal]:has(a,button){translate:none}
@@ -17,14 +17,14 @@
 .neighborly-trust>*{max-width:64ch}
 .neighborly-together .neighborly-trust h2{margin:0 0 12px;font:400 26px/1.25 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-4);word-spacing:.04em}
 .neighborly-trust p{margin:0;font-size:17px;line-height:1.6;text-wrap:pretty}
-.neighborly-trust a{display:inline-block;margin-top:12px;font-size:15px;color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.neighborly-trust a{display:inline-flex;align-items:center;min-height:44px;min-width:44px;margin-top:2px;font-size:15px;color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
 .neighborly-together-statement{grid-column:2;grid-row:1;align-self:center;margin:0;max-width:25ch;font:400 clamp(24px,2.1vw,34px)/1.22 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-4);text-wrap:pretty}
 /* What a conference gets, written on one sheet of the workspace's own paper, its corner folded in ochre. */
 .neighborly-final-actions{display:flex;flex-direction:column;align-items:flex-start;gap:18px;max-width:380px}
 .neighborly-begin[data-slot=button]{height:auto;min-height:64px;padding:18px 26px;gap:28px;border-radius:0;background:#293f32;color:#f5eedf;font-size:17px;white-space:normal;box-shadow:none}
 .neighborly-begin[data-slot=button]:hover{background:#3a5040}
 .neighborly-final-links{display:flex;flex-wrap:wrap;gap:6px 30px}
-.neighborly-final-links a{display:inline-flex;align-items:center;gap:10px;min-height:44px;font-size:16px;text-decoration:none;border-bottom:1px solid #293f3260;background:linear-gradient(currentColor,currentColor) 0 100%/0 1px no-repeat;transition:background-size 160ms cubic-bezier(.2,.7,.2,1)}
+.neighborly-final-links a{display:inline-flex;align-items:center;gap:10px;min-height:44px;font-size:16px;text-decoration:none;border-bottom:1px solid #293f3260;background:linear-gradient(currentColor,currentColor) 0 100%/0 1px no-repeat;transition:background-size 160ms var(--ease-paper)}
 /* A link's line is drawn from the left, in ink, over its pale one. */
 .neighborly-final-links a:is(:hover,:focus-visible){background-size:100% 1px}
 .neighborly-final-actions small{font-size:14px;line-height:1.5;color:#3d4f43}
@@ -36,7 +36,7 @@
 /* The name stays on paper: beneath it the cloth is seen as through a thin sheet. */
 .neighborly-together::after{content:"";position:absolute;left:0;right:0;bottom:0;z-index:-1;height:calc(24vw + 120px);background:linear-gradient(#eee7d700,#eee7d7d9 38%,#eee7d7e6);pointer-events:none}
 /* One quiet way to give; it never competes with the invitation above it. */
-.neighborly-give{display:inline-flex;align-items:center;min-height:44px;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:#343e3366;background:linear-gradient(currentColor,currentColor) 0 calc(50% + .75em)/0 1px no-repeat;transition:background-size 160ms cubic-bezier(.2,.7,.2,1)}
+.neighborly-give{display:inline-flex;align-items:center;min-height:44px;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:#343e3366;background:linear-gradient(currentColor,currentColor) 0 calc(50% + .75em)/0 1px no-repeat;transition:background-size 160ms var(--ease-paper)}
 .neighborly-give:is(:hover,:focus-visible){background-size:100% 1px}
 /* Each link keeps its words on one line ("St. Example" is a name); on a phone the row turns between links instead. */
 .neighborly-colophon nav{display:flex;flex-wrap:wrap;gap:0 28px}
@@ -129,7 +129,7 @@
   .neighborly-continuation .neighborly-colophon>span{flex:none}
   .neighborly-continuation .neighborly-colophon nav{flex:1 1 0;min-width:0;justify-content:center;gap:0 clamp(16px,2vw,28px)}
   .neighborly-continuation .neighborly-colophon nav a{display:inline-flex;align-items:center;min-height:44px}
-  .neighborly-continuation .neighborly-colophon>a{flex:none;margin:0;font-size:clamp(48px,4.6vw,88px)}
+  .neighborly-continuation .neighborly-colophon>a{flex:none;min-height:44px;margin:0;font-size:clamp(48px,4.6vw,88px)}
 }
 /* On a phone the painting stands taller than the screen, so the last screen leads with the card in the hands: the foot sits
    right under the torn edge, with room kept below the name so the close's words leave the frame whole, never cut. */

@@ -45,6 +45,7 @@ import type * as nameKeys from "../nameKeys.js";
 import type * as neighbors from "../neighbors.js";
 import type * as notificationEvents from "../notificationEvents.js";
 import type * as notifications from "../notifications.js";
+import type * as openingDays from "../openingDays.js";
 import type * as pages from "../pages.js";
 import type * as people from "../people.js";
 import type * as quilt from "../quilt.js";
@@ -103,6 +104,7 @@ declare const fullApi: ApiFromModules<{
   neighbors: typeof neighbors;
   notificationEvents: typeof notificationEvents;
   notifications: typeof notifications;
+  openingDays: typeof openingDays;
   pages: typeof pages;
   people: typeof people;
   quilt: typeof quilt;

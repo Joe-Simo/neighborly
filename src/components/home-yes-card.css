@@ -3,8 +3,8 @@
 .home-yes-stage{
   --live-muted:#656d61;--live-line:#dcded2;--live-ink:#283c32;--live-paper:#eee7d7;--live-accent:#365c46;--live-green:#365c46;
   --primary:#365c46;--primary-foreground:#fffdf5;--background:#fffdf7;--muted:#eeeee3;--border:#d4dacb;--ring:#526f56;
-  --help-plum:#6a557f;--help-plum-wash:#ece7f0;--help-ochre:#b98a2f;--help-ochre-ink:#7d5a17;--help-ochre-wash:#f6ecd3;--help-sage-wash:#e9eddf;--help-sheet:#fffdf7;--help-ease:cubic-bezier(.2,.7,.2,1);
-  --paper-ease:cubic-bezier(.2,.7,.2,1);--paper:#f7f4ed;--paper-green:#365c46;--paper-ink:#283c32;
+  --help-plum:#6a557f;--help-plum-wash:#ece7f0;--help-ochre:#b98a2f;--help-ochre-ink:#7d5a17;--help-ochre-wash:#f6ecd3;--help-sage-wash:#e9eddf;--help-sheet:#fffdf7;--help-ease:var(--ease-paper);
+  --paper-ease:var(--ease-paper);--paper:#f7f4ed;--paper-green:#365c46;--paper-ink:#283c32;
   display:grid;align-items:start;color:#283c32;font-family:"Source Sans 3", "Source Sans 3 Fallback", sans-serif;font-size:17px;text-align:left}
 .home-yes-stage *{box-sizing:border-box}
 .home-yes-stage>*{grid-area:1/1;min-width:0}

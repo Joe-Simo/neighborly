@@ -1,5 +1,6 @@
 "use client";
 
+import { saveFile } from "@/lib/save-file";
 import "./tools.css";
 import { useState } from "react";
 import { useConvex, useMutation } from "convex/react";
@@ -105,11 +106,7 @@ function RecordsExportView({ state, onGather, onDownloadAll, onDownload, onReset
   );
 }
 
-function save(file: Blob, name: string) {
-  const url = URL.createObjectURL(file);
-  Object.assign(document.createElement("a"), { href: url, download: name }).click();
-  URL.revokeObjectURL(url);
-}
+const save = saveFile;
 
 /** One of the site's own typefaces as a data address, so a page can carry it. */
 const face = (name: string) =>

@@ -1,6 +1,7 @@
 "use client";
 
-import { startTransition, useState } from "react";
+import { saveFile } from "@/lib/save-file";
+import { startTransition, useEffect, useRef, useState, type ReactNode } from "react";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
@@ -42,9 +43,7 @@ function HousingProviders({ year, read, lines }: { year: number; read: ReadHousi
   function save() {
     if (!report) return;
     const name = housingFileName(report, data.church.name);
-    const address = URL.createObjectURL(new Blob([housingCsv(report, data.church.name, data.church.sample, words, lines)], { type: "text/csv;charset=utf-8" }));
-    Object.assign(document.createElement("a"), { href: address, download: name }).click();
-    URL.revokeObjectURL(address);
+    saveFile(new Blob([housingCsv(report, data.church.name, data.church.sample, words, lines)], { type: "text/csv;charset=utf-8" }), name);
     startTransition(() => setDone(words.rooms.reports.saved(name)));
   }
 
@@ -52,7 +51,7 @@ function HousingProviders({ year, read, lines }: { year: number; read: ReadHousi
   return (
     <div className="housing-body">
       <p className="housing-note">{w.deck}</p>
-      <div className="housing-scroll" tabIndex={0} role="region" aria-label={w.title}>
+      <HousingFrame label={w.title}>
         <table className="housing-table">
           <thead>
             <tr>
@@ -73,7 +72,7 @@ function HousingProviders({ year, read, lines }: { year: number; read: ReadHousi
                   <small>{w.payments(line.payments)}</small>
                 </th>
                 {line.months.map((cents, index) => (
-                  <td key={report.months[index]}>{cents ? money(cents, language) : "–"}</td>
+                  <td key={report.months[index]}>{cents ? money(cents, language) : <span className="housing-none">–</span>}</td>
                 ))}
                 <td>{money(line.total, language)}</td>
               </tr>
@@ -89,13 +88,37 @@ function HousingProviders({ year, read, lines }: { year: number; read: ReadHousi
             </tr>
           </tfoot>
         </table>
-      </div>
+      </HousingFrame>
       <div className="live-row-actions">
         <Button variant="outline" onClick={save}>
           <Download size={17} aria-hidden="true" /> {w.download}
         </Button>
       </div>
       <p className="housing-note" role="status">{done}</p>
+    </div>
+  );
+}
+
+/** The table's scrolling frame. data-more is set while the last column is not wholly in view, which draws the 24px fade on the right edge; one IntersectionObserver, nothing in the scroll loop. */
+export function HousingFrame({ label, children }: { label: string; children: ReactNode }) {
+  const frame = useRef<HTMLDivElement>(null);
+  const scroll = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const root = scroll.current;
+    const last = root?.querySelector("thead th:last-child");
+    if (!root || !last || typeof IntersectionObserver === "undefined") return;
+    const watch = new IntersectionObserver(
+      ([entry]) => frame.current?.toggleAttribute("data-more", !!entry && entry.intersectionRatio < 0.98),
+      { root, threshold: [0, 0.98, 1] },
+    );
+    watch.observe(last);
+    return () => watch.disconnect();
+  }, []);
+  return (
+    <div className="housing-frame" ref={frame}>
+      <div className="housing-scroll" ref={scroll} tabIndex={0} role="region" aria-label={label}>
+        {children}
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { numberLocales } from "@/lib/words/numbers";
 import { useEffect, useId, useRef, useState } from "react";
 import { useQuery } from "@/components/workspace/query";
 import { api } from "../../../../convex/_generated/api";
@@ -114,7 +115,7 @@ function AssistantRecord({ record }: { record: Recorded }) {
   const text = useRoomWords();
   const removed: Record<string, string> = text.removed;
   const sent = record.sentText.replace(/\[(name|phone|email|address|date)\]/g, (_: string, kind: string) => `[${removed[kind]}]`);
-  const figure = new Intl.NumberFormat(words.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const figure = new Intl.NumberFormat(numberLocales[words.locale], { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   return (
     <>
       <span className="mb-1.5 block border-l-2 border-[#cfc5dc] pl-3 font-serif text-[17px]">{sent}</span>

@@ -137,7 +137,7 @@ export function DateMonth({ language, selected, defaultMonth, min, max, labelDay
             </thead>
             <tbody className="rdp-weeks">
               {weeks.map((row) => (
-                <tr key={key(row.find(Boolean) as Date)} className="rdp-week" aria-label={span.formatRange(row.find(Boolean) as Date, row.findLast(Boolean) as Date)}>
+                <tr key={key(row.find(Boolean) as Date)} className="rdp-week" aria-label={span.formatRange(row.find(Boolean) as Date, [...row].reverse().find(Boolean) as Date)}>
                   {row.map((date, i) => date
                     ? <Day key={i} date={date} label={labelDay(date)} chosen={sameDay(date, selected && dayOf(selected))} today={sameDay(date, today)} allowed={allowed(date)} stop={sameDay(date, stop)} onPick={onSelect} />
                     : <td key={i} className="rdp-day rdp-outside rdp-hidden" role="gridcell" />)}

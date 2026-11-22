@@ -1,4 +1,5 @@
 .live-app {
+  min-height: 100vh;
   min-height: 100svh;
   background: #f7f4ed;
   color: #283c32;
@@ -8,6 +9,10 @@
   --live-ink: #283c32;
   --live-paper: #f7f4ed;
   --live-accent: #365c46;
+  /* The chosen room in the side menu, and a room under the pointer: --live-nav-hover is --live-nav-selected
+     (#dde5d3 = 221 229 211) at 50% alpha. Change them together; no color-mix, which iOS 15 lacks. */
+  --live-nav-selected: #dde5d3;
+  --live-nav-hover: rgb(221 229 211 / 0.5);
   --primary: #365c46;
   --primary-foreground: #fffdf5;
   --background: #fffdf7;
@@ -93,7 +98,7 @@
 .live-church-name[data-sample] { margin-bottom: var(--space-8); }
 .live-sample-mark {
   margin: 0 0 var(--space-24) 12px;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 650;
   letter-spacing: var(--caps-track);
   text-transform: uppercase;
@@ -117,7 +122,7 @@
   color: #242a27;
 } }
 .live-nav a[aria-current="page"] {
-  background: #dde5d3;
+  background: var(--live-nav-selected);
   color: #294c39;
   box-shadow: inset 3px 0 #55714c;
 }
@@ -140,7 +145,7 @@
   border-bottom: 1px solid var(--live-line);
 }
 .live-kicker {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 650;
   letter-spacing: var(--caps-track);
   text-transform: uppercase;
@@ -237,7 +242,7 @@
 .live-status {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-8) 7px;
+  gap: var(--space-8) 8px;
   font-size: 13px;
   color: #466143;
   white-space: nowrap;
@@ -392,6 +397,7 @@
 }
 .live-dialog {
   max-width: 560px !important;
+  max-height: 90vh;
   max-height: 90svh;
   overflow-y: auto;
   background: #f5f3ec !important;
@@ -417,7 +423,7 @@
   margin: var(--space-24) 0;
 }
 .live-detail dt {
-  font-size: 12px;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: var(--caps-track);
   color: var(--live-muted);
@@ -448,7 +454,7 @@
   padding-bottom: var(--space-48);
 }
 .live-auth h1 {
-  font-size: 54px;
+  font-size: var(--type-figure-l);
 }
 .live-auth .live-form {
   margin-top: var(--space-32);
@@ -504,7 +510,7 @@
 .live-app th:not([scope="row"]) {
   text-align: left;
   color: var(--live-muted);
-  font-size: 12px;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: var(--caps-track);
   font-weight: 600;
@@ -582,7 +588,7 @@
     padding: var(--space-8) 14px;
   }
   .live-nav a {
-    gap: var(--space-8) 7px;
+    gap: var(--space-8) 8px;
   }
   .live-main {
     padding: var(--space-32) 20px var(--space-64);
@@ -591,10 +597,10 @@
     padding: var(--space-24) 24px !important;
   }
   .live-app h1 {
-    font-size: 44px;
+    font-size: var(--type-figure-s);
   }
   .live-header-actions {
-    gap: var(--space-8) 7px;
+    gap: var(--space-8) 8px;
   }
   .live-header-actions button {
     padding: 0 12px;
@@ -633,6 +639,7 @@
     width: min(100% - 44px, 480px);
     margin: 0 auto;
     padding-top: var(--space-32);
+    min-height: 100vh;
     min-height: 100svh;
   }
   .live-auth-art {
@@ -647,7 +654,7 @@
     border-bottom: 1px solid #d9ddd3;
   }
   .live-auth h1 {
-    font-size: 48px;
+    font-size: var(--type-figure-l);
   }
   .live-auth .live-deck{margin-bottom:var(--space-16)}
   .live-auth-tabs{margin-top:var(--space-16)}
@@ -760,7 +767,7 @@
 }
 
 .live-auth-availability {
-  padding: var(--space-16) 17px;
+  padding: var(--space-16) 16px;
   margin: var(--space-20) 0 0;
   font-size: 15px;
   line-height: 1.5;
@@ -801,10 +808,10 @@
 
 .live-commitment-row{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:var(--space-24) 24px;align-items:center;padding:var(--space-24) 0}
 .live-date-leaf{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:84px;border-top:2px solid #859472;border-bottom:1px solid var(--live-line);color:#67745b}
-.live-date-leaf span{font-size:10px;line-height:1.3;text-transform:uppercase;letter-spacing: var(--caps-track)}.live-date-leaf strong{font-family: "Newsreader","Newsreader Fallback",Georgia,serif; font-weight: 400; font-size: 35px; line-height: 1; font-variant-numeric: lining-nums tabular-nums;letter-spacing:-.04em;color:var(--live-ink)}
-.live-commitment-row .live-meta{gap:var(--space-8) 10px;font-size:12px;margin-bottom:var(--space-8)}.live-commitment-row h3{font:400 26px/1.15 "Newsreader","Newsreader Fallback",Georgia,serif;letter-spacing:-.02em;margin-bottom:var(--space-8)}.live-commitment-row .live-row-actions{gap:var(--space-16) 18px}.live-commitment-row .live-row-main p{font-size:15px}.live-commitment-time{color:var(--live-muted)}
+.live-date-leaf span{font-size:10px;line-height:1.3;text-transform:uppercase;letter-spacing: var(--caps-track)}.live-date-leaf strong{font-family: "Newsreader","Newsreader Fallback",Georgia,serif; font-weight: 400; font-size: 35px; line-height: 1; font-feature-settings: "lnum" 1, "tnum" 1;letter-spacing:-.04em;color:var(--live-ink)}
+.live-commitment-row .live-meta{gap:var(--space-8) 10px;font-size:13px;margin-bottom:var(--space-8)}.live-commitment-row h3{font:400 26px/1.15 "Newsreader","Newsreader Fallback",Georgia,serif;letter-spacing:-.02em;margin-bottom:var(--space-8)}.live-commitment-row .live-row-actions{gap:var(--space-16) 18px}.live-commitment-row .live-row-main p{font-size:15px}.live-commitment-time{color:var(--live-muted)}
 @media(min-width:851px){.live-page-head{padding-bottom:var(--space-24);margin-bottom:var(--space-32)}.live-main{padding-top:var(--space-48)}.live-main h1{font-size:clamp(42px,4vw,57px)}}
-@media(max-width:560px){.live-commitment-row{grid-template-columns:48px minmax(0,1fr);column-gap:18px;row-gap:var(--space-16)}.live-date-leaf{min-height:78px}.live-date-leaf strong{font-size:30px}.live-commitment-row h3{font-size:24px}.live-commitment-row .live-row-actions{grid-column:2;width:auto;margin:0;justify-content:space-between;gap:var(--space-12) 12px}.live-commitment-row .live-meta{display:grid;gap:3px;font-size:11px}}
+@media(max-width:560px){.live-commitment-row{grid-template-columns:48px minmax(0,1fr);column-gap:18px;row-gap:var(--space-16)}.live-date-leaf{min-height:78px}.live-date-leaf strong{font-size:30px}.live-commitment-row h3{font-size:24px}.live-commitment-row .live-row-actions{grid-column:2;width:auto;margin:0;justify-content:space-between;gap:var(--space-12) 12px}.live-commitment-row .live-meta{display:grid;gap:3px;font-size:13px}}
 
 .live-mobile-menu{background:#f7f4ed;color:#283c32;border:1px solid #d9ddce;padding:var(--space-32) 28px;border-radius:6px;font-family:"Source Sans 3","Source Sans 3 Fallback",sans-serif}
 .live-mobile-menu [data-slot=dialog-title]{font:400 35px/1.1 "Newsreader","Newsreader Fallback",Georgia,serif;letter-spacing:-.025em}
@@ -812,7 +819,7 @@
 .live-mobile-menu nav{display:grid;margin-top:var(--space-12);border-top:1px solid #d9ddce}
 .live-mobile-menu nav a{display:flex;align-items:center;gap:var(--space-16) 16px;min-height:54px;padding:var(--space-12) 12px;border-bottom:1px solid #d9ddce;color:inherit;text-decoration:none;font-size:16px}
 .live-mobile-menu nav a[aria-current=page]{background:#e5eadc;color:#31533a}
-.live-menu-current{margin-left:auto;font-size:11px;color:#617357}
+.live-menu-current{margin-left:auto;font-size:13px;color:#617357}
 .live-menu-current{color:#4b5f42}
 
 /* Keep clear of the notch, the rounded corners and the home bar on iPhone and iPad. */
@@ -880,6 +887,7 @@
     margin: 0 auto;
     padding-top: 0;
     padding-bottom: calc(50px + env(safe-area-inset-bottom));
+    min-height: 100vh;
     min-height: 100svh;
   }
   .live-auth-art {

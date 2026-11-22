@@ -66,7 +66,7 @@ const en = {
       { key: "slip", name: "The slip", why: "On the home page the same call becomes a slip: one name, one need, the ochre corner that means it is waiting.", alt: "A paper slip reading Rosa Fontaine, Behind on November rent, $450, with an ochre corner, laid on two more slips." },
       { key: "room", name: "The room", why: "In Help line the picture heads the room, and Rosa’s call waits as a drafted request until a person says yes.", alt: "The Help line room: the heading Every call, returned, the receiver picture, and Rosa Fontaine’s request for $450 waiting for a yes." },
     ],
-    credit: "The picture was made with Codex's image generator, from written direction, and chosen by the author. Stills from the running site with the sample conference; every name is made up.",
+    credit: "The picture was made with Codex’s image generator, from written direction, and chosen by the author. Stills from the running site with the sample conference; every name is made up.",
   },
   frameStrip: {
     caption: "A scroll down this page on the Mac, frame by frame",
@@ -162,14 +162,14 @@ const en = {
       "On the iPhone the app follows Apple’s own ways: a long press on a row opens the system’s context menu with the same actions as the web.",
     ] },
     { title: "Free for every conference", blocks: [
-      "Kind Helps is free for every conference, with no plans and no paid tiers. A conference can download all of its records at any time. The work is kept going by gifts alone, given through one quiet link at the foot of the public pages.",
+      "Kind Helps is free for every conference, with no plans and no paid tiers. A conference can download all of its records at any time. The work is kept going by gifts alone.",
     ] },
   ] as MadeSection[],
   colophon: {
     label: "Colophon",
     lines: [
       ["Type", "Newsreader and Source Sans 3"],
-      ["Art", "made with Codex's image generator, from written direction, and chosen by the author"],
+      ["Art", "made with Codex’s image generator, from written direction, and chosen by the author"],
       ["Built with", "Claude Code"],
       ["Technologies", "Next.js 16, React 19, TypeScript, Tailwind CSS 4, shadcn/ui, Convex, Clerk, Three.js, Serwist (offline), fflate, and Capacitor (the iPhone and iPad app, with a WidgetKit widget). Tested with Bun and Vitest, and hosted on Vercel."],
     ] as [string, string][],
@@ -256,7 +256,7 @@ const es: typeof en = {
     { title: "Por qué existe", blocks: [
       "Kind Helps es para los voluntarios de las conferencias de San Vicente de Paúl: quienes atienden la línea de ayuda, visitan los hogares y llevan las cuentas. Muchas conferencias llevan este trabajo en papel, en hojas de cálculo o en ServWare. Kind Helps lo reúne en un solo lugar, en inglés y en español, en el teléfono o en el escritorio.",
       [
-        { lead: "La dignidad del vecino.", rest: "La ayuda se paga al dueño de la vivienda, a la compañía de servicios o a la tienda, nunca al vecino. Las visitas se hacen de dos en dos. El nombre, el teléfono y la dirección de un vecino se quitan antes de que una nota llegue al asistente." },
+        { lead: "La dignidad del vecino.", rest: "La ayuda se paga al arrendador, a la compañía de servicios o a la tienda, nunca al vecino. Las visitas se hacen de dos en dos. El nombre, el teléfono y la dirección de un vecino se quitan antes de que una nota llegue al asistente." },
         { lead: "El tiempo del voluntario.", rest: "La nota de una llamada se vuelve un borrador de petición, y la pareja para una visita se sugiere según quién está libre." },
         { lead: "Cuentas honradas.", rest: "Cada donativo y cada pago queda anotado. Un error se corrige con una anotación nueva, nunca se borra." },
       ],
@@ -264,7 +264,7 @@ const es: typeof en = {
     ] },
     { title: "Una sola pintura, hecha de papel", blocks: [
       "Kind Helps está dibujado como relieve de papel en capas: hojas cortadas puestas unas sobre otras, cada una con su propio borde y su propia sombra. El patio tras las puertas, las manos que pasan la tarjeta y las cuatro imágenes de la historia son una sola pintura en ese material.",
-      "La obra pintada se hizo con el generador de imágenes de Codex a partir de indicaciones escritas, y elegida por quien lo creó. La página no le añade nada. En la página de inicio se mueve según su propia profundidad: la piedra cercana y las colinas lejanas se separan alrededor de la mesa al entrar, la luz sigue a un sol que se pone al atardecer, y las personas, pintadas tres veces cada una, pasan de una de sus pinturas a la siguiente. Alrededor, se mueve el papel.",
+      "La obra pintada se hizo con el generador de imágenes de Codex a partir de indicaciones escritas, y la eligió el autor. La página no le añade nada. En la página de inicio se mueve según su propia profundidad: la piedra cercana y las colinas lejanas se separan alrededor de la mesa al entrar, la luz sigue a un sol que se pone al atardecer, y las personas, pintadas tres veces cada una, pasan de una de sus pinturas a la siguiente. Alrededor, se mueve el papel.",
     ] },
     { title: "Cortado según su propia profundidad", blocks: [
       "El patio se pintó entero. Su propia profundidad lo corta en hojas sin pintar nada nuevo: aquí se separa en seis hojas, con las personas de la mesa en una séptima, y en la página de inicio se reúne en cuatro planos que se mueven al entrar. Cada borde cortado es de la pintura, así que juntas las hojas vuelven a ser la pintura.",
@@ -272,7 +272,7 @@ const es: typeof en = {
       ["Entero, como lo muestran las puertas al abrirse.", "La pintura del patio, entera, vista de frente."],
       ["Girado, todavía una sola hoja.", "La misma pintura girada un poco hacia un lado, todavía como una sola hoja."],
       ["Separándose.", "Las hojas se separan: el cielo y el claustro del fondo detrás, el suelo delante, y el papel visible entre los bordes cortados."],
-      ["Siete hojas, cada una a su profundidad.", "Las siete hojas del todo separadas, del fondo al frente: cielo, torre y claustro del fondo, personas, mesa y arcada, banco del jardín, suelo, portal."],
+      ["Siete hojas, cada una a su profundidad.", "Las siete hojas del todo separadas, del fondo al frente: cielo, torre y claustro del fondo, personas, mesa y arcada, banco del jardín, suelo, puerta."],
     ] } },
     { title: "Las reglas que guarda el papel", table: "anatomy", blocks: [
       "El programa de un ministerio lo leen personas cansadas al final de un día largo. Por eso cada pantalla sigue unas pocas reglas que no se doblan.",
@@ -293,10 +293,10 @@ const es: typeof en = {
       ],
       "No escribe prosa, y ninguna petición se guarda sin el sí de una persona.",
       "El nombre, el teléfono y la dirección de un vecino se quitan antes de enviar nada: todo pasa antes por un paso de reglas fijas, y en cada borrador «Lo que vio el asistente» muestra la nota tal como salió. Guardar una petición no es concederla: la conferencia decide la ayuda, y el responsable o un coordinador anota la decisión.",
-      "En 12 notas de llamada inventadas, apartadas de las que sirvieron para ajustarlo, llenó bien 42 de 48 campos, dejó 6 en blanco y no se equivocó en ninguno. Doce notas son pocas, y se equivocará alguna vez; por eso una persona revisa cada borrador.",
+      "En 12 notas de llamada inventadas, apartadas de las que sirvieron para ajustarlo, completó bien 42 de 48 campos, dejó 6 en blanco y no se equivocó en ninguno. Doce notas son pocas, y se equivocará alguna vez; por eso una persona revisa cada borrador.",
     ] },
     { title: "En inglés y en español", blocks: [
-      "Cada pantalla del voluntariado está en inglés y en español, y también Una semana, las páginas de privacidad y de accesibilidad, y esta. El español son palabras fijas propias, escritas para cada pantalla, no traducidas por una máquina al abrir la página, así que el mismo botón siempre dice lo mismo.",
+      "Cada pantalla que usa un voluntario está en inglés y en español, y también Una semana, las páginas de privacidad y de accesibilidad, y esta. El español son palabras fijas propias, escritas para cada pantalla, no traducidas por una máquina al abrir la página, así que el mismo botón siempre dice lo mismo.",
       "Quien fundó el proyecto aprobó el texto en español. Cuando una página es una traducción lo dice arriba, y vale la versión en inglés.",
     ] },
     { title: "Dibujado, juzgado, redibujado", table: "process", blocks: [
@@ -309,7 +309,7 @@ const es: typeof en = {
       "La regla que cumple cada cambio que mueve algo: se filma en una Mac en anchos de escritorio y de teléfono, y entra solo cuando ningún cuadro pasa de 33 milisegundos o, donde una página ya pasaba, cuando no va más lenta que antes.",
       [
         { lead: "Menos de un segundo.", rest: "La conferencia de muestra abre en unos 0.85 segundos en el ancho de escritorio y en 1.1 en un teléfono, medido en nuestra máquina de pruebas." },
-        { lead: "Tres cuadros.", rest: "En la misma máquina, el primer desplazamiento responde antes del tercer cuadro, o dentro de 60 píxeles." },
+        { lead: "Tres cuadros.", rest: "En la misma máquina, el primer desplazamiento responde a más tardar en el tercer cuadro, o dentro de 60 píxeles." },
         { lead: "Dos segundos.", rest: "La aplicación del iPhone abre su sección en 1.6 a 2 segundos en el simulador." },
         { lead: "Ni un cuadro de más.", rest: "El patio que se levanta en la primera visita se filmó a 390 píxeles con el procesador cuatro veces más lento, y a 1440, en claro y en oscuro: 91 cuadros cada vez, ninguno de más de 33 milisegundos, incluida la primera vez tras arrancar el servidor." },
         { lead: "También con Reducir movimiento.", rest: "Las mismas grabaciones se repiten con Reducir movimiento activado. Entonces el patio simplemente está ahí." },
@@ -321,7 +321,7 @@ const es: typeof en = {
       "En el iPhone la aplicación sigue las costumbres de Apple: una pulsación larga sobre una fila abre el menú contextual del sistema con las mismas acciones que en la web.",
     ] },
     { title: "Gratis para toda conferencia", blocks: [
-      "Kind Helps es gratis para toda conferencia, sin planes y sin niveles de pago. Una conferencia puede descargar todos sus registros cuando quiera. El trabajo se sostiene solo con donativos, dados por un enlace discreto al pie de las páginas públicas.",
+      "Kind Helps es gratis para toda conferencia, sin planes y sin niveles de pago. Una conferencia puede descargar todos sus registros cuando quiera. El trabajo se sostiene solo con donativos.",
     ] },
   ],
   colophon: {

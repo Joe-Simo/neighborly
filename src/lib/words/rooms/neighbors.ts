@@ -164,7 +164,12 @@ export const en = (t: Terms, place: string) => ({
       takeBackThis: (what: string) => `Take it back: ${what}`,
       empty: { title: `No calls, ${t.visits} or payments yet.`, body: "Each one for this household appears here, starting with a call on the help line." },
     },
-    openings: { title: "Who has opened this record", who: "Coordinators and owners only" },
+    openings: {
+      title: "Who has opened this record",
+      who: "Coordinators and owners only",
+      day: (count: number) => (count === 1 ? "on {day} at {time}" : `${enN(count)} times on {day}, last at {time}`),
+      all: (count: number) => `Show all ${enN(count)}`,
+    },
     remove: { open: "Remove this record", who: "Owners only" },
   },
   atHome: {
@@ -389,7 +394,12 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       takeBackThis: (what) => `Retirarlo: ${what}`,
       empty: { title: `Todavía no hay llamadas, ${t.visits} ni pagos.`, body: "Todo lo de este hogar aparece aquí, empezando por una llamada en la línea de ayuda." },
     },
-    openings: { title: "Quién ha abierto este registro", who: "Solo coordinadores y responsables" },
+    openings: {
+      title: "Quién ha abierto este registro",
+      who: "Solo coordinadores y responsables",
+      day: (count) => (count === 1 ? "el {day} a las {time}" : `${esN(count)} veces el {day}, la última a las {time}`),
+      all: (count) => `Ver los ${esN(count)}`,
+    },
     remove: { open: "Borrar este registro", who: "Solo responsables" },
   },
   atHome: {

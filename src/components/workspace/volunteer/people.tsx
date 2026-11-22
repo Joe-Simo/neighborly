@@ -1,5 +1,6 @@
 "use client";
 
+import { numberLocales } from "@/lib/words/numbers";
 import { keepTitle } from "@/lib/words/titles";
 import "./people.css";
 import "@/components/workspace/for-good.css";
@@ -107,7 +108,7 @@ export function PeopleSection() {
             <dl>
               <div>
                 <dt>{text.readyCount(ready)}</dt>
-                <dd><b>{new Intl.NumberFormat(words.locale).format(ready)}</b></dd>
+                <dd><b>{new Intl.NumberFormat(numberLocales[words.locale]).format(ready)}</b></dd>
               </div>
             </dl>
           </div>

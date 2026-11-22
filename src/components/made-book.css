@@ -36,7 +36,7 @@
 .public-made-frames path{fill:#7f8c82}
 .public-made-frames path[data-late]{fill:#6a557f}
 .public-made-frames line{stroke:#293f32;stroke-width:1;vector-effect:non-scaling-stroke;stroke-dasharray:4 3}
-.public-made-frames-source{margin:12px 0 0;font-size:15px;line-height:1.5;color:#3d4f43}
+.public-made-frames-source{margin:12px 0 0;font-size:13px;line-height:1.5;color:#3d4f43}
 @media(min-width:1024px){.public-words.public-made .public-made-frames{grid-column:2;grid-row:1/span 2;align-self:start;margin:0}}
 /* The 33 ms line is named where it runs, above it at the strip's right end. */
 .public-made-frames-plot{position:relative}

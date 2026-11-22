@@ -7,10 +7,10 @@
 .public-page-header>a:last-child{display:flex;align-items:center;gap:11px;min-height:44px;padding:0 2px;font-size:15px;color:inherit;text-decoration:none;border-bottom:1px solid #253e3140}
 /* The page's words arrive as every sheet here does: rising a little, once. They are never hidden. */
 @keyframes paper-rise{from{translate:0 16px}}
-.paper-rise{animation:paper-rise .5s cubic-bezier(.2,.7,.2,1)}
+.paper-rise{animation:paper-rise .5s var(--ease-paper)}
 /* On a state page the painting stays where it is and only the words rise. */
 .public-state .paper-rise{animation:none}
-.public-state .paper-rise>:not(.live-auth-art){animation:paper-rise .5s cubic-bezier(.2,.7,.2,1)}
+.public-state .paper-rise>:not(.live-auth-art){animation:paper-rise .5s var(--ease-paper)}
 /* The page lies on a desk a shade darker than its paper. Its name and each part are sheets of that paper, laid one on the next: a sheet's lower edge is one cut line and its shadow falls on the sheet below. No rule lines and no fades. */
 .public-page{background:#e6decb}
 .public-words{position:relative;padding:clamp(12px,2vw,32px) max(12px,3%) clamp(64px,7vw,110px);

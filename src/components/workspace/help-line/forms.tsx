@@ -255,7 +255,7 @@ export function ReturnForm({
   onSaved: () => void;
 }) {
   const markReturned = useMutation(api.assistance.markReturned);
-  const { pending, error, save } = useSave("decided");
+  const { pending, error, save } = useSave();
   const w = useWords().rooms.helpLineForms.call;
   return (
     <form

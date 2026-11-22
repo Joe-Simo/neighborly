@@ -1,5 +1,6 @@
 "use client";
 
+import { numberLocales } from "@/lib/words/numbers";
 import { DateLeaf } from "@/components/workspace/primitives";
 
 import { FOLD_HOLD, closeUp, foldLeaves, openUp, useFocusOnce, useSavedLine } from "@/components/workspace/fold";
@@ -582,7 +583,7 @@ function VisitsView({
                 <dl>
                   <div data-pair="">
                     <dt>{text.coming.thisWeekLabel}</dt>
-                    <dd><b>{new Intl.NumberFormat(words.locale).format(thisWeek)}</b></dd>
+                    <dd><b>{new Intl.NumberFormat(numberLocales[words.locale]).format(thisWeek)}</b></dd>
                   </div>
                 </dl>
               )}

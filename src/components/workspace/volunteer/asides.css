@@ -1,6 +1,6 @@
 /* The volunteer rooms' side columns (RoomAside, 1280px up). Quiet type, hairlines, no cards. */
 .live-aside-sheet .volunteer-month,
-.live-aside-sheet .volunteer-teams-week { width: 100%; border-collapse: collapse; table-layout: fixed; font-variant-numeric: tabular-nums; }
+.live-aside-sheet .volunteer-teams-week { width: 100%; border-collapse: collapse; table-layout: fixed; font-feature-settings: "lnum" 1, "tnum" 1; }
 .live-aside-sheet :is(.volunteer-month, .volunteer-teams-week) :is(th, td) { border: 0; background: none; text-transform: none; letter-spacing: 0; }
 .live-aside-sheet .volunteer-month caption { caption-side: top; text-align: left; margin-bottom: var(--space-12); font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: 24px; line-height: 1.15; letter-spacing: -0.01em; color: var(--live-ink); }
 .live-aside-sheet :is(.volunteer-month, .volunteer-teams-week) thead th { padding: 0 0 var(--space-8); font-size: 13px; font-weight: 400; text-align: center; color: var(--live-muted); border-bottom: 1px solid var(--live-line); }
@@ -39,7 +39,7 @@
 .live-aside-sheet .volunteer-next-reply::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 2px solid #a8791f; }
 .live-aside-sheet .volunteer-next-reply[data-reply="accepted"]::before { border: 0; background: #365c46; }
 .live-aside-sheet .volunteer-next-reply[data-reply="declined"]::before { border: 1px solid var(--live-ink); }
-.volunteer-next-day { font-variant-numeric: lining-nums tabular-nums; }
+.volunteer-next-day { font-feature-settings: "lnum" 1, "tnum" 1; }
 
 /* High contrast (forced colors) clears fills, so away days and offered days looked like every other day. Away is
    solid ink with the date in reverse, as on paper; an offered day is underlined with a thick rule; the keys match. */

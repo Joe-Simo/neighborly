@@ -113,7 +113,8 @@
 .treasury-entry-amount {
   font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
   font-weight: 400;
-  font-size: 44px;
+  font-size: var(--type-figure-s);
+  font-feature-settings: "lnum" 1, "tnum" 1;
   line-height: 1;
   letter-spacing: -0.03em;
   font-feature-settings: "lnum" 1, "tnum" 1;
@@ -464,7 +465,7 @@
 }
 /* The paid sheet closes up (foldLeaves) and its ledger row holds the mark for a moment. */
 .help-ledger tbody tr {
-  transition: background-color 400ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1));
+  transition: background-color 400ms var(--paper-ease, var(--ease-paper));
 }
 @media (hover: hover) { .help-ledger tbody tr[data-landed],
 .help-ledger tbody tr[data-landed]:hover {
@@ -657,7 +658,7 @@
 .treasury-balance-leaves i:nth-child(3) { translate: -1px 0; width: calc(100% - 7px); rotate: -0.2deg; }
 .treasury-paper b {
   display: inline-block;
-  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 40px; line-height: 0.9; letter-spacing: -0.02em;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: var(--type-figure-s); line-height: 0.9; letter-spacing: -0.02em;
   font-feature-settings: "lnum" 1, "tnum" 1; color: var(--live-ink);
 }
 /* The balance's figure (96px) clears the month's two slips only in a wide room. Where the room is narrower, by the
@@ -693,7 +694,10 @@
 .treasury-budget p { margin: 0; color: var(--live-muted); font-size: 17px; }
 .treasury-budget > form { flex-basis: 100%; }
 /* The month check: what waits on a person, a flag the assistant raised included, is ochre; nothing is red. */
-.treasury-check { margin-top: var(--space-24); }
+/* The month check is its own row, set 24px clear of the budget's line, so it never reads as one of the budget's buttons. */
+.treasury-check { display: flex; flex-direction: column; align-items: flex-start; flex: 0 0 100%; width: 100%; margin-top: var(--space-24); padding-top: 0; }
+.treasury-check > * { align-self: stretch; }
+.treasury-check > [data-slot="button"] { align-self: flex-start; width: auto; }
 .treasury-check [data-waiting] { color: var(--help-ochre-ink); }
 /* The button, then the verdict a step below it; each line is its entry, with the reason under it, small and muted. */
 .treasury-check > p:first-of-type { margin-top: var(--space-16); }

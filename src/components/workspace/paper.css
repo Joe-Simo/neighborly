@@ -17,7 +17,7 @@
 .live-app,
 .live-dialog,
 .live-mobile-menu {
-  --paper-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --paper-ease: var(--ease-paper);
   --paper: #f7f4ed;
   --paper-green: #365c46;
   --paper-plum: #6f5f93;
@@ -98,7 +98,7 @@
 /* A rolling figure keeps its value's width from the first frame, and its first digit never moves: the digits roll
    in the place the value will stand, so nothing beside it or under it shifts. */
 /* A large figure: lining, even-width digits on one line. It stands at its value at once; nothing counts up here. */
-.count-up { display: inline-block; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
+.count-up { display: inline-block; font-feature-settings: "lnum" 1, "tnum" 1; white-space: nowrap; }
 
 /* Links answer a pointer the same way everywhere: the line under a link thickens. A row answers the pointer only when
    it opens something, and then it lifts one step (globals.css, people.css); a row that opens nothing does not answer it. */
@@ -192,6 +192,7 @@
     position: sticky;
     top: 0;
     align-self: start;
+    height: 100vh;
     height: 100svh;
     min-height: 0;
     overflow-y: auto;
@@ -354,7 +355,7 @@
     min-height: calc(60px + env(safe-area-inset-top));
     padding: calc(8px + env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 8px max(24px, env(safe-area-inset-left));
   }
-  .live-app .live-wordmark { font-size: 28px; letter-spacing: -0.045em; }
+  .live-app .live-wordmark { font-size: 26px; letter-spacing: -0.045em; }
   .live-app .live-account { display: none; }
 }
 /* ── Under 900px, phones and upright iPads alike: one bar. The wordmark on the left, Menu on the right.
@@ -366,7 +367,7 @@
   .live-app .live-menu-trigger {
     display: inline-flex;
     height: 44px;
-    gap: var(--space-8) 9px;
+    gap: var(--space-8) 8px;
     padding: 0 12px;
     font-size: 16px;
     font-weight: 500;
@@ -456,6 +457,12 @@
   .live-app .live-main p:has(> :is(button, [data-slot="button"]):only-child):not(td *, th[scope="row"] *) { display: none !important; }
   /* A row is one record: it never splits across two sheets. */
   .live-app .live-main :is(.live-row, .help-row, tr) { break-inside: avoid; }
+}
+/* What is held in view on screen is the screen's: the app bar, the cut letters over the neighbor list and a sheet's
+   foot row of buttons are display:none on paper, and a sheet's held title prints once, where it stands. */
+@media print {
+  .live-app .live-header, .live-app .help-letter-head, .live-dialog .live-form-actions { display: none !important; }
+  .live-dialog-fixed [data-slot="dialog-header"] { position: static !important; box-shadow: none !important; }
 }
 
 /* The menu sheet fills the screen between the insets: its title, every room in a list that scrolls, and a foot that stays. */
@@ -626,13 +633,13 @@
 .week-figures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 0 var(--space-40); border-top: 2px solid #596e51; border-bottom: 1px solid var(--live-line); }
 .week-figures a { display: grid; gap: var(--space-8) 8px; align-content: start; padding: var(--space-24) 20px var(--space-24) 0; color: var(--live-ink); transition: transform 200ms var(--paper-ease); }
 .week-figures a + a { padding-left: clamp(12px, 2.4vw, 28px); border-left: 1px solid var(--live-line); }
-.week-figures .count-up { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: clamp(44px, 5vw, 72px); line-height: 0.98; font-variant-numeric: lining-nums tabular-nums; letter-spacing: -0.03em; }
+.week-figures .count-up { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: clamp(44px, 5vw, 72px); line-height: 0.98; font-feature-settings: "lnum" 1, "tnum" 1; letter-spacing: -0.03em; }
 .week-figures a > span:nth-child(2) { font-size: 15px; line-height: 1.3; color: var(--live-muted); text-decoration: underline; text-decoration-color: #b9c4b0; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 .week-figures a:is(:hover, :active) > span:nth-child(2) { text-decoration-thickness: 2px; text-decoration-color: currentColor; }
 /* The reason under a figure: plum, the attention colour, because it is only there when something waits. Its room is kept when it is empty. */
 .week-figures a > small { min-height: 1lh; margin-top: -2px; font-size: 13px; line-height: 1.3; color: var(--help-plum, #6f5f93); }
 @media (max-width: 560px) { .week-figures a > small { min-height: 2lh; font-size: 13px; } }
-@media (max-width: 560px) { .week-figures a { padding: var(--space-16) 8px var(--space-16) 0; } .week-figures a > span:nth-child(2) { font-size: 14px; } }
+@media (max-width: 560px) { .week-figures a { padding: var(--space-16) 8px var(--space-16) 0; } .week-figures a > span:nth-child(2) { font-size: 13px; } }
 /* Your choice: the answer is the filled button; Details is a quiet link after it. */
 .live-request-section .live-row-actions { gap: var(--space-8) 16px; }
 .live-request-section .live-row-actions .tools-quiet { margin-left: 6px; }
@@ -698,7 +705,7 @@
 
 /* ── Type floor: nothing under 13px ───────────────────────────────────── */
 .live-app .live-meta,
-.live-app .live-count { font-size: 15px; }
+.live-app .live-count { font-size: 15px; font-feature-settings: "lnum" 1, "tnum" 1; }
 .live-app .live-status { font-size: 15px; }
 .live-app th:not([scope="row"]) { font-size: 13px; }
 :is(.live-app, .live-dialog) .live-detail dt { font-size: 13px; }
@@ -801,7 +808,7 @@
   color: var(--paper-ink, #283c32);
   font-size: 16px;
   line-height: 1.5;
-  animation: paper-rise 320ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)) backwards;
+  animation: paper-rise 320ms var(--paper-ease, var(--ease-paper)) backwards;
 }
 .live-error > div { flex: 1 1 260px; min-width: 0; }
 .live-error .live-error-recovery { margin-top: var(--space-4); font-size: 15px; color: #5d6657; }
@@ -1040,7 +1047,7 @@ nav.week-figures .count-up {
 @media (max-width: 560px) {
   nav.week-figures { gap: var(--space-8) 8px; }
   nav.week-figures a, nav.week-figures a + a { padding: var(--space-16) 10px var(--space-12); }
-  nav.week-figures .count-up { font-size: 44px; }
+  nav.week-figures .count-up { font-size: var(--type-figure-s); }
 }
 @media (prefers-reduced-motion: reduce) { nav.week-figures a { transition: none; } }
 /* Numeral beside its words: a card is as tall as its number. What is waiting is said in ink beside the small ochre ring. */
@@ -1061,7 +1068,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 @media (max-width: 560px) {
   nav.week-figures { grid-template-columns: minmax(0, 1fr); gap: var(--space-8) 10px; }
   nav.week-figures a, nav.week-figures a + a { padding: var(--space-8) 16px; column-gap: 16px; }
-  nav.week-figures .count-up { font-size: 44px; }
+  nav.week-figures .count-up { font-size: var(--type-figure-s); }
   nav.week-figures a > span:nth-child(2) { font-size: 16px; }
   nav.week-figures a > small { font-size: 13px; min-height: 0; }
 }
@@ -1249,7 +1256,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 /* Saved while the room is open: pressed once into its place. */
 .week-quilt-piece[data-laid] { animation: week-piece-pressed 200ms var(--paper-ease) both; }
 @keyframes week-piece-pressed { from { transform: translateY(-3px) scale(1.08); } }
-.week-quilt figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) 16px; margin-top: var(--space-8); font-size: 14px; line-height: 1.4; color: var(--live-ink); }
+.week-quilt figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) 16px; margin-top: var(--space-8); font-size: 15px; line-height: 1.4; color: var(--live-ink); }
 /* The key's swatch is a piece of the quilt itself, set level and a little smaller, beside the count it names. */
 .week-quilt-key { display: inline-flex; align-items: center; gap: 8px; }
 .week-quilt-key > .week-quilt-piece { --size: 12px; margin: 0; rotate: none; translate: none; }
@@ -1403,11 +1410,11 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 .paper-scene[data-kind="offline"] > b { display: block; --fold: #c8962e; }
 .paper-scene[data-kind="error"] > b { display: block; --fold: #6f5f93; }
 /* Laid once: the pile is set down from a little above, the top sheet last. Transform only. */
-.paper-scene > :is(i, .paper-vignette) { animation: paper-scene-lay 420ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)) backwards; }
+.paper-scene > :is(i, .paper-vignette) { animation: paper-scene-lay 420ms var(--paper-ease, var(--ease-paper)) backwards; }
 .paper-scene > :nth-child(2) { animation-delay: 50ms; }
 .paper-scene > :nth-child(3) { animation-delay: 100ms; }
 @keyframes paper-scene-lay { from { translate: 0 -10px; rotate: -3deg; } }
-.live-app .live-state .paper-vignette { animation: paper-scene-lay 420ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)) 100ms backwards; }
+.live-app .live-state .paper-vignette { animation: paper-scene-lay 420ms var(--paper-ease, var(--ease-paper)) 100ms backwards; }
 /* The scene stands to the left of its words, on the words' first line; on a narrow window, above them. */
 .live-app :is(.live-empty, .help-empty):has(> .paper-scene) { grid-template-columns: auto minmax(0, 1fr); gap: var(--space-32) 32px; align-items: start; }
 .live-app .live-state[data-lead] { grid-template-columns: 196px minmax(0, 1fr); }
@@ -1437,7 +1444,7 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.85), 0 1px 1px rgb(59 58 36 / 0.12), 0 22px 40px -28px rgb(71 62 36 / 0.45);
 }
 /* Lists and tables: set as type. Figures line up by the digit, the rules are hairlines, a table's heads are small letterspaced capitals. */
-.live-app :is(.live-list, table, .help-aside-list, .visits-aside-day, .week-figures) { font-variant-numeric: tabular-nums lining-nums; font-kerning: normal; }
+.live-app :is(.live-list, table, .help-aside-list, .visits-aside-day, .week-figures) { font-feature-settings: "lnum" 1, "tnum" 1; font-kerning: normal; }
 .live-app table:not(.book-table) th:not([scope="row"]) { font-size: 13px; font-weight: 600; letter-spacing: var(--caps-track); text-transform: uppercase; color: var(--live-muted); }
 .live-app table:not(.book-table) :is(th, td) { border-bottom: 1px solid var(--live-line); }
 /* Heads: the display line set as the home page sets its own: optical size, balanced lines, hanging punctuation. */
@@ -1472,9 +1479,9 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
   .live-app .live-section { margin-top: var(--space-40); }
   .live-app .live-section-head { margin-bottom: var(--space-16); }
   .live-app .live-main[data-room="help"] .live-section-head { gap: var(--space-8) 16px; }
-  .live-app .help-sheet h2 { font-size: 28px !important; margin-bottom: var(--space-8) !important; }
+  .live-app .help-sheet.help-sheet.help-sheet h2 { font-size: 26px; margin-bottom: var(--space-8); }
   .live-app .help-sheet { padding: var(--space-24) 24px; }
-  .live-app .help-empty :is(h2, h3) { font-size: 28px; margin-bottom: var(--space-8); }
+  .live-app .help-empty :is(h2, h3) { font-size: 26px; margin-bottom: var(--space-8); }
   .live-app .live-empty :is(h1, h2, h3) { font-size: 24px; }
   .live-app .tools-leaf > h2 { font-size: 24px; margin-bottom: var(--space-8); }
   .live-app .help-row { column-gap: 16px; row-gap: var(--space-16); }
@@ -1492,7 +1499,7 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
    they stand in columns. Newsreader and Source Sans 3 already draw their figures so; this keeps it true if either
    face is ever swapped, and wherever a room's own rule left the figures to the default. Prose keeps its own. */
 :is(.live-app, .live-dialog) :is(.help-amount, .help-money, .live-count, .report-months, .report-legend, .help-bars, .help-ledger, .help-figures, td, th, time, .live-date-leaf) {
-  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
 }
 
 /* A name is kept whole on its line, and when it is longer than the line (a family's full name on a phone) it turns
@@ -1538,13 +1545,13 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
   --tw-ring-shadow: 0 0 #0000;
   box-shadow: var(--relief-sheet);
 }
-[data-slot="dropdown-menu-content"][data-state="open"] { animation: paper-rise-solid 220ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)) both; }
+[data-slot="dropdown-menu-content"][data-state="open"] { animation: paper-rise-solid 220ms var(--paper-ease, var(--ease-paper)) both; }
 [data-slot="dropdown-menu-content"][data-state="closed"] { animation: none; }
 [data-slot="dropdown-menu-content"] :is([data-slot="dropdown-menu-item"], [data-slot="dropdown-menu-radio-item"], [data-slot="dropdown-menu-checkbox-item"]) { min-height: 44px; border-radius: 4px; color: #283c32; font-size: 16px; }
 [data-slot="dropdown-menu-content"] :is([data-slot="dropdown-menu-item"], [data-slot="dropdown-menu-radio-item"], [data-slot="dropdown-menu-checkbox-item"]):is(:focus, [data-highlighted]) { background: #e7ecdc; color: #283c32; }
 @media (prefers-reduced-motion: reduce) { [data-slot="dropdown-menu-content"][data-state="open"] { animation: none; } }
 /* Sheets portalled outside the room (the month, a menu) take the room's ease too. */
-:is(.live-date-sheet, [data-slot="dropdown-menu-content"]) { --paper-ease: cubic-bezier(0.2, 0.7, 0.2, 1); }
+:is(.live-date-sheet, [data-slot="dropdown-menu-content"]) { --paper-ease: var(--ease-paper); }
 /* A sheet laid over the room (the month, a menu) is whole from its first frame and only rises. */
 @keyframes paper-rise-solid { from { transform: translateY(12px); } }
 .live-date-sheet:not(.live-date-bottom) { animation-name: paper-rise-solid; }
@@ -1562,7 +1569,7 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
   line-height: 1.5;
 }
 :is(.live-app, .live-dialog) .live-success.help-done:not([data-filed-from]),
-.live-error { animation: paper-rise-solid 320ms var(--paper-ease, cubic-bezier(0.2, 0.7, 0.2, 1)) backwards; }
+.live-error { animation: paper-rise-solid 320ms var(--paper-ease, var(--ease-paper)) backwards; }
 .live-waiting { color: #7d5a17; }
 @media (prefers-reduced-motion: reduce) {
   :is(.live-app, .live-dialog) .live-success.help-done:not([data-filed-from]), .live-error { animation: none; }
@@ -1582,6 +1589,28 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 /* Sign out in the desktop bar is drawn 40px tall; its reach is 44px, the button unchanged. */
 .live-app .live-header-desk > button { position: relative; }
 .live-app .live-header-desk > button::after { content: ""; position: absolute; inset: min(0px, calc(50% - 22px)); }
+
+/* Under a finger (iPhone, iPad) every act set as words (Change request, Add a note, Edit, Remove, Decide, Show all, a
+   quiet ghost or link button, a name in a line) answers over at least 44px each way. The reach grows round the word,
+   centred on it; the word, its line and its focus ring stay exactly where they were. Only where the word is smaller
+   than 44px does the reach grow, so two acts 22px apart never reach into each other. Position is set in a low layer
+   so an act already placed (absolute, sticky) keeps its own; a control that draws its own ::after is left alone. */
+@layer base {
+  @media (pointer: coarse) {
+    :is(.live-app, .live-dialog) :is([data-slot="button"]:is([data-variant="ghost"], [data-variant="link"]):not([data-size^="icon"]), .help-text-action, a.meeting-decide) { position: relative; }
+  }
+}
+@media (pointer: coarse) {
+  :is(.live-app, .live-dialog) :is([data-slot="button"]:is([data-variant="ghost"], [data-variant="link"]):not([data-size^="icon"]), .help-text-action, a.meeting-decide):not(:is(.live-password-control, .entry-tabs) button, main button.min-h-11, .live-back)::after { content: ""; position: absolute; inset-block: max(min(0px, calc(50% - 22px)), calc(-1 * var(--reach-y, 22px))); inset-inline: max(min(0px, calc(50% - 22px)), calc(-1 * var(--reach-x, 22px))); }
+  /* A short name ("Al") reaches 44px across as well as up and down. */
+  .live-main a.live-link::after { inset-block: max(-10px, calc(-1 * var(--reach-y, 10px))); inset-inline: max(min(-4px, calc(50% - 22px)), calc(-1 * var(--reach-x, 22px))); }
+  /* Where acts stand together, in a row or a column, no reach passes the middle of the gap between them: half the
+     row gap up and down, half the inline gap across. Two neighbours' reaches meet at most; they never overlap. */
+  :is(.live-app, .live-dialog) .help-actions { --reach-y: 4px; --reach-x: 5px; }
+  :is(.live-app, .live-dialog) :is(.help-head-actions, .help-home-actions) { --reach-y: 12px; --reach-x: 11px; }
+  :is(.live-app, .live-dialog) .visits-sheet-links { --reach-y: 4px; --reach-x: 13px; }
+  :is(.live-app, .live-dialog) .meeting-sheet li { --reach-y: 2px; --reach-x: 4px; }
+}
 
 /* A short, wide window (an iPad on its side) keeps the room's head to under two fifths of the screen, so the first
    card shows below it: a smaller title and a tighter band, still one height in every room. */
@@ -1718,3 +1747,42 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
   :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):active::before { opacity: 1; transition: none; }
   .people-row[data-opens]:active { background-color: var(--relief-paper); transition: none; }
 }
+
+/* ── A sheet's foot is its own row ───────────────────────────────────────────
+   A sheet with buttons ends on them: the sheet keeps no paper of its own below them, so the buttons' row is its
+   foot, with a 1px rule above and 16px of paper round the buttons. The form scrolls above that rule and is cut
+   there: nothing is drawn under the buttons, and a box reached with the keyboard is scrolled clear of them.
+   On a phone the row's foot clears the home bar; with the keyboard up, the keyboard is its foot. */
+.live-dialog.live-dialog-fixed.live-dialog-fixed:has(.live-form-actions) { padding-bottom: 0 !important; scroll-padding-bottom: 120px; }
+.live-dialog.live-dialog-fixed .live-form-actions.live-form-actions {
+  position: sticky; bottom: 0; z-index: 1;
+  margin: var(--space-24) calc(-1 * var(--live-dialog-pad)) 0;
+  padding: var(--space-16) var(--live-dialog-pad);
+  background: #f5f3ec; border-top: 1px solid var(--live-line); box-shadow: none;
+}
+@media (max-width: 699px) {
+  .live-dialog.live-dialog-fixed .live-form-actions.live-form-actions { padding-bottom: max(var(--space-16), env(safe-area-inset-bottom)); }
+  [data-live-keyboard] .live-dialog.live-dialog-fixed .live-form-actions.live-form-actions { padding-bottom: var(--space-16); }
+}
+[data-live-tight] .live-dialog.live-dialog-fixed .live-form-actions.live-form-actions { padding-block: var(--space-8); }
+[data-live-short] .live-dialog.live-dialog-fixed .live-form-actions.live-form-actions { position: static; }
+
+/* Every foot row is end-aligned, primary last. A side action marked data-foot-aside (Print, Email, Download) is not
+   the row's answer: from 600px it stands at the row's start, in the same line; under 600px it takes its own line above
+   the answer, end-aligned. A note in the row (meeting-send-why, the waiting line) takes its own line on top of both, end-aligned, at every width. */
+.live-form-actions > :is(.meeting-send-why, .live-waiting) { flex: 1 0 100%; order: -3; margin: 0; text-align: end; }
+.live-form-actions { justify-content: flex-end; }
+@media (min-width: 600px) {
+  .live-form-actions > [data-foot-aside]:first-of-type { margin-inline-end: auto; }
+}
+@media (max-width: 599px) {
+  .live-form-actions:has(> [data-foot-aside])::after { content: ""; order: -1; flex-basis: 100%; height: 0; }
+  .live-form-actions > [data-foot-aside] { order: -2; }
+}
+
+/* A neighbor's name that opens their request reaches 44px to the touch without moving a letter. */
+.live-app .help-row h3 > .help-row-open { display: inline-block; padding-block: 11px; margin-block: -11px; }
+
+/* Widows and rag: heads and dialog titles balance their lines, body copy avoids a lone last word. Workspace-wide. */
+:is(.live-app, .live-dialog) :is(h1, h2, h3, [data-slot="dialog-title"]) { text-wrap: balance; }
+:is(.live-app, .live-dialog) :is(p, li, dd, figcaption, blockquote) { text-wrap: pretty; }

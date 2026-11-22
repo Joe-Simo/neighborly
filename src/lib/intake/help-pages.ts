@@ -1,3 +1,4 @@
+import { endingWords } from "../../components/public-ending-words";
 import { intakeWords, type IntakeLanguage, type IntakeWords, type NeedKind } from "./intake-words";
 
 /**
@@ -99,8 +100,19 @@ ${body(w, view, action)}
 </main>
 ${status ? "" : aside(w)}
 </div>
+${status ? "" : foot(language)}
 </body>
 </html>`;
+}
+
+/** The foot every public page shares (public-foot.tsx), in plain HTML: the promise, the four ways on, the name. Not on a status page, which keeps its quick exit alone. */
+function foot(language: IntakeLanguage) {
+  const said = endingWords[language];
+  return `<footer class="colophon">
+  <span><em>${esc(said.free[0])}</em>${esc(said.free[1])}</span>
+  <nav aria-label="${esc(said.about)}"><a href="/app/help-line?intent=sample">${esc(said.sample)}</a><a href="${said.howMadePath}">${esc(said.howMade)}</a><a href="${said.accessPath}">${esc(said.access)}</a><a href="${said.privacyPath}">${esc(said.privacy)}</a><a href="https://github.com/sponsors/Joe-Simo" target="_blank" rel="noopener noreferrer">${esc(said.give)}<span class="sr-only"> ${esc(said.newTab)}</span></a></nav>
+  <a class="name" href="/" lang="en">kind helps</a>
+</footer>`;
 }
 
 function aside(w: IntakeWords) {
@@ -254,6 +266,7 @@ a{color:inherit;text-underline-offset:4px;text-decoration-thickness:1px}
 a:hover{text-decoration-thickness:2px}
 :focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:4px}
 .bar{display:flex;justify-content:space-between;align-items:center;gap:16px;max-width:1040px;margin:0 auto;padding:16px 24px}
+.mark,.lang,.slip p a{display:inline-flex;align-items:center;min-height:44px}
 .mark{font:400 24px/1 Georgia,"Times New Roman",serif;letter-spacing:-.02em;text-decoration:none}
 .lang{font-size:16px}
 .exit{position:fixed;top:12px;right:12px;z-index:2;display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:4px;background:var(--ink);color:var(--sheet);font-weight:600;text-decoration:none;box-shadow:0 2px 6px #283c3240}
@@ -320,4 +333,18 @@ form:has(#safe-yes:checked) .when{display:none}
 .late p{margin:0}.late .lines{margin-top:12px}
 .remove{margin-top:28px}
 @media(max-width:559px){.bar{padding:12px 16px}.wall{padding:4px 16px 40px}.sheet{padding:24px 20px}.exit{top:8px;right:8px}}
-@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}`;
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+@font-face{font-family:"Newsreader";font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/newsreader-display-regular.woff2) format("woff2")}
+@font-face{font-family:"Newsreader";font-style:italic;font-weight:400;font-display:swap;src:url(/fonts/newsreader-display-italic.woff2) format("woff2")}
+.colophon{container-type:inline-size;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:24px;padding:12px 20px calc(82px + env(safe-area-inset-bottom));background:#eee7d7;color:#293f32;font-size:15px}
+.colophon em{font-family:Newsreader,Georgia,serif;font-style:italic;font-weight:400}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.colophon nav{display:flex;flex-wrap:wrap;gap:0 28px}
+.colophon nav a{display:inline-flex;align-items:center;min-height:44px;white-space:nowrap;text-decoration-color:#343e3366}
+.colophon .name{flex-basis:100%;display:inline-flex;align-items:center;margin:20px 0 -.08em;font:400 calc(100cqi / 4.1)/.8 Newsreader,Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;text-decoration:none;text-shadow:.008em .016em .012em #3b2a1240,.03em .07em .08em #3b2a1224}
+@media(max-width:560px){.colophon nav{display:grid;grid-template-columns:repeat(2,max-content)}}
+@media(max-width:900px){.colophon{background:#f5f3ec}}
+@media(max-width:600px){.colophon{padding-bottom:calc(82px + 22vw + env(safe-area-inset-bottom))}}
+@media(min-width:901px){.colophon{flex-wrap:nowrap;min-height:clamp(92px,7.4vw,140px);gap:0 clamp(24px,3vw,48px);padding:0 7% env(safe-area-inset-bottom)}.colophon>span{flex:none}.colophon nav{flex:1 1 0;min-width:0;justify-content:center;gap:0 clamp(16px,2vw,28px)}.colophon .name{flex:none;min-height:44px;margin:0;font-size:clamp(48px,4.6vw,88px)}}
+@media(min-width:1600px){.colophon{font-size:16px}}
+@media(forced-colors:active){.colophon .name{text-shadow:none}}`;

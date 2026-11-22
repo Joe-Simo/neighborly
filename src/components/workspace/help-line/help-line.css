@@ -46,7 +46,7 @@
 .help-home .help-text-action[data-slot="button"] { font-size: 16px; }
 .help-home-actions { display: flex; gap: var(--space-24) 22px; }
 .help-accounts { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-8) 6px; }
-.help-accounts span { display: block; font-size: 16px; color: var(--live-muted); font-variant-numeric: tabular-nums; }
+.help-accounts span { display: block; font-size: 16px; color: var(--live-muted); font-feature-settings: "lnum" 1, "tnum" 1; }
 .help-alert { display: flex; align-items: baseline; gap: var(--space-8) 10px; margin: 0 0 var(--space-32); padding: var(--space-16) 18px; background: var(--help-ochre-wash); border-left: 3px solid var(--help-ochre); color: var(--help-ochre-ink); font-size: 19px; line-height: 1.45; }
 .help-alert svg { flex: none; position: relative; top: 3px; }
 .help-head-actions { display: inline-flex; align-items: center; gap: var(--space-24) 22px; }
@@ -87,8 +87,9 @@
   .help-lines[data-shape="pair"] .help-line-row { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
 }
 @media (max-width: 850px) { .help-home { grid-template-columns: 1fr; gap: var(--space-24) 26px; } }
-/* The link keeps its 44px reach without making its line taller than the other rows. */
-.help-timeline p .help-text-action[data-slot="button"] { margin-block: -13px; }
+/* The link sits in its line at the line's own height; on touch its reach comes from the shared ::after, capped so it never meets the lines above and below. */
+.live-app .help-timeline p .help-text-action[data-slot="button"] { min-height: 0; }
+.help-timeline p { --reach-y: 9px; }
 @media (max-width: 640px) {
   .help-timeline .help-sep { display: none; }
   .help-timeline .help-sep + [data-slot="button"] { display: flex; margin-block: 2px 0; }
@@ -175,7 +176,7 @@
   .help-seal { position: static; align-self: start; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .help-sheet.help-sealed, .help-seal, .help-seal path, .help-row[data-arrived] .live-status:before { animation: none; }
+  .help-sheet.help-sealed, .help-seal, .help-seal path, .help-row[data-arrived] .live-status:before, .help-decided.help-approved::after { animation: none; }
   .help-sealed .help-actions, .help-sealed .help-unsaved { transition: none; }
   .help-row-arrow { transition: none; }
 }
@@ -183,7 +184,7 @@
    pass. The rows keep the room's one left edge, the heading's and the search's, at every width. */
 .live-app .help-letter-head {
   position: sticky; top: var(--live-bar, 0px); z-index: 2; margin: 0;
-  font: 400 48px/0.9 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.03em;
+  font: 400 var(--type-figure-l)/0.9 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.03em;
   color: var(--relief-letter);
   padding: var(--space-8) 0; background: var(--live-paper, #f5f3ec); border-bottom: 1px solid var(--live-line);
 }
@@ -312,7 +313,7 @@
 .help-filed-words { display: grid; justify-items: start; gap: 1px 0; min-width: 0; flex: 1 1 auto; }
 .help-filed-words strong { font: 400 24px/1.2 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; white-space: nowrap; transform-origin: 0 0; }
 .help-filed-words [data-filed="asks"] { font-size: 17px; line-height: 1.45; }
-.help-filed-words > span:last-child { font-size: 15px; line-height: 1.45; margin-top: 3px; }
+.help-filed-words > span:last-child { font-size: 15px; line-height: 1.45; margin-top: var(--space-4); }
 .help-done.help-filed > :is(a, button) { align-self: center; flex: none; }
 @media (max-width: 700px) {
   .help-done.help-filed { flex-wrap: wrap; }
@@ -413,7 +414,10 @@
 /* The one next step the assistant read in a returned call's outcome: one plum line, never faded. */
 /* The mark keeps beside its words, as on the Spanish line; the way on sits under the words, never under the mark. */
 .help-row .help-next-step { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; margin-top: var(--space-4); }
-.help-next-step > [data-slot="button"] { grid-column: 2; justify-self: start; }
+/* The assistant's suggestion is muted ink with its sparkle in ink; the step it names is the plain ink link. Never plum: plum is wrong. */
+.live-app .help-row .help-next-step svg { color: var(--live-ink); }
+.live-app .help-row .help-next-step { --reach-y: 9px; }
+.live-app .help-row .help-next-step .help-text-action[data-slot="button"] { min-height: 0; color: var(--paper-ink, #283c32); vertical-align: baseline; }
 .help-next-step svg { position: relative; top: 2px; flex: none; }
 /* The household's lines lie in the form as its own lines; their box is only there to be said aloud as they arrive. */
 .help-repeat { display: contents; }

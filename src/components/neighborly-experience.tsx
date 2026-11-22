@@ -10,6 +10,7 @@ import dynamic from "next/dynamic";
 import { paceOpening } from "@/lib/painted-world-scroll";
 import { keepPlace } from "./courtyard-door";
 import { PaintedWorld } from "./painted-world";
+import { EASE_PAPER, PAPER_CARRY_MS } from "@/lib/motion";
 
 /** A short, wide screen: the opening cannot be pinned there, so the page simply scrolls. Keep in step with the same query in painted-world.css. */
 const sidewaysPhone = "(max-height:500px) and (min-aspect-ratio:10/11)";
@@ -58,7 +59,7 @@ export function NeighborlyExperience() {
       keepPlace();
       try { sessionStorage.setItem("neighborly-paper", "1"); } catch { /* Without storage the workspace simply opens without the sheet. */ }
       sheet.dataset.carrying = "true";
-      rise = sheet.animate([{ transform: "translateY(100%)" }, { transform: "none" }], { duration: 380, easing: "cubic-bezier(.2,.65,.2,1)", fill: "forwards" });
+      rise = sheet.animate([{ transform: "translateY(100%)" }, { transform: "none" }], { duration: PAPER_CARRY_MS, easing: EASE_PAPER, fill: "forwards" });
       void rise.finished.then(() => {
         // The sheet now covers the whole window: the page is taken to its top under it, and the room is asked for without
         // the router's own scroll, which measured the new page inside the commit that lays it.

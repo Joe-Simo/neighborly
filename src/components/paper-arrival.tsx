@@ -3,6 +3,7 @@
 import { useLayoutEffect, useRef } from "react";
 import { HELD_CARD } from "@/lib/held-card";
 import { restWhatIsUnderneath, wholeUnderneath } from "@/lib/room-whole";
+import { EASE_PAPER_LEAVE } from "@/lib/motion";
 
 /** The sheet is up and off in this long, the same as the door's own paper. */
 const LIFT = 240;
@@ -54,7 +55,7 @@ export function PaperArrival() {
         return;
       }
       restWhatIsUnderneath();
-      lift = element.animate([{ transform: "none" }, { transform: "translateY(-104%)" }], { duration: LIFT, easing: "cubic-bezier(0.5, 0, 0.9, 0.6)", fill: "forwards" });
+      lift = element.animate([{ transform: "none" }, { transform: "translateY(-104%)" }], { duration: LIFT, easing: EASE_PAPER_LEAVE, fill: "forwards" });
       void lift.finished.then(() => { settle(); delete element.dataset.carrying; lift?.cancel(); }, () => {});
     };
     look();

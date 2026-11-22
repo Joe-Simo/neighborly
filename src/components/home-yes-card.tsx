@@ -12,9 +12,10 @@ import "@/components/workspace/help.css";
 import "@/components/workspace/paper.css";
 import "@/components/workspace/help-line/help-line.css";
 import "./home-yes-card.css";
+import { EASE_PAPER, PAPER_CARD_MS } from "@/lib/motion";
 
 const DAY = 86_400_000;
-const PAPER_EASE = "cubic-bezier(0.2, 0.7, 0.2, 1)";
+const PAPER_EASE = EASE_PAPER;
 /** The corner turns green and the tick settles; then the sheet folds back off the list. */
 const GREEN = 300;
 /** The fold (home-yes-card.css): the list's words are set down only once the draft is past them. */
@@ -72,7 +73,7 @@ export function HomeYesCard() {
     const tick = stage.current?.querySelector<HTMLElement>("[data-new] i");
     if (step !== "filed" || !tick || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const after = held.current ? 0 : FOLD;
-    const set = tick.animate([{ transform: "scale(0)" }, { transform: "scale(1.2)", offset: 0.7 }, { transform: "none" }], { duration: 260, delay: after, easing: PAPER_EASE, fill: "backwards" });
+    const set = tick.animate([{ transform: "scale(0)" }, { transform: "scale(1.2)", offset: 0.7 }, { transform: "none" }], { duration: PAPER_CARD_MS, delay: after, easing: PAPER_EASE, fill: "backwards" });
     return () => set.cancel();
   }, [step]);
   // The list's lines are set down one by one, at full ink, the moment the folding draft has lifted clear of each: the draft folds back about its top

@@ -21,19 +21,22 @@ const fill = (text: string, values: Record<string, string>) => text.replace(/\{(
  * from the recorder's file and never moves. A late frame is plum, the colour for wrong; the rest are ink.
  */
 export function MadeFrames({ said, language }: { said: Said; language: Language }) {
+  // Both widths share one x-axis: a frame is the same width in each strip, so the longer run is the longer strip.
+  const span = Math.max(...madeFrames.widths.map(({ all }) => all.length));
   return <figure className="public-made-frames">
     <figcaption className="public-made-frames-title">{said.caption}</figcaption>
-    {madeFrames.widths.map(({ width, all, frames, over, worst }) => {
+    {madeFrames.widths.map(({ width, all, frames, over, worst }, row) => {
       const summary = fill(said.summary[over ? 1 : 0], { n: whole.format(frames), over: whole.format(over), worst: whole.format(worst) });
       return <div key={width} className="public-made-frames-row">
         <p><strong>{said.widths[width]}</strong> {summary}</p>
         <div className="public-made-frames-plot" style={{ "--line": `${((ceiling - lateMs) / ceiling) * 100}%` } as CSSProperties}>
-        <svg shapeRendering="crispEdges" viewBox={`0 0 ${all.length} ${ceiling}`} preserveAspectRatio="none" role="img" aria-label={`${said.widths[width]}. ${summary}`}>
+        <svg shapeRendering="crispEdges" viewBox={`0 0 ${span} ${ceiling}`} preserveAspectRatio="none" role="img" aria-label={`${said.widths[width]}. ${summary}`}>
           {/* One path for the frames in time and one for the late ones: the same marks as a rect each, in two elements instead of thousands. */}
           {([false, true] as const).map((isLate) => <path key={String(isLate)} data-late={isLate || undefined} d={marks(all, isLate)} />)}
-          <line x1={0} x2={all.length} y1={ceiling - lateMs} y2={ceiling - lateMs} />
+          <line x1={0} x2={span} y1={ceiling - lateMs} y2={ceiling - lateMs} />
         </svg>
-        <span aria-hidden="true">{said.line}</span>
+        {/* The 33 ms line is labelled once, on the first strip; the second shares its height. */}
+        {row === 0 && <span aria-hidden="true">{said.line}</span>}
         </div>
       </div>;
     })}

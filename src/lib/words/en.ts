@@ -183,7 +183,7 @@ export function en(set: WordSet) {
       quietDetail:
         "No commitments are scheduled in the next seven days. Later dates are in Commitments.",
       fromGroup: `From your ${t.group}`,
-      noAnnouncementsTitle: "All quiet from the group.",
+      noAnnouncementsTitle: `All quiet from the ${t.group}.`,
       noAnnouncementsDetail: "News from your coordinators will show up here.",
     },
     mine: {
@@ -306,7 +306,7 @@ export function en(set: WordSet) {
       done: "Done",
       open: "Open",
       emptyTitle: "No tasks yet.",
-      emptyDetail: "Anything the group needs done is listed here, with who does it and by when.",
+      emptyDetail: `Anything the ${t.group} needs done is listed here, with who does it and by when.`,
       meetings: "Meetings",
       going: "You are going",
       notGoing: "You can’t make it",

@@ -18,7 +18,7 @@ const said = {
   },
   es: {
     kinds: { rent: "renta", utility: "servicios", food: "comida", voucher: "vales", other: "otro tipo" },
-    records: { request: "la solicitud", note: "la nota", visit: "el informe de la visita" },
+    records: { request: "la petición", note: "la nota", visit: "el informe de la visita" },
     recent: (kind: string, paid: boolean, date: string, amount: string) => `Se ${paid ? "pagó" : "aprobó"} ayuda de ${kind} el ${date}${amount ? `: ${amount}` : ""}.`,
     sameAmount: (kind: string, amount: string, date: string) => `El ${date} se pidió ayuda de ${kind} por la misma cantidad, ${amount}.`,
     same: (record: string, date: string) => `El asistente lee esto como la misma necesidad que ${record} del ${date}.`,

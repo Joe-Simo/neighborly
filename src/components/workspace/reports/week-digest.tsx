@@ -44,7 +44,7 @@ const said = {
     noName: "Sin nombre",
     more: (n: number) => `y ${n} más`,
     email: "Enviármelo por correo los lunes por la mañana",
-    kinds: { rent: "Renta", utility: "Servicios", food: "Comida", voucher: "Vales", other: "Otra ayuda" } satisfies Record<Kind, string>,
+    kinds: { rent: "Alquiler", utility: "Servicios", food: "Comida", voucher: "Vales", other: "Otra ayuda" } satisfies Record<Kind, string>,
     months: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
   },
 } satisfies Record<Language, unknown>;

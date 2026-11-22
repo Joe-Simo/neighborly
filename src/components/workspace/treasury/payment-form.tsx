@@ -6,6 +6,7 @@ import { DateField } from "@/components/workspace/date-field";
 import { useWorkspace } from "@/components/workspace/context";
 import { LiveField, markWrong } from "@/components/workspace/primitives";
 import { fill } from "@/lib/words/fill";
+import { feelYes } from "@/components/workspace/use-save";
 import { centsToInput, parseCents, formatFigure } from "@/components/workspace/treasury/money";
 import {
   FormActions,
@@ -55,6 +56,7 @@ export function PaymentForm({
         const refusal = await onSubmit({ amount: cents, date, memo, checkNumber });
         setSaving(false);
         if (refusal) setError(refusal);
+        else feelYes();
       }}
     >
       <div className="live-form-grid treasury-form-grid">

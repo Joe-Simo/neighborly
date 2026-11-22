@@ -62,7 +62,7 @@ const said = {
     notSameThis: (name: string) => `No es el mismo: ${name}`,
     sheet: (name: string) => `Unir ${name} a este registro`,
     moves: "Lo que pasa aquí",
-    movesDetail: "Cada llamada, solicitud, visita, nota y línea del libro del otro registro. Su teléfono, correo o dirección llena lo que este registro deja vacío, y sus notas se añaden debajo de estas.",
+    movesDetail: "Cada llamada, petición, visita, nota y línea del libro del otro registro. Su teléfono, correo o dirección llena lo que este registro deja vacío, y sus notas se añaden debajo de estas.",
     goes: "Lo que se va",
     goesDetail: "El otro registro. Las cifras del año cuentan este hogar una sola vez.",
     final: "Una unión no se puede deshacer.",
@@ -70,7 +70,7 @@ const said = {
     confirm: "Unir registros",
     merged: (name: string) => `El registro de ${name} se unió a este.`,
     counting: "Contando lo que pasa…",
-    moving: (m: Moved) => [plural(m.calls, "llamada", "llamadas"), plural(m.requests, "solicitud", "solicitudes"), plural(m.visits, "visita", "visitas"), plural(m.ledger, "línea del libro", "líneas del libro"), plural(m.notes, "nota", "notas")].join(", "),
+    moving: (m: Moved) => [plural(m.calls, "llamada", "llamadas"), plural(m.requests, "petición", "peticiones"), plural(m.visits, "visita", "visitas"), plural(m.ledger, "línea del libro", "líneas del libro"), plural(m.notes, "nota", "notas")].join(", "),
     history: "Unidos a este registro",
     mergedBy: (name: string, who: string, when: string) => `Registro de ${name}, unido por ${who} el ${when}.`,
   },
@@ -195,7 +195,7 @@ function MergeForm({ neighborId, other, w, onMerged }: { neighborId: Id<"neighbo
   const { data } = useWorkspace();
   const moving = useQuery(api.duplicates.mergeCounts, { churchId: data.church.id, otherId: other.id });
   const merge = useMutation(api.duplicates.merge);
-  const { pending, error, save } = useSave("decided");
+  const { pending, error, save } = useSave();
   return (
     <form
       className="live-form help-form help-for-good"

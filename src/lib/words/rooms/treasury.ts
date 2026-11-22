@@ -297,7 +297,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   kept: "No se anotó nada, y lo que escribiste sigue aquí.",
   refused: "No se pudo anotar. Inténtalo de nuevo.",
   recordedBy: "{amount}, anotado por {name}. Si el tuyo es un segundo pago, vuelve a anotarlo.",
-  undoRefused: "No se pudo deshacer. La entrada queda como se anotó.",
+  undoRefused: "No se pudo deshacer. El movimiento queda como se anotó.",
   kindGone: "Este tipo ya no se ofrece. Elige otro.",
   kinds: { rent: "Alquiler", utility: "Servicios", food: "Comida", voucher: "Vale para la tienda de segunda mano", other: "Otra ayuda" },
   sources: { collection: "Colecta de la parroquia", walk: "Caminata Amigos de los Pobres", donation: "Donativo", twinning: "Hermanamiento recibido", opening: "Saldo inicial" },

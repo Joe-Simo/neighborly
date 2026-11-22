@@ -72,6 +72,8 @@ const eslintConfig = defineConfig([
     "public/assets/painted-world/draco/**",
     // Built by scripts/help-script.mts (the Ask for help pages' one script).
     "public/help-botid.js",
+    // Built by scripts/service-worker.mts after next build.
+    "public/serwist/**",
   ]),
 ]);
 

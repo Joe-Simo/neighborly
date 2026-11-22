@@ -5,7 +5,7 @@ import { internalMutation, mutation } from "./functions";
 import type { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 import { hour, hourAsked, mayOpenNeighborRecords, neighborAccess } from "./access";
-import { approvedBetween, sumApproved } from "./treasury";
+import { approvedBetween, monthToDate, sumApproved } from "./treasury";
 import { deliveryConfiguration, resend } from "./notifications";
 import { emailLanguage, paperEmail } from "../src/lib/email/paper-email";
 
@@ -50,7 +50,7 @@ async function digestOf(ctx: QueryCtx, churchId: Id<"churches">, at: number) {
   const start = DateTime.fromMillis(at, { zone: church.timeZone }).startOf("month");
   const before = start.minus({ years: 1 });
   const [thisMonth, lastYear, owed] = await Promise.all([
-    approvedBetween(ctx, churchId, start.toMillis(), at),
+    monthToDate(ctx, church, at),
     approvedBetween(ctx, churchId, before.toMillis(), before.endOf("month").toMillis()),
     ctx.db.query("calls").withIndex("by_church_callback", q => q.eq("churchId", churchId).eq("callback", "needed")).take(500),
   ]);
@@ -61,7 +61,7 @@ async function digestOf(ctx: QueryCtx, churchId: Id<"churches">, at: number) {
   }));
   return {
     waiting: { count: open.length, rows },
-    month: { month: start.month, approved: sumApproved(thisMonth), budget: church.monthlyBudget ?? null, lastYear: sumApproved(lastYear) },
+    month: { month: thisMonth.month, approved: thisMonth.approved, budget: thisMonth.budget, lastYear: sumApproved(lastYear) },
     overdue: { count: late.length, rows: overdue },
   };
 }

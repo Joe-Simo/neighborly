@@ -1,3 +1,4 @@
+import { EASE_PAPER } from "@/lib/motion";
 /**
  * A written-up visit, once its save has committed, is filed: the sheet folds in two along its middle (the lower
  * half folding up as bare paper, its fields gone from the first frame, like a turned page's back), the household's
@@ -70,7 +71,7 @@ export async function fileAway(sheet: HTMLElement | null, household: string) {
   shade?.style.setProperty("transition", "none", "important");
   sheet.style.setProperty("transition", "none", "important");
   sheet.style.setProperty("visibility", "hidden", "important");
-  const ease = "cubic-bezier(0.3, 0.7, 0.2, 1)";
+  const ease = EASE_PAPER;
   const shrink = `scale(${scale})`;
   folded.animate([{ transform: "none" }, { transform: shrink }], { duration: 260, easing: ease, fill: "forwards" });
   await flap.animate([{ transform: "rotateX(0deg)" }, { transform: "rotateX(180deg)" }], { duration: 260, easing: ease, fill: "forwards" }).finished;

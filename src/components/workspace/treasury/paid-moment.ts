@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { flushSync } from "react-dom";
 import { arriving, holdThePage } from "@/components/workspace/fold";
 import type { Payable } from "@/components/workspace/treasury/labels";
+import { EASE_PAPER } from "@/lib/motion";
 
 /** The request a payment was just recorded for, and the ledger entry that payment became. */
 /** The share of the moment at which the closed card, corner and all, is cut away from over the paid line. */
@@ -22,7 +23,7 @@ export type Paid = {
 /** The whole hand-over: the sheet shortens in 360ms and is gone by 520ms. */
 const HANDING = 560;
 const LANDED = 1600;
-const CLOSE = "cubic-bezier(0.2, 0.7, 0.2, 1)";
+const CLOSE = EASE_PAPER;
 
 /** The waiting sheet as it stood when its payment was sent: a copy to hand over, and where it was. */
 let taken: { card: HTMLElement; from: DOMRect; paper: { backgroundColor: string; borderRadius: string; boxShadow: string } } | undefined;

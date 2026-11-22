@@ -37,7 +37,7 @@
 }
 .volunteer-choice .volunteer-given { text-transform: capitalize; }
 /* On a phone the buttons sit 3px down; the word that takes their place sits where they sat, so the sheet keeps its height. */
-@media (max-width: 560px) { .live-app .volunteer-choice .volunteer-choice-row > .volunteer-given { margin-top: 3px; } }
+@media (max-width: 560px) { .live-app .volunteer-choice .volunteer-choice-row > .volunteer-given { margin-top: var(--space-4); } }
 .live-app .volunteer-given[data-no] { color: var(--live-muted); font-weight: 400; }
 .volunteer-meeting .live-row-actions { gap: var(--space-8) 22px; }
 .live-app .volunteer-said { margin: 0 0 var(--space-32); }
@@ -129,7 +129,7 @@
 .volunteer-days,
 .volunteer-meeting-desk,
 .live-app .live-commitment-row .live-row-main p {
-  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
 }
 
 /* A span of dates breaks as two even lines, never leaving a year alone on the second. */

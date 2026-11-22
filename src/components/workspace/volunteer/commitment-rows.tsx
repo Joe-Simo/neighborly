@@ -13,6 +13,7 @@ import { useConnectionLost } from "@/components/workspace/states";
 import { useWorkspace } from "@/components/workspace/context";
 import type { LiveWorkspaceData } from "@/components/workspace/types";
 import { upcomingCommitments, withoutIncomingRequests } from "@/lib/commitment-visibility";
+import { EASE_PAPER } from "@/lib/motion";
 
 /** What This week lists under Coming up: the next 7 days of commitments, less those still asked of this person above. The glance counts the same list. */
 export function comingUp(data: LiveWorkspaceData, now: number) {
@@ -148,7 +149,7 @@ function WaitsToGo({ when }: { when: boolean }) {
     } else if (tall.current && box.current && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       // The line is already out of the page, so there is nothing to hand to closeUp: its place gives up the room
       // the line really took, in the same 360ms.
-      box.current.animate([{ height: `${tall.current}px` }, { height: "0px" }], { duration: 360, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" });
+      box.current.animate([{ height: `${tall.current}px` }, { height: "0px" }], { duration: 360, easing: EASE_PAPER });
       tall.current = 0;
     } else {
       tall.current = 0;

@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { FollowingHeading, LiveLoading, PaperScene } from "@/components/workspace/primitives";
 import { LiveState } from "@/components/workspace/states";
+import { EASE_PAPER } from "@/lib/motion";
 
 /**
  * While a room's rows arrive: the one quiet "Opening…" line of the whole product, and only after 400ms,
@@ -125,7 +126,7 @@ export async function letSheetWordsGo() {
 }
 
 /** The pace of every word that is carried to the line, and of the sheet's own setting of it giving way. */
-const CARRY = "cubic-bezier(0.2, 0.7, 0.2, 1)";
+const CARRY = EASE_PAPER;
 /** How much of the whole yes the two settings of a carried word take to change places. */
 const CHANGE = 0.25;
 let kept: { copy: HTMLElement; word: HTMLElement }[] = [];

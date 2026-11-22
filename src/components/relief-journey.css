@@ -135,7 +135,9 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 [data-picture=call] [data-piece=cord]{transform-origin:86.5% 58%;transform:rotate(calc(sin(var(--h) * 180deg) * 4deg + var(--q) * -1.5deg))}
 /* The visit: the door is shut and opens a hand's width; the light comes up behind it; the two who came bring their hands up. */
 [data-picture=visit] [data-piece=light]{opacity:var(--h)}
-[data-picture=visit] [data-piece=leaf]{transform-origin:12.3% 50%;transform:scaleX(calc(1 + var(--q) * .135))}
+/* A door opens into the house, so the leaf never crosses its own frame: fully open, its painted edge (47.35% of the piece) comes to rest
+   against the far jamb's inner edge (49.6%), hinged at 12.3%, so it widens by 2.25/35.05 and no more. Its edge posts stay whole. */
+[data-picture=visit] [data-piece=leaf]{transform-origin:12.3% 50%;transform:scaleX(calc(1 + var(--q) * .064))}
 [data-picture=visit] [data-piece=hands]{transform:translate(calc(var(--q) * -30px),calc(var(--q) * 26px))}
 /* No ground is drawn under the door, so nothing is cast below its foot: the shadows end there, not at the picture's cut edge. */
 /* The leaf's cut left a faint strip beyond its own edge, which showed beside the post while the door stood open wider. */
@@ -209,7 +211,9 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .relief-panel[data-chapter=call] .relief-picture{aspect-ratio:4/3}
   .relief-panel[data-chapter=call] .relief-layers{width:128%;height:124%;margin:-19% 0 0 -18%}
   .relief-panel[data-chapter=visit] .relief-picture{aspect-ratio:5/6}
-  .relief-panel[data-chapter=visit] .relief-layers{width:170%;height:112%;margin:-6% 0 0 -6%}
+  /* The door's frame stands a 16px gutter in from the window's edge, never a sliver cut by it: the plate's door is at 155/1536 of the
+     painting, which at this cover crop lands 4.55% of the picture's width right of the layers' edge. The sleeves still run off the edge, as meant. */
+  .relief-panel[data-chapter=visit] .relief-layers{width:170%;height:112%;margin:-6% 0 0 calc(16px - 4.55%)}
   .relief-panel[data-chapter=help] .relief-picture{aspect-ratio:1/1}
   .relief-panel[data-chapter=help] .relief-layers{width:180%;height:136%;margin:-24% 0 0 -66%}
   .relief-panel[data-chapter=year] .relief-picture{aspect-ratio:4/3}

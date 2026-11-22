@@ -1,5 +1,6 @@
 "use client";
 
+import { numberLocales } from "@/lib/words/numbers";
 import { keepTitle } from "@/lib/words/titles";
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { speak } from "@/components/workspace/fold";
@@ -266,7 +267,7 @@ function NeighborListView({
           // The whole conference, from its running figures; before they are first counted, what is shown.
           const households = list.households ?? shown;
           const waitingAll = list.waiting ?? waiting.length;
-          const figure = new Intl.NumberFormat(words.locale);
+          const figure = new Intl.NumberFormat(numberLocales[words.locale]);
           // The conference's households as paper: the figure on a cut slip, those waiting on a smaller slip with the
           // waiting ochre at its edge, and under them the one line that every opening is logged.
           return (

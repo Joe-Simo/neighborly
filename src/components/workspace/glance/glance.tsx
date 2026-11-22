@@ -50,7 +50,7 @@ const said = {
     whole: "La conferencia de un vistazo",
     visits: "Lo tuyo, próximos 7 días",
     visitsLine: (next: string) => (next ? `Lo próximo: ${next}` : "Nada tuyo en los próximos 7 días"),
-    asks: (n: number) => (n ? `${n} visita${n === 1 ? "" : "s"} esperan tu respuesta` : ""),
+    asks: (n: number) => (n ? (n === 1 ? "1 visita espera tu respuesta" : `${n} visitas esperan tu respuesta`) : ""),
     tasks: "Tus tareas",
     tasksLine: (late: number) => (late ? `${late} con la fecha pasada` : "Ninguna con la fecha pasada"),
     callbacks: "Llamadas con dos días de retraso",

@@ -1,5 +1,6 @@
 "use client";
 
+import { saveFile } from "@/lib/save-file";
 import { useState } from "react";
 import { useAction, useConvex } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
@@ -11,6 +12,7 @@ import { useWorkspace } from "@/components/workspace/context";
 import { invitationLinksCsv, readMemberRows, type MemberRow } from "@/components/workspace/tools/member-rows";
 import { fileProblem, readSoFar, SheetImportView, type LeftOut, type SheetStep, type SheetWords } from "@/components/workspace/tools/sheet-import";
 import type { Words } from "@/lib/words";
+import { randomId } from "@/lib/random-id";
 
 type Checked = FunctionReturnType<typeof api.importExport.checkMembers>;
 type Imported = FunctionReturnType<typeof api.importExport.importMembers>;
@@ -67,7 +69,7 @@ export function MembersImport() {
         if (state.step !== "review") return;
         const review = state;
         setState({ step: "working", label: tools.members.adding, saving: review });
-        void importMembers({ churchId, batchId: crypto.randomUUID(), rows })
+        void importMembers({ churchId, batchId: randomId(), rows })
           .then((imported) => {
             setResults(imported);
             setState({ step: "done", done: imported.filter((row) => row.outcome === "invited").length, leftOut: membersLeftOut(imported, tools.members.reasons) });
@@ -78,9 +80,7 @@ export function MembersImport() {
         <Button
           onClick={() => {
             const links = results.flatMap((row) => (row.token ? [{ name: row.name, email: row.email, token: row.token }] : []));
-            const url = URL.createObjectURL(new Blob([invitationLinksCsv(links, window.location.origin)], { type: "text/csv;charset=utf-8" }));
-            Object.assign(document.createElement("a"), { href: url, download: data.church.sample ? "sample-invitation-links.csv" : "invitation-links.csv" }).click();
-            URL.revokeObjectURL(url);
+            saveFile(new Blob([invitationLinksCsv(links, window.location.origin)], { type: "text/csv;charset=utf-8" }), data.church.sample ? "sample-invitation-links.csv" : "invitation-links.csv");
           }}
         >
           <Download size={18} aria-hidden="true" /> {tools.members.downloadLinks}

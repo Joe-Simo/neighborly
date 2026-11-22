@@ -35,6 +35,8 @@ describe("a conference meeting's agenda and minutes", () => {
     const args = { churchId: ids.churchId, meetingId: ids.meetingId };
     const sheet = await signed.query(api.minutes.sheet, args);
     expect(sheet.since).toBe(start - 7 * DAY);
+    // No email is set up in the tests, so the sheet says why the minutes cannot be emailed, as send would.
+    expect(sheet.emailOff).toBe("off");
     expect(sheet.waiting.map(row => row.kind)).toEqual(["rent"]);
     expect(sheet.decided.map(row => [row.kind, row.status])).toEqual([["food", "approved"]]);
     expect(sheet.visits.map(row => row.place)).toEqual(["hospital"]);

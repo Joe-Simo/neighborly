@@ -125,7 +125,7 @@ const es: typeof en = {
   pause: "Pausar el formulario web",
   resume: "Volver a recibir peticiones",
   none: "No hay peticiones web esperando.",
-  kinds: { rent: "Renta", utility: "Factura de servicios", food: "Comida", voucher: "Vale", other: "Otra cosa" },
+  kinds: { rent: "Alquiler", utility: "Factura de servicios", food: "Comida", voucher: "Vale", other: "Otra cosa" },
   spanish: "Español",
   unverified: "Sin verificar: no se confirmó con un código",
   doNotMessage: (when) => (when ? `No enviar textos ni dejar mensajes. Llamar solo: ${when}` : "No enviar textos ni dejar mensajes."),

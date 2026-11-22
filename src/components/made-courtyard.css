@@ -47,8 +47,8 @@
 
 .public-made-figure{margin:28px 0 0}
 /* Never drawn past its 960px source, so the depth map stays sharp at 1920. */
-/* The real map, never recoloured, laid on card paper with the card's relief like the page's other tiles. */
-.public-made-figure img{display:block;box-sizing:border-box;width:100%;max-width:960px;height:auto;padding:var(--space-12);border-radius:2px;background:var(--relief-paper);box-shadow:var(--relief-card)}
+/* The real map, never recoloured, in the paper print frame the home art takes from 2200px: no mat, one edge, the card relief. */
+.public-made-figure img{display:block;box-sizing:border-box;width:100%;max-width:960px;height:auto;border:1px solid var(--relief-edge);border-radius:3px;background:var(--relief-paper);box-shadow:var(--relief-card)}
 .public-made-figure figcaption{margin-top:10px;font-size:15px;line-height:1.5;color:#3d4f43}
 /* On a wide screen the stage sits a little lower, so the ring keeps 24px of air below the paper of the section before it. */
 @media(min-width:701px) and (prefers-reduced-motion:no-preference){.made-courtyard-stage{padding-top:72px;padding-bottom:64px;box-sizing:border-box}}
@@ -59,6 +59,6 @@
 /* The courtyard's sheets as four fixed stills, two by two, one to a row on a phone; laid on card paper like the depth map. */
 .public-made-stills{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-24) var(--space-16);max-width:960px;margin:var(--space-24) 0 0;padding:0;list-style:none}
 .public-made-stills figure{margin:0}
-.public-made-stills img{display:block;box-sizing:border-box;width:100%;height:auto;padding:var(--space-8);border-radius:2px;background:var(--relief-paper);box-shadow:var(--relief-card)}
+.public-made-stills img{display:block;box-sizing:border-box;width:100%;height:auto;border:1px solid var(--relief-edge);border-radius:3px;background:var(--relief-paper);box-shadow:var(--relief-card)}
 .public-made-stills figcaption{margin-top:10px;font-size:15px;line-height:1.5;color:#3d4f43}
 @media(max-width:560px){.public-made-stills{grid-template-columns:1fr}}

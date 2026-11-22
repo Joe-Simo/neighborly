@@ -6,6 +6,7 @@ import { askFirstRoom } from "@/lib/first-room";
 import { whenIdle } from "@/lib/idle";
 import { askSampleTicket, startSignIn, warmSignIn } from "@/lib/sample-ticket";
 import { warmAppStyles } from "@/lib/app-styles";
+import { SAMPLE_DOOR } from "@/lib/sample-door";
 
 /**
  * What every way into the sample does before the visitor arrives: pointing at it or reaching it by keyboard fetches
@@ -33,11 +34,7 @@ export function useSampleDoor(onClick?: MouseEventHandler<HTMLAnchorElement>) {
   };
 }
 
-/**
- * Where the home page's sample door leads: straight to the help line, where Rosa Fontaine's call waits with its drafted request,
- * so one Yes is the whole walk (the one-minute walk). The visitor is signed in there, in that room, as at /app.
- */
-export const SAMPLE_DOOR = "/app/help-line?intent=sample";
+export { SAMPLE_DOOR };
 
 /** The link into the sample conference. */
 export function SampleLink(props: Omit<ComponentProps<typeof Link>, "href">) {

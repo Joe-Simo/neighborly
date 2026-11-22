@@ -11,7 +11,9 @@ import { YearPaper } from "./year-paper";
 import { ThreadCard } from "./thread-card";
 import { ChapterSheet } from "./chapter-sheets";
 import { ReliefLean } from "./relief-lean";
-import { ClosingBand, Colophon } from "./public-ending";
+import { ClosingBand } from "./public-ending";
+import { Colophon } from "./public-foot";
+import { SampleLink } from "./sample-link";
 import { useSettled } from "@/lib/use-settled";
 import "./neighborly-continuation.css";
 import "./rooms.css";
@@ -97,7 +99,7 @@ export function NeighborlyContinuation() {
         <Link href="/privacy">Privacy</Link>
       </div>
       <ClosingBand />
-      <Colophon home="#story-start" />
+      <Colophon home="#story-start" Sample={SampleLink} />
     </section>
   </div>;
 }

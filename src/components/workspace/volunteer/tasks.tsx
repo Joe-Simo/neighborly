@@ -1,5 +1,6 @@
 "use client";
 
+import { numberLocales } from "@/lib/words/numbers";
 import "./volunteer.css";
 import { Suspense, lazy, useState } from "react";
 import { takeFocus } from "@/components/workspace/volunteer/commitment-rows";
@@ -66,7 +67,7 @@ export function TasksSection() {
               <dl>
                 <div>
                   <dt>{words.tasks.openNoun(data.tasks.filter((task) => !task.complete).length)}</dt>
-                  <dd><b>{new Intl.NumberFormat(words.locale).format(data.tasks.filter((task) => !task.complete).length)}</b></dd>
+                  <dd><b>{new Intl.NumberFormat(numberLocales[words.locale]).format(data.tasks.filter((task) => !task.complete).length)}</b></dd>
                 </div>
               </dl>
             </div>

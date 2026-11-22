@@ -13,6 +13,7 @@ import { LiveLoading } from "@/components/workspace/primitives";
 import { LiveFailure } from "@/components/workspace/states";
 import { sayFailure } from "@/components/workspace/failure";
 import { fill } from "@/lib/words/fill";
+import { formatCount } from "@/lib/words";
 import { filesWords } from "@/components/workspace/tools/files-words";
 
 /** Kept in step with convex/files.ts, which checks again: this only saves a wasted upload, and says why in these words. */
@@ -51,7 +52,7 @@ export default function UploadedFiles(place: Place) {
   const [busy, setBusy] = useState(false);
   const headingId = place.neighborId ? "neighbor-files-name" : "conference-files-name";
 
-  const size = (bytes: number) => (bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`);
+  const size = (bytes: number) => (bytes < 1024 * 1024 ? `${formatCount(Math.max(1, Math.round(bytes / 1024)), words.locale)} KB` : `${formatCount(Math.round(bytes / 1024 / 102.4) / 10, words.locale)} MB`);
 
   const chosen = async (event: ChangeEvent<HTMLInputElement>) => {
     const picked = event.currentTarget.files?.[0];
@@ -152,7 +153,7 @@ export default function UploadedFiles(place: Place) {
         </ul>
       )}
       <div className="tools-file-pick help-actions">
-        <input ref={picker} id={`${headingId}-pick`} type="file" accept={ACCEPT} onChange={(event) => void chosen(event)} disabled={busy} />
+        <input ref={picker} id={`${headingId}-pick`} type="file" tabIndex={-1} aria-hidden="true" accept={ACCEPT} onChange={(event) => void chosen(event)} disabled={busy} />
         <Button type="button" variant="outline" disabled={busy} onClick={() => picker.current?.click()}>{text.choose}</Button>
         <span className="tools-small">{text.help}</span>
       </div>
