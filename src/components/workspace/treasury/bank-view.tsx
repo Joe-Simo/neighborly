@@ -119,8 +119,7 @@ function BankView({
         <div>
           <dt>{w.figures.onItsWay}</dt>
           <dd>
-            {onItsWay < 0 ? "− " : ""}
-            <span className="count-up">{formatFigure(Math.abs(onItsWay))}</span>
+            <span className="count-up">{onItsWay < 0 ? "−\u00a0" : ""}{formatFigure(Math.abs(onItsWay))}</span>
             <small>
               {bank.waitingCount
                 ? fill(w.figures.inOut, { in: formatFigure(bank.onItsWayIn), out: formatFigure(bank.onItsWayOut) })
