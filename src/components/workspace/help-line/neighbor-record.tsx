@@ -904,18 +904,7 @@ function NeighborRecordView({
             <Lock size={14} aria-hidden="true" /> {text.openings.who}
           </span>
         </div>
-        <div className="help-opened">
-          {record.openings.map((opening, index) => (
-            <span key={`${opening.at}-${index}`}>
-              <strong>{opening.who}</strong> ·{" "}
-              {format(opening.at, {
-                weekday: "short",
-                hour: "numeric",
-                minute: "2-digit",
-              })}
-            </span>
-          ))}
-        </div>
+        <Openings openings={record.openings} text={text.openings} format={format} />
       </section>
 
       {record.mayRemove && (
@@ -933,5 +922,26 @@ function NeighborRecordView({
         </p>
       )}
     </>
+  );
+}
+
+/** One line per person per day, ten at first: a record opened twenty times by one person is one fact, not twenty. */
+function Openings({ openings, text, format }: { openings: Record["openings"]; text: Words["rooms"]["neighbors"]["record"]["openings"]; format: Workspace["format"] }) {
+  const [all, setAll] = useState(false);
+  const shown = all ? openings : openings.slice(0, 10);
+  return (
+    <div className="help-opened">
+      <ul>
+        {shown.map((opening) => (
+          <li key={`${opening.who}-${opening.at}`}>
+            <strong>{opening.who}</strong> ·{" "}
+            {fill(text.day(opening.count), { day: format(opening.at, { weekday: "short", month: "short", day: "numeric", year: "numeric" }), time: format(opening.at, { hour: "numeric", minute: "2-digit" }) })}
+          </li>
+        ))}
+      </ul>
+      {!all && openings.length > 10 && (
+        <Button variant="ghost" className="help-opened-all" onClick={() => setAll(true)}>{text.all(openings.length)}</Button>
+      )}
+    </div>
   );
 }

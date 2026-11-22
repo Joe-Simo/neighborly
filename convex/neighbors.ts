@@ -7,6 +7,7 @@ import { logNeighborOpening, neighborAccess, neighborRecord, openedBy, opening }
 import { mayUndo } from "./undo";
 import { TAKE_BACK_DAYS, callRow, lookups, nameKey, phoneKey, requestRow, toCallRow, toRequestRow } from "./assistance";
 import { paidTowardRequest } from "./treasury";
+import { groupOpenings } from "./openingDays";
 import schema from "./schema";
 import { longestLanguageName, spokenName } from "./spoken";
 import { tally } from "./counts";
@@ -441,7 +442,8 @@ export const record = query({
     requests: v.array(requestRow),
     calls: v.array(callRow),
     history: v.array(historyEvent),
-    openings: v.array(v.object({ who: v.string(), at: v.number() })),
+    /** One row per person per day in the conference's time zone: how many times, and the last time. */
+    openings: v.array(v.object({ who: v.string(), at: v.number(), count: v.number() })),
     /** Only an owner may remove the record; the mutation checks again. */
     mayRemove: v.boolean(),
   }),
@@ -474,7 +476,7 @@ export const record = query({
       ...requests.filter(given).map((request) => ({ type: "voucher" as const, at: (request.status === "closed" ? request.closedAt : null) ?? request.decidedAt ?? request.createdAt, requestId: request.id, item: request.voucher?.item ?? "", quantity: request.voucher?.quantity ?? 0, who: request.decidedByName ?? request.createdByName, closedBy: request.closedByName ?? "", takenBack: request.status === "closed", takeBackUntil: request.status === "paid" ? (request.decidedAt ?? 0) + TAKE_BACK_DAYS * 24 * 60 * 60 * 1000 : null, note: request.status === "closed" ? request.decisionNote : "" })),
       ...(await Promise.all(requests.filter((request) => request.source !== "import" && !given(request) && (request.status === "declined" || request.status === "closed")).map(async (request) => ({ type: "decision" as const, at: (request.status === "closed" ? request.closedAt : null) ?? request.decidedAt ?? request.createdAt, kind: request.kind, status: request.status === "closed" ? ("closed" as const) : ("declined" as const), note: [request.decisionNote, [...request.referrals, request.referral].filter(Boolean).length ? `Referred to ${[...request.referrals, request.referral].filter(Boolean).join(", ")}.` : ""].filter(Boolean).join(" "), who: request.status === "closed" && request.closedByName ? request.closedByName : request.amountApproved === null ? (request.decidedByName ?? request.createdByName) : "", approvedBy: request.amountApproved === null ? "" : (request.decidedByName ?? "") , approved: request.amountApproved ?? 0, paid: request.status === "closed" && request.amountApproved ? await paidTowardRequest(ctx, request.id) : 0 })))),
     ].sort((a, b) => b.at - a.at);
-    const opened = await ctx.db.query("auditEvents").withIndex("by_church_action_target", (q) => q.eq("churchId", churchId).eq("action", "neighbor.opened").eq("targetId", neighborId)).order("desc").take(20);
+    const opened = await ctx.db.query("auditEvents").withIndex("by_church_action_target", (q) => q.eq("churchId", churchId).eq("action", "neighbor.opened").eq("targetId", neighborId)).order("desc").take(500);
     const openers = new Map<string, Promise<string>>();
     const opener = (userId: (typeof opened)[number]["actorId"]) => {
       const known = openers.get(userId) ?? ctx.db.query("memberships").withIndex("by_church_user", (q) => q.eq("churchId", churchId).eq("userId", userId)).unique().then((member) => member?.name ?? "A former member");
@@ -483,7 +485,7 @@ export const record = query({
     };
     return {
       mayRemove: member.role === "owner",
-      openings: await Promise.all(opened.map(async (event) => ({ who: await opener(event.actorId), at: event.at }))),
+      openings: await Promise.all(groupOpenings(opened.map((event) => ({ who: event.actorId, at: event.at })), church?.timeZone ?? "UTC").slice(0, 60).map(async (day) => ({ ...day, who: await opener(day.who) }))),
       neighbor: toRow(neighbor),
       household: (neighbor.household ?? []).map((person) => ({ ...person, age: person.birthYear === undefined ? null : yearStart.year - person.birthYear })),
       money: neighbor.money ?? null,

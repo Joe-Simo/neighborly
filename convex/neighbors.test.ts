@@ -113,7 +113,7 @@ describe("opening a record", () => {
     // With its own line the read returns exactly what it did before: one opening, one line.
     const record = await as(ids.coordinator).query(api.neighbors.record, { churchId, neighborId: ids.rosa, opening: mine });
     expect(record).toMatchObject({ neighbor: { name: "Esperanza Montoya" }, openings: [{ who: "Thomas Okafor" }] });
-    expect(await readRecord(as(ids.coordinator), { churchId, neighborId: ids.rosa })).toMatchObject({ ...record, openings: [{ who: "Thomas Okafor" }, { who: "Thomas Okafor" }] });
+    expect(await readRecord(as(ids.coordinator), { churchId, neighborId: ids.rosa })).toMatchObject({ ...record, openings: [{ who: "Thomas Okafor", count: 2 }] });
     expect((await openings(t)).filter((line) => line.action === "neighbor.opened")).toHaveLength(2);
   });
 
