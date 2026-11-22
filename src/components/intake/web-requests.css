@@ -22,3 +22,17 @@
 .web-requests .web-partner > span { min-width: 0; }
 .web-requests .web-link code { word-break: break-all; }
 .web-requests .web-days { list-style: none; padding: 0; margin: 8px 0; }
+/* A web request is a stack of lines, not a call row: it leaves the help row's leaf-words-actions grid, so the
+   "passed on by" line, the contact and the asks read top to bottom and its buttons sit side by side. */
+.web-requests .help-row.web-row { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+.web-requests .web-row > .live-row-actions,
+.web-requests .web-row .web-ask .live-row-actions { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 8px; margin-top: 12px; }
+.web-requests .web-row .web-ask { margin-top: 12px; }
+.web-requests .web-row .web-ask p { margin: 0; }
+/* The partner form's language choice: each radio by its own word, with room between the two. */
+.web-requests .web-language { display: flex; flex-wrap: wrap; gap: 4px 24px; border: 0; padding: 0; margin: 0; }
+.web-requests .web-language legend { width: 100%; margin-bottom: 4px; }
+.web-requests .web-language .web-choice { display: flex; gap: 8px; align-items: center; min-height: 44px; }
+.web-requests .web-partners .live-form input:not([type="radio"]) { max-width: 420px; }
+.web-requests .web-partners .live-form > [data-slot="button"] { justify-self: start; align-self: flex-start; width: auto; }
+.web-requests .web-partner + .web-partner { margin-top: 4px; }
