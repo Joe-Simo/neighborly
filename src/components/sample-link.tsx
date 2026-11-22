@@ -3,6 +3,9 @@
 import Link from "next/link";
 import type { ComponentProps, MouseEvent, MouseEventHandler, PointerEvent } from "react";
 import { askFirstRoom } from "@/lib/first-room";
+
+/** The sample's function reference, fetched only when the card nears the window, so public pages do not carry convex/server. */
+const fromPublicPage = () => import("../../convex/_generated/api").then(({ api }) => api.demo.firstRoom);
 import { whenIdle } from "@/lib/idle";
 import { askSampleTicket, startSignIn, warmSignIn } from "@/lib/sample-ticket";
 import { warmAppStyles } from "@/lib/app-styles";
@@ -19,7 +22,7 @@ export function useSampleDoor(onClick?: MouseEventHandler<HTMLAnchorElement>) {
     onPointerDown: (event: PointerEvent<HTMLAnchorElement>) => {
       if (event.button !== 0) return;
       askSampleTicket();
-      askFirstRoom();
+      askFirstRoom(fromPublicPage);
       warmSignIn();
       startSignIn();
     },
@@ -54,7 +57,7 @@ export function warmWhenNear(link: HTMLElement | null) {
     // Both lay tags and run code as they arrive, so they are asked for once the page is idle, never in a scroll's frame.
     cancel = whenIdle(() => {
       warmSignIn();
-      askFirstRoom();
+      askFirstRoom(fromPublicPage);
     }, 1000);
   }, { rootMargin: "600px 0px" });
   near.observe(link);
