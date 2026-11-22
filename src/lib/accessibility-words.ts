@@ -50,7 +50,7 @@ const es: PublicWords = {
     { title: "Lo que buscamos", blocks: ["Kind Helps está hecho para cumplir las WCAG 2.2 en los niveles A y AA, en inglés y en español. Cada prueba de abajo se hizo el 19 de noviembre de 2026. Que una prueba pase quiere decir que lo que revisó pasó ese día; no es una promesa de que nada falla."] },
     { title: "Qué se probó", blocks: [[
       ["Ningún fallo de axe.", "axe-core 4.14 (WCAG 2.2 A y AA) no encontró ninguno en las 13 secciones, en inglés y en español, como responsable y como miembro, a 390 y 1440 píxeles, ni en las 10 páginas públicas, incluida la de entrar. Lighthouse 12.6 dio 100 en accesibilidad en sus 66 pasadas."],
-      ["Letra grande:", "cada sala en inglés y en español con zoom al 200 %, con el tamaño de letra más grande de iOS a 360 y 1440 píxeles, y reacomodada a 320 píxeles: 104 revisiones. La primera vuelta encontró fallos en 7 salas, que se corrigieron. Después de corregirlas, 97 pasan limpias y 7 muestran algo que elegimos a propósito, que se explica en los límites conocidos."],
+      ["Letra grande:", "cada sección en inglés y en español con zoom al 200 %, con el tamaño de letra más grande de iOS a 360 y 1440 píxeles, y reacomodada a 320 píxeles: 104 revisiones. La primera vuelta encontró fallos en 7 secciones, que se corrigieron. Después de corregirlas, 97 pasan limpias y 7 muestran algo que elegimos a propósito, que se explica en los límites conocidos."],
       ["Teclado:", "52 hojas y diálogos, cada uno a 360 y 1440 píxeles: se abren con el teclado, el foco se queda dentro, cada uno tiene un solo nombre, Escape lo cierra y el foco vuelve a lo que lo abrió. Todos pasan. Seis tenían un calendario que se leía como un segundo diálogo; se corrigió y se volvió a revisar."],
       ["Colores forzados:", "la semana, la línea de ayuda, los vecinos, las visitas, los compromisos y la tesorería, a 390 y 1440 píxeles. Las marcas que daban su sentido solo con el color, como una palomita o un anillo de espera, ahora conservan su forma con los colores del sistema."],
     ]] },
@@ -58,7 +58,7 @@ const es: PublicWords = {
       ["Las notas de una visita escrita", "se ven en la lista como una sola línea con puntos suspensivos, aun con letra grande. Las notas completas se abren en la visita."],
       ["Una dirección de correo", "puede partirse a mitad de línea con letra grande, y también una palabra con guion. El nombre de una persona nunca se parte."],
       ["Contraste sobre el arte:", "donde las palabras están cerca del arte de papel pintado, axe no puede medir el contraste y pide que una persona lo mire. Cada caso se revisó a ojo; las palabras están sobre papel liso."],
-      ["Dónde probamos:", "las salas se probaron con la conferencia de ejemplo de la app, con las mismas pantallas que ve un miembro que entró. Todavía no hemos probado con todos los lectores de pantalla ni con personas que usan uno cada día."],
+      ["Dónde probamos:", "las secciones se probaron con la conferencia de ejemplo de la app, con las mismas pantallas que ve un miembro que entró. Todavía no hemos probado con todos los lectores de pantalla ni con personas que usan uno cada día."],
     ]] },
   ],
   questions: {
