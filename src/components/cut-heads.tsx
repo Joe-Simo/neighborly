@@ -6,7 +6,7 @@ import { whenIdle } from "@/lib/idle";
 
 /**
  * Section heads as cut paper, by the rule of "Faith, lived out.": each public section head is cut from the page and hinged at its foot.
- * Below the fold it lies back at 60° (never further), and it stands, whole, while its foot crosses the bottom fifth of the window:
+ * Below the fold it lies back at 60° (never further), and it stands, whole, in one short eased move as soon as its foot comes into the window (never held part-way by the scroll):
  * once a visit, never lying back again. Its foot shade and cut line lie flat on the page under it, cast along the one sun. Its type is never split or redrawn: the head turns as one.
  * Only its transform changes, and only while one is in sight. With Reduce Motion, or without script, every head simply stands.
  *
@@ -22,21 +22,21 @@ let h = 0;
 const feet = new Map<HTMLElement, number>();
 const read = () => { h = innerHeight; feet.clear(); seen.forEach(head => feet.set(head, head.getBoundingClientRect().bottom)); };
 
+/** How long a head takes to stand once it has begun: its CSS transition (cut-heads.css) and a little more. */
+const standFor = 700;
 const place = () => {
-  let changed = false;
   seen.forEach(head => {
     const foot = feet.get(head);
-    if (foot === undefined) return;
-    // It moves only while its foot is in the bottom fifth of the window; above that it stands, and once stood it stays stood for the visit.
-    const t = Math.max(0, Math.min(1, (h - foot) / (h * .2)));
-    const stand = (1 - (1 - t) ** 3).toFixed(3);
-    if (set.get(head) === stand) return;
-    set.set(head, stand);
-    changed = true;
-    if (stand === "1.000") { head.dataset.cut = "stood"; head.style.removeProperty("--stand"); seen.delete(head); watch?.unobserve(head); return; }
-    head.style.setProperty("--stand", stand);
+    if (foot === undefined || set.has(head)) return;
+    // As soon as its foot has come into the window it stands, whole, in one short eased move (the transition on --stand),
+    // and stays stood for the visit. It is never left part-way by where the scroll stopped.
+    if (foot > h * .98) return;
+    set.set(head, "1");
+    seen.delete(head); watch?.unobserve(head);
+    head.style.setProperty("--stand", "1");
+    setTimeout(() => { if (set.get(head) !== "1") return; head.dataset.cut = "stood"; head.style.removeProperty("--stand"); }, standFor);
   });
-  return changed;
+  return false;
 };
 const { ask: wake, drop: rest } = frameStep(read, place);
 
