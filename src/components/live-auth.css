@@ -12,6 +12,7 @@
   isolation: isolate;
   display: grid;
   align-items: center;
+  min-height: 100vh;
   min-height: 100svh;
   /* The sheet's top stays put whichever tab is open: it sits where the tallest sheet (a new account, about 760px)
      would be centred, instead of each sheet centring itself and the tabs jumping under the hand. */

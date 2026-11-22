@@ -163,6 +163,7 @@ summary:focus-visible,
   position: relative;
   isolation: isolate;
   width: 100%;
+  height: 100vh;
   height: 100svh;
   min-height: 720px;
   overflow: hidden;
@@ -393,6 +394,7 @@ summary:focus-visible,
   top: 8vh;
   width: min(620px, 93vw);
   max-width: none;
+  max-height: 84vh;
   max-height: 84svh;
   overflow-y: auto;
   translate: none;
@@ -785,6 +787,7 @@ summary:focus-visible,
 @media (max-width: 700px) {
   .mural-screen {
     height: auto;
+    min-height: 100vh;
     min-height: 100svh;
     padding: 29px 24px 22px;
     display: grid;
@@ -1069,6 +1072,7 @@ summary:focus-visible,
 @media (701px <= width <= 1023px) {
   .mural-screen[data-artwork="cast"] {
     height: auto;
+    min-height: 100vh;
     min-height: 100svh;
     padding: 29px 24px 22px;
     display: grid;

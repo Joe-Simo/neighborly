@@ -80,7 +80,7 @@ body:has(.door-sweep) :is(.paper-loading-mark, .paper-loading-words, .live-openi
 .door-fold-half { position: absolute; inset: 0; overflow: hidden; transform-origin: 50% 50%; backface-visibility: hidden; will-change: transform; }
 .door-fold-half[data-half="top"] { clip-path: inset(0 0 50% 0); z-index: 1; }
 .door-fold-half[data-half="foot"] { clip-path: inset(50% 0 0 0); box-shadow: 0 -1px 0 rgb(40 60 50 / 0.12); }
-.door-fold-half .entry { min-height: 100dvh; }
+.door-fold-half .entry { min-height: 100vh; min-height: 100dvh; }
 /* The copy is the sheet as it stands: nothing on it is laid down again. */
 .door-fold *, .door-fold *::before, .door-fold *::after { animation: none !important; transition: none !important; }
 @media (prefers-reduced-motion: reduce) { .door-fold { display: none; } }

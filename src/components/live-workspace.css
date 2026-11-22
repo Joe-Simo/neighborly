@@ -1,4 +1,5 @@
 .live-app {
+  min-height: 100vh;
   min-height: 100svh;
   background: #f7f4ed;
   color: #283c32;
@@ -392,6 +393,7 @@
 }
 .live-dialog {
   max-width: 560px !important;
+  max-height: 90vh;
   max-height: 90svh;
   overflow-y: auto;
   background: #f5f3ec !important;
@@ -633,6 +635,7 @@
     width: min(100% - 44px, 480px);
     margin: 0 auto;
     padding-top: var(--space-32);
+    min-height: 100vh;
     min-height: 100svh;
   }
   .live-auth-art {
@@ -880,6 +883,7 @@
     margin: 0 auto;
     padding-top: 0;
     padding-bottom: calc(50px + env(safe-area-inset-bottom));
+    min-height: 100vh;
     min-height: 100svh;
   }
   .live-auth-art {
