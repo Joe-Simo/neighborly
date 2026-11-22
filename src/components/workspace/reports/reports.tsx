@@ -75,6 +75,9 @@ function Report() {
   const churchId = data.church.id;
   const at = useHour();
   const onRecord = useQuery(api.reports.years, at ? { churchId, at } : "skip");
+  // The same readings the week's digest asks (week-digest.tsx), shared with it: the room waits for them (below).
+  const allowed = useQuery(api.access.canOpenNeighborRecords, { churchId });
+  const digest = useQuery(api.digest.week, allowed && at ? { churchId, at } : "skip");
   const [chosen, setChosen] = useState<number>();
   const [quarter, setQuarter] = useState<Quarter>();
   const [done, setDone] = useState("");
@@ -143,7 +146,9 @@ function Report() {
     }, 2000);
   }, [shown, data.church.name, data.church.sample, words, sampleSaid]);
 
-  if (!onRecord || !shown || year === undefined) return <ReportLoading />;
+  // The week's digest and the national form's button stand above the figures, so the room waits for them too: on a slow
+  // connection they would otherwise land after the figures and push them down.
+  if (!onRecord || !shown || year === undefined || allowed === undefined || (allowed && digest === undefined)) return <ReportLoading />;
 
   function saveSpreadsheet(saved: NonNullable<typeof shown>) {
     const name = csvFileName(saved, data.church.name);
@@ -154,10 +159,9 @@ function Report() {
 
   return (
     <>
-    <Suspense fallback={null}>
+    <Suspense fallback={<ReportLoading />}>
       <WeekDigest />
       {!quarter && <SvdpSheet report={shown} />}
-    </Suspense>
     <ReportView
       report={shown}
       groupName={data.church.name}
@@ -218,6 +222,7 @@ function Report() {
       onPrint={() => window.print()}
       onSpreadsheet={() => saveSpreadsheet(shown)}
     />
+    </Suspense>
     <Suspense fallback={null}>
       <HousingSection key={year} year={year} read={useHousingSummary} lines={housingLines} />
     </Suspense>
