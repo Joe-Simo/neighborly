@@ -55,7 +55,9 @@ function shareTags(language: IntakeLanguage, w: IntakeWords) {
   return [
     `<meta name="description" content="${esc(w.deck)}">`,
     `<link rel="canonical" href="https://kindhelps.com${path}">`,
-    `<link rel="alternate" hreflang="${language === "es" ? "en" : "es"}" href="https://kindhelps.com${language === "es" ? "/help" : "/ayuda"}">`,
+    // Both languages and the default, the same set on each page, so a search engine pairs them (as the other public pages do).
+    `<link rel="alternate" hreflang="en" href="https://kindhelps.com/help"><link rel="alternate" hreflang="es" href="https://kindhelps.com/ayuda">`,
+    `<link rel="alternate" hreflang="x-default" href="https://kindhelps.com/help">`,
     `<meta property="og:type" content="website"><meta property="og:site_name" content="Kind Helps">`,
     `<meta property="og:locale" content="${language === "es" ? "es_LA" : "en_US"}">`,
     `<meta property="og:url" content="https://kindhelps.com${path}">`,
