@@ -21,6 +21,7 @@ import { words as wordsFor, type Language, type Words } from "@/lib/words";
 import { useBook } from "@/lib/words/use-book";
 import type { LiveArea } from "@/components/workspace/areas";
 import { stateWords } from "@/components/workspace/failure";
+import { edgeWords } from "@/lib/edge-words";
 import { LiveRoomLoading } from "@/components/workspace/primitives";
 import "@/components/public-state.css";
 import { LiveWorkspace } from "@/components/workspace/shell";
@@ -418,16 +419,17 @@ function LiveRooms({
   // (a session the backend will not accept, no connection) is said plainly, with a way on and a way out.
   const waiting = !leavingForSample && !signedOut && (!asking || !viewer || sampleVisitor === undefined);
   const offline = useOffline();
-  // A kept room opened with no connection: when the connection returns, the sign-in service (whose own script never
-  // came) is brought back by opening the page once more, the kept room drawn again at once and the cover laid over the
-  // change by the app (SceneDelegate, kindHelpsReload), so the page is never seen half there. Once a visit.
+  // A page opened with no connection (a kept room, or the app's page kept by the offline worker): when the connection
+  // returns, the sign-in service (whose own script never came) is brought back by opening the page once more, a kept
+  // room drawn again at once and the cover laid over the change by the app (SceneDelegate, kindHelpsReload), so the
+  // page is never seen half there. Once a visit.
   const wasOffline = useRef(false);
   useEffect(() => {
     if (offline) {
       wasOffline.current = true;
       return;
     }
-    if (!wasOffline.current || !kept || (window as { Clerk?: { loaded?: boolean } }).Clerk?.loaded) return;
+    if (!wasOffline.current || (window as { Clerk?: { loaded?: boolean } }).Clerk?.loaded) return;
     wasOffline.current = false;
     try {
       if (sessionStorage.getItem("kind-helps:back-online")) return;
@@ -438,7 +440,7 @@ function LiveRooms({
     const reload = (window as { webkit?: { messageHandlers?: { kindHelpsReload?: { postMessage: (body: null) => void } } } }).webkit?.messageHandlers?.kindHelpsReload;
     if (reload) reload.postMessage(null);
     else window.location.reload();
-  }, [offline, kept]);
+  }, [offline]);
   const [waitedLong, setWaitedLong] = useState(false);
   useEffect(() => {
     // The wait is counted with a connection only: it starts again from the moment the connection returns.
@@ -506,6 +508,9 @@ function LiveRooms({
   }
   if (leavingForSample) return <LiveRoomLoading label={authWords[deviceLanguage].sampleOpening} />;
   // The shared visitor never starts a conference. With none to show, theirs is being rebuilt.
+  // With no connection there is nothing to wait for: the launch line would stand for as long as the device is offline
+  // (the sign-in service's script may never have come), so it is said plainly, until the connection returns.
+  if (waiting && offline) return <LaunchFailure language={deviceLanguage} offline />;
   if (waiting) return waitedLong && bookReady ? <LaunchFailure language={deviceLanguage} leave={signOut} /> : <LiveRoomLoading />;
   if (sampleVisitor && !churchId) return <SampleResetting language={deviceLanguage} leave={signOut} />;
   if (!bookReady) return <LiveRoomLoading />;
@@ -725,7 +730,8 @@ function PageMore({
 }
 
 /** The workspace did not arrive: one line, one sentence, try again, and sign out as the quiet way out. */
-function LaunchFailure({ language, leave }: { language: Language; leave: () => void }) {
+/** The app could not open: no answer in ten seconds, or (`offline`) no connection at all, said as the offline page says it. */
+function LaunchFailure({ language, leave, offline = false }: { language: Language; leave?: () => void; offline?: boolean }) {
   const said = wordsFor(language);
   const states: Partial<Record<keyof typeof stateWords, string>> = said.states;
   return (
@@ -733,16 +739,18 @@ function LaunchFailure({ language, leave }: { language: Language; leave: () => v
       <main className="live-auth" lang={said.locale}>
         <div className="live-auth-art" aria-hidden="true" />
         <p className="public-state-mark">kind helps</p>
-        <h1 role="alert">{states.launchTitle ?? stateWords.launchTitle}</h1>
-        <p className="live-deck">{states.launchDeck ?? stateWords.launchDeck}</p>
+        <h1 role="alert">{offline ? said.states.offlineTitle : (states.launchTitle ?? stateWords.launchTitle)}</h1>
+        <p className="live-deck">{offline ? edgeWords[language].offlineAbout : (states.launchDeck ?? stateWords.launchDeck)}</p>
         <Button onClick={() => window.location.reload()} style={{ marginTop: 24 }}>
           {said.states.tryAgain}
         </Button>
-        <p style={{ marginTop: 16 }}>
-          <button type="button" className="live-link" onClick={leave}>
-            {said.shell.signOut}
-          </button>
-        </p>
+        {leave && (
+          <p style={{ marginTop: 16 }}>
+            <button type="button" className="live-link" onClick={leave}>
+              {said.shell.signOut}
+            </button>
+          </p>
+        )}
       </main>
     </div>
   );
