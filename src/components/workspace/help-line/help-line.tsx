@@ -1,5 +1,6 @@
 "use client";
 
+import { phoneLine } from "@/lib/keys";
 import { systemSaid } from "@/lib/system-sentences";
 import { numberLocales } from "@/lib/words/numbers";
 import { DateLeaf } from "@/components/workspace/primitives";
@@ -902,7 +903,7 @@ function HelpLineView({
                     {call.phone && (
                       // The number calls: on a phone a tap rings it, and the row's menu offers it first as Call.
                       <a className="help-phone" href={`tel:${call.phone.replace(/[^\d+]/g, "")}`}>
-                        {call.phone}
+                        {phoneLine(call.phone)}
                       </a>
                     )}
                   </h3>

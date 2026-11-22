@@ -6,7 +6,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { hour, hourAsked, neighborAccess } from "./access";
 import { callbackOwner } from "./assistance";
 import { intakeMatch } from "../src/lib/duplicates";
-import { phoneKey } from "../src/lib/keys";
+import { phoneKey, phoneLine } from "../src/lib/keys";
 import { bbox, byDistance, circlePolygon, covering, distanceMiles, reachOf, validArea, validMiles, validZip, type Point, type Team } from "./area";
 import { helpKind } from "./schema";
 import { deliveryConfiguration, resend } from "./notifications";
@@ -391,7 +391,7 @@ export function publicPhone(typed: string): string | null {
   if (typed.length > 30 || /[^\d\s().+-]/.test(typed)) return null;
   const digits = typed.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "");
   if (!/^[2-9]\d{2}[2-9]\d{6}$/.test(digits)) return null;
-  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  return phoneLine(digits);
 }
 const DAY_TEXT = /^\d{4}-\d{2}-\d{2}$/;
 /**
