@@ -37,7 +37,7 @@ const eslintConfig = defineConfig([
     // APIs Safari does not have. Calling one unguarded throws on iPhone and iPad (it crashed the home page once), so every use goes through
     // the one helper that falls back where they are missing.
     files: ["src/**/*.{ts,tsx}"],
-    ignores: ["src/lib/idle.ts"],
+    ignores: ["src/lib/idle.ts", "src/lib/frame-or-task.ts", "src/lib/frame-or-task.test.ts"],
     rules: {
       "no-restricted-globals": ["error",
         { name: "requestIdleCallback", message: "Safari has no requestIdleCallback. Use whenIdle from @/lib/idle." },

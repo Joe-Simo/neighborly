@@ -1,10 +1,13 @@
+import { frameOrTask } from "./frame-or-task";
+
 /**
  * Resolves once the page's first frame has been drawn: the first animation frame, then the task after it (that frame's paint).
  * A browser that is not yet drawing (a tab still opening, a phone busy elsewhere) fires no frames; idle work waits for it, so
- * nothing further down the page is fetched or made before the first screen is on the glass.
+ * nothing further down the page is fetched or made before the first screen is on the glass. A page that says it is visible
+ * but draws nothing (a window behind another) goes on after an idle callback instead (frame-or-task.ts).
  */
 let drawn: Promise<void> | undefined;
-const firstFrame = () => (drawn ??= new Promise<void>((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0))));
+const firstFrame = () => (drawn ??= new Promise<void>((resolve) => frameOrTask(() => setTimeout(resolve, 0))));
 
 /**
  * Runs work when the page is idle, after its first frame, and returns how to call it off. Safari has no requestIdleCallback, so there

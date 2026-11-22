@@ -17,6 +17,7 @@ import { holdAndTurn } from "./courtyard-door";
 import { underneathIsReady } from "@/lib/room-whole";
 import { authWords, DrawnIn, entryLanguageNow, giveTabBack, useEntryLanguage, useJustLeft, type AuthError } from "./live-auth-words";
 import { EntrySheet } from "./entry-sheet";
+import { afterAPaint } from "@/lib/next-look";
 
 export type LiveEntryIntent = "start" | "join" | "signin";
 type Flow = "signIn" | "signUp" | "reset";
@@ -219,7 +220,8 @@ export function LiveAuth({
    */
   async function holdForTurn() {
     if (document.documentElement.dataset.shell !== "ios") return;
-    await new Promise((painted) => requestAnimationFrame(() => requestAnimationFrame(painted)));
+    // The way in waits on this, so it goes on in a page that draws no frames too (next-look.ts).
+    await new Promise<void>((painted) => afterAPaint(painted));
     // The page as it stands: the app's own frame with the sheet in it, so it is drawn exactly as it was.
     const sheet = document.querySelector<HTMLElement>(".live-app .entry")?.closest<HTMLElement>(".live-app");
     if (!sheet) return;
