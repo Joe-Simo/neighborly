@@ -44,6 +44,7 @@ const en = {
   assistant: "A person reads every request. Our assistant may suggest the kind of help; a person decides.",
   send: "Send my request",
   sending: "Sending…",
+  offline: "You're not online right now, so nothing was sent. What you typed is still here: send it again once you're connected, or call 211.",
   danger: {
     title: "If you're in danger right now, call 911.",
     deck: "If you're thinking about hurting yourself, call or text 988. It's free, private and open all day and night.",
@@ -213,6 +214,7 @@ const es: IntakeWords = {
   assistant: "Una persona lee cada petición. Nuestro asistente puede sugerir el tipo de ayuda; una persona decide.",
   send: "Enviar mi petición",
   sending: "Enviando…",
+  offline: "No tienes conexión ahora, así que no se envió nada. Lo que escribiste sigue aquí: envíalo de nuevo cuando tengas conexión, o llama al 211.",
   danger: {
     title: "Si estás en peligro ahora, llama al 911.",
     deck: "Si estás pensando en hacerte daño, llama o manda un mensaje al 988. Es gratis, privado y atiende de día y de noche.",
