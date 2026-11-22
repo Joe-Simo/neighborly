@@ -1,5 +1,6 @@
 "use client";
 
+import { saveFile } from "@/lib/save-file";
 import { startTransition, useState } from "react";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,9 +43,7 @@ function HousingProviders({ year, read, lines }: { year: number; read: ReadHousi
   function save() {
     if (!report) return;
     const name = housingFileName(report, data.church.name);
-    const address = URL.createObjectURL(new Blob([housingCsv(report, data.church.name, data.church.sample, words, lines)], { type: "text/csv;charset=utf-8" }));
-    Object.assign(document.createElement("a"), { href: address, download: name }).click();
-    URL.revokeObjectURL(address);
+    saveFile(new Blob([housingCsv(report, data.church.name, data.church.sample, words, lines)], { type: "text/csv;charset=utf-8" }), name);
     startTransition(() => setDone(words.rooms.reports.saved(name)));
   }
 

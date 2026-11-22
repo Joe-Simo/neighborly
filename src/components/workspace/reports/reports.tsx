@@ -1,5 +1,6 @@
 "use client";
 
+import { saveFile } from "@/lib/save-file";
 import { Component, Suspense, lazy, startTransition, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { whenIdle } from "@/lib/idle";
 import { useAction } from "convex/react";
@@ -145,10 +146,7 @@ function Report() {
 
   function saveSpreadsheet(saved: NonNullable<typeof shown>) {
     const name = csvFileName(saved, data.church.name);
-    const address = URL.createObjectURL(new Blob([written.current?.report === saved ? written.current.text : reportCsv(saved, data.church.name, data.church.sample, words, sampleSaid)], { type: "text/csv;charset=utf-8" }));
-    const link = Object.assign(document.createElement("a"), { href: address, download: name });
-    link.click();
-    URL.revokeObjectURL(address);
+    saveFile(new Blob([written.current?.report === saved ? written.current.text : reportCsv(saved, data.church.name, data.church.sample, words, sampleSaid)], { type: "text/csv;charset=utf-8" }), name);
     // The saved line is said after the press is answered: the file is already on its way.
     startTransition(() => setDone(w.saved(name)));
   }

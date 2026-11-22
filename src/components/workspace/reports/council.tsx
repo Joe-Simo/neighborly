@@ -1,5 +1,6 @@
 "use client";
 
+import { saveFile } from "@/lib/save-file";
 import { startTransition, useEffect, useState, type FormEvent } from "react";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
@@ -171,9 +172,7 @@ function CouncilYearTable({ councilId, year, money }: { councilId: Id<"councils"
   function save() {
     if (!report) return;
     const name = councilFileName(report);
-    const address = URL.createObjectURL(new Blob([councilCsv(report, w)], { type: "text/csv;charset=utf-8" }));
-    Object.assign(document.createElement("a"), { href: address, download: name }).click();
-    URL.revokeObjectURL(address);
+    saveFile(new Blob([councilCsv(report, w)], { type: "text/csv;charset=utf-8" }), name);
     startTransition(() => setDone(words.rooms.reports.saved(name)));
   }
 

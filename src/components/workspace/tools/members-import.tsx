@@ -1,5 +1,6 @@
 "use client";
 
+import { saveFile } from "@/lib/save-file";
 import { useState } from "react";
 import { useAction, useConvex } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
@@ -79,9 +80,7 @@ export function MembersImport() {
         <Button
           onClick={() => {
             const links = results.flatMap((row) => (row.token ? [{ name: row.name, email: row.email, token: row.token }] : []));
-            const url = URL.createObjectURL(new Blob([invitationLinksCsv(links, window.location.origin)], { type: "text/csv;charset=utf-8" }));
-            Object.assign(document.createElement("a"), { href: url, download: data.church.sample ? "sample-invitation-links.csv" : "invitation-links.csv" }).click();
-            URL.revokeObjectURL(url);
+            saveFile(new Blob([invitationLinksCsv(links, window.location.origin)], { type: "text/csv;charset=utf-8" }), data.church.sample ? "sample-invitation-links.csv" : "invitation-links.csv");
           }}
         >
           <Download size={18} aria-hidden="true" /> {tools.members.downloadLinks}
