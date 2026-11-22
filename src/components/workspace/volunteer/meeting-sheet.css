@@ -12,4 +12,4 @@
   html[data-print="meeting"] .meeting-dialog { position: static !important; transform: none !important; max-height: none !important; overflow: visible !important; box-shadow: none !important; }
 }
 /* Why "Email to members" cannot be pressed yet: one muted line on the button row, whole, never faded. */
-.meeting-sheet .meeting-send-why { flex: 1 0 100%; margin: 0; font-size: 14px; line-height: 1.4; color: var(--live-muted); text-align: end; }
+.meeting-sheet .meeting-send-why { flex: 1 0 100%; margin: 0; font-size: 13px; line-height: 1.4; color: var(--live-muted); text-align: end; }

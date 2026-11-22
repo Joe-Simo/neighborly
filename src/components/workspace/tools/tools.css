@@ -22,7 +22,7 @@
 }
 .tools-rota { margin-top: var(--space-32); }
 .tools-rota header p { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: var(--caps-track); color: var(--live-muted); }
-.tools-rota header h3 { margin: var(--space-4) 0 var(--space-16); font: 400 28px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; color: var(--live-ink); }
+.tools-rota header h3 { margin: var(--space-4) 0 var(--space-16); font: 400 26px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; color: var(--live-ink); }
 .tools-rota td { vertical-align: top; }
 .tools-rota td:first-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .tools-rota td small { display: block; color: var(--live-muted); font-size: 15px; }

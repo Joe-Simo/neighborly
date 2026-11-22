@@ -72,7 +72,7 @@
 @container book-page (max-width: 300px) {
   .book-sheet { padding-inline: 16px; }
   .book-columns :is(th, td) { font-size: 13px; }
-  .report-book .book-columns thead th { font-size: 12px; letter-spacing: 0.02em; }
+  .report-book .book-columns thead th { font-size: 13px; letter-spacing: 0.02em; }
 }
 .book-right { container: book-page / inline-size; }
 /* A total's rule is the ink one: the faint rule of the row above would otherwise win where the two meet. The row

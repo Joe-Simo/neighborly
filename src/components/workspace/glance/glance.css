@@ -5,7 +5,7 @@
 .glance-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 2px solid #596e51; }
 .glance-tiles a { position: relative; display: grid; gap: 6px; align-content: start; min-height: 44px; padding: var(--space-16) 12px var(--space-16) 0; border-bottom: 1px solid var(--live-line); color: var(--live-ink); text-decoration: none; }
 .glance-tiles a:nth-child(2n) { padding-left: 12px; border-left: 1px solid var(--live-line); }
-.glance-tiles a > span:first-child { font-size: 14px; line-height: 1.3; color: var(--live-muted); text-decoration: underline; text-decoration-color: #b9c4b0; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.glance-tiles a > span:first-child { font-size: 15px; line-height: 1.3; color: var(--live-muted); text-decoration: underline; text-decoration-color: #b9c4b0; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 .glance-tiles a:is(:hover, :active) > span:first-child { text-decoration-thickness: 2px; text-decoration-color: currentColor; }
 /* Something here waits for a person: a small ochre corner, the paper rule's colour for waiting. */
 .glance-tiles a[data-waits]::before { content: ""; position: absolute; top: 0; right: 0; width: 10px; height: 10px; background: linear-gradient(225deg, var(--help-ochre, #b98a2f) 50%, transparent 50%); }
