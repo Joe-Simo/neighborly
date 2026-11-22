@@ -25,7 +25,7 @@ import type { LiveArea } from "@/components/workspace/areas";
 import { readFailure } from "@/components/workspace/failure";
 import { sayRefused } from "@/lib/refusals";
 import { LaunchMark, LiveLoading } from "@/components/workspace/primitives";
-import { LiveConnection, LiveWaiting, RoomBoundary } from "@/components/workspace/states";
+import { LiveConnection, LiveWaiting, RoomBoundary, RoomFault } from "@/components/workspace/states";
 import { sayZoneLater, zoneName, ZoneSaid } from "@/components/workspace/zone";
 import { LiveDialog } from "@/components/workspace/live-dialog";
 import { WorkspaceKeys } from "@/components/workspace/keys";
@@ -78,6 +78,7 @@ export function LiveWorkspace({
   keptNotice,
   requestCommitments = NO_COMMITMENTS,
   roomWaiting = false,
+  listsFault,
 }: {
   area: LiveArea;
   data: LiveWorkspaceData;
@@ -95,6 +96,8 @@ export function LiveWorkspace({
   requestCommitments?: LiveWorkspaceData["commitments"];
   /** The room's own first lists are still on their way: the frame stands and the room says it is opening. */
   roomWaiting?: boolean;
+  /** The room's own lists could not be read (live-app.tsx): the room says so, with this to ask them again. */
+  listsFault?: () => void;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dialog, setDialog] = useState<ActionKind | null>(null);
@@ -848,7 +851,11 @@ export function LiveWorkspace({
                 <div className="live-room" hidden={!here}>
                   <Activity mode={here ? "visible" : "hidden"}>
                     <RoomBoundary>
-                      <RoomBody Section={room.Section} waiting={here && roomWaiting} label={words.states.opening} pagination={here ? pagination : null} />
+                      {here && listsFault ? (
+                        <RoomFault onRetry={listsFault} />
+                      ) : (
+                        <RoomBody Section={room.Section} waiting={here && roomWaiting} label={words.states.opening} pagination={here ? pagination : null} />
+                      )}
                     </RoomBoundary>
                   </Activity>
                 </div>

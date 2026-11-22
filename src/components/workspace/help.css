@@ -136,7 +136,8 @@
 .help-row[data-quiet] .live-date-leaf { border-top-color: var(--live-line); }
 .help-facts { display: flex; flex-wrap: wrap; gap: var(--space-8) 22px; align-items: center; }
 .help-phone { font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; font-weight: 400; font-size: 17px; line-height: 1; letter-spacing: 0; color: var(--live-muted); margin-left: 10px; font-feature-settings: "lnum" 1, "tnum" 1; }
-.help-person { display: inline-flex; align-items: center; gap: var(--space-8) 8px; vertical-align: middle; }
+/* Kept whole on its line; a name longer than the whole line (written without spaces) turns inside it. */
+.help-person { display: inline-flex; align-items: center; gap: var(--space-8) 8px; vertical-align: middle; max-width: 100%; overflow-wrap: anywhere; }
 .help-person .help-initials:first-child { position: relative; z-index: 1; box-shadow: 0 0 0 2px var(--live-paper); }
 .help-sheet .help-person .help-initials:first-child { box-shadow: 0 0 0 2px var(--help-sheet); }
 .help-initials {

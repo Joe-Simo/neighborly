@@ -151,6 +151,8 @@
   text-transform: uppercase;
   color: #52644f;
   margin: 0 0 var(--space-12);
+  /* The conference's name: one written without spaces turns at the column's edge instead of running under it. */
+  overflow-wrap: anywhere;
 }
 .live-app h1 {
   font:
@@ -245,10 +247,12 @@
   gap: var(--space-8) 8px;
   font-size: 13px;
   color: #466143;
-  white-space: nowrap;
+  /* Short, it stays on one line; a long one (a Spanish need with its amount, a long name) turns within the row. */
+  max-width: 100%;
 }
 .live-status:before {
   content: "";
+  flex: none;
   width: 6px;
   height: 6px;
   border-radius: 50%;

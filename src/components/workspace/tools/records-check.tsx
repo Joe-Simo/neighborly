@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/workspace/context";
 import { useQuery } from "@/components/workspace/query";
 import { recordHref } from "@/components/workspace/help-line/format";
+import { sayFailure } from "@/components/workspace/failure";
+import { LiveFailure } from "@/components/workspace/states";
 
 /** Only this leaf's words, in both languages, so they load with it. */
 const said = {
@@ -61,8 +63,14 @@ export function RecordsCheck() {
     if (asked) name.current?.focus();
   }, [asked]);
   const count = found ? found.people.length + found.households.length + found.phones.length : 0;
+  // A "these are fine" that does not go through is said in the leaf, and the row stays for another try.
+  const [refused, setRefused] = useState("");
+  const answer = (send: () => Promise<unknown>) => {
+    setRefused("");
+    send().catch((cause: unknown) => setRefused(sayFailure(words.notices, cause, words.states.notSaved, words.states.offlineSave)));
+  };
   const fine = (kind: "person" | "phone", key: string, what: string) => (
-    <Button variant="link" className="help-text-action" aria-label={w.fineThis(what)} onClick={() => void dismiss({ churchId, kind, key }).catch(() => null)}>
+    <Button variant="link" className="help-text-action" aria-label={w.fineThis(what)} onClick={() => answer(() => dismiss({ churchId, kind, key }))}>
       {w.fine}
     </Button>
   );
@@ -71,6 +79,7 @@ export function RecordsCheck() {
       <h2 id="records-check-name" ref={name} tabIndex={-1}>{w.title}</h2>
       <p className="tools-leaf-deck">{w.deck}</p>
       <p className="sr-only" role="status">{!found ? "" : count ? w.found(count) : w.none}</p>
+      {refused && <LiveFailure message={refused} kept="" />}
       {!found ? (
         <div className="help-actions">
           <Button variant="outline" disabled={asked} onClick={() => setAsked(true)}>{asked ? w.checking : w.run}</Button>
@@ -120,7 +129,7 @@ export function RecordsCheck() {
                         variant="link"
                         className="help-text-action"
                         aria-label={w.fineThis(`${row.first.name}, ${row.second.name}`)}
-                        onClick={() => void differ({ churchId, neighborId: row.first.id, otherId: row.second.id }).catch(() => null)}
+                        onClick={() => answer(() => differ({ churchId, neighborId: row.first.id, otherId: row.second.id }))}
                       >
                         {w.fine}
                       </Button>

@@ -645,7 +645,8 @@
 .treasury-balance-stand { display: inline-grid; margin-top: var(--space-8); }
 .treasury-balance-figure {
   font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400;
-  font-size: min(96px, 17vw); line-height: 0.8; letter-spacing: -0.04em; padding-bottom: 0.06em;
+  /* Held to the room's width as well, so a balance in the millions stands whole on a phone. */
+  font-size: min(96px, 17vw, calc(100cqi / (var(--figure-chars, 8) * 0.54))); line-height: 0.8; letter-spacing: -0.04em; padding-bottom: 0.06em;
   font-feature-settings: "lnum" 1, "tnum" 1; color: #335844;
 }
 .treasury-balance-leaves {
@@ -657,8 +658,12 @@
 .treasury-balance-leaves i:nth-child(2) { translate: 3px 0; width: calc(100% - 4px); rotate: 0.15deg; }
 .treasury-balance-leaves i:nth-child(3) { translate: -1px 0; width: calc(100% - 7px); rotate: -0.2deg; }
 .treasury-paper b {
+  /* A slip's figure is held to the slip's width (200px beside a wide balance, half the room under a narrow one), so
+     money in the millions never runs into the next slip. */
+  --figure-max: var(--type-figure-s);
+  --figure-room: 200px;
   display: inline-block;
-  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: var(--type-figure-s); line-height: 0.9; letter-spacing: -0.02em;
+  font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: min(var(--figure-max), calc(var(--figure-room) / (var(--figure-chars, 8) * 0.54))); line-height: 0.9; letter-spacing: -0.02em;
   font-feature-settings: "lnum" 1, "tnum" 1; color: var(--live-ink);
 }
 /* The balance's figure (96px) clears the month's two slips only in a wide room. Where the room is narrower, by the
@@ -668,12 +673,13 @@
 @container (max-width: 940px) {
   .treasury-paper { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
   .treasury-balance { grid-column: 1 / -1; }
+  .treasury-paper b { --figure-room: calc(50cqi - 20px); }
 }
 @container (max-width: 760px) {
-  .treasury-paper b { font-size: clamp(28px, 8vw, 36px); min-width: 0; }
+  .treasury-paper b { --figure-max: clamp(28px, 8vw, 36px); min-width: 0; }
 }
 @media (max-width: 850px) {
-  .treasury-paper b { font-size: clamp(28px, 8vw, 36px); min-width: 0; }
+  .treasury-paper b { --figure-max: clamp(28px, 8vw, 36px); min-width: 0; }
 }
 
 /* On paper the ledger is the record: its own page with a foot (ledger-view.tsx), black on white, no relief. Its head

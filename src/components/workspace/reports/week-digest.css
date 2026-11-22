@@ -3,4 +3,4 @@
 .week-digest p { margin: 0; }
 .week-digest ul { display: grid; gap: var(--space-4); margin: 0 0 var(--space-8); padding: 0; list-style: none; }
 .week-digest li small { display: block; color: var(--live-muted); font-size: 15px; }
-.week-digest [data-slot="toggle"] { justify-self: start; min-height: 44px; }
+.week-digest [data-slot="toggle"] { justify-self: start; min-height: 44px; max-width: 100%; height: auto; padding-block: var(--space-8); white-space: normal; text-align: left; }

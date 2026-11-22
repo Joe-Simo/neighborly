@@ -95,8 +95,10 @@
 }
 
 /* ── Teams ────────────────────────────────────────────────────────────── */
-.team-card h2 { margin-bottom: 0; }
-.live-app .team-card > p { font-size: 17px; }
+/* A team's name or note written without spaces turns at the card's edge instead of running out of it. */
+.team-card { min-width: 0; }
+.team-card h2 { margin-bottom: 0; overflow-wrap: anywhere; }
+.live-app .team-card > p { font-size: 17px; overflow-wrap: anywhere; }
 .team-faces { display: flex; align-items: center; margin-right: auto; }
 .team-faces .live-avatar { width: 36px; height: 36px; font-size: 13px; box-shadow: 0 0 0 2px var(--paper, #f7f4ed); }
 .team-faces .live-avatar + .live-avatar { margin-left: -8px; }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, lazy, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { Component, Suspense, lazy, type ReactNode, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { noSessionKept } from "@/lib/no-session-kept";
 import { fetchRoom } from "@/components/workspace/sections";
@@ -83,14 +83,44 @@ let opened: number | undefined;
 /** The hour this page was opened in, the same for every reading of it. */
 const hourOpened = () => (opened ??= Math.floor(Date.now() / 3_600_000) * 3_600_000);
 
-export function LiveApp(props: Parameters<typeof LiveRooms>[0]) {
+export function LiveApp(props: Omit<Parameters<typeof LiveRooms>[0], "listsFailed" | "retryLists">) {
   useRoomAhead(props.area ?? "week");
   return (
     <>
-      <LiveRooms {...props} />
+      <ListsBoundary area={props.area ?? "week"}>
+        {(failed, retry) => <LiveRooms {...props} listsFailed={failed} retryLists={retry} />}
+      </ListsBoundary>
       <DoorSweep />
     </>
   );
+}
+
+/**
+ * A room's own lists (the paged readings below) are read here, above the rooms, so one that fails would take the
+ * whole app with it. The first failure is taken to be theirs: the app is drawn again without them and that room
+ * alone says it did not open, with Try again. Should the app fail again without them, the fault was not theirs and
+ * is passed up to the app's own error page, as before. Moving to another room asks its lists afresh.
+ */
+class ListsBoundary extends Component<
+  { area: LiveArea; children: (failed: boolean, retry: () => void) => ReactNode },
+  { area: LiveArea; error: unknown; failedWith: unknown }
+> {
+  override state = { area: this.props.area, error: null as unknown, failedWith: null as unknown };
+  static getDerivedStateFromError(error: unknown) {
+    return { error };
+  }
+  static getDerivedStateFromProps(props: { area: LiveArea }, state: { area: LiveArea }) {
+    return props.area === state.area ? null : { area: props.area, error: null, failedWith: null };
+  }
+  override componentDidCatch(error: unknown) {
+    if (this.state.failedWith === null) this.setState({ failedWith: error });
+  }
+  retry = () => this.setState({ error: null, failedWith: null });
+  override render() {
+    const { error, failedWith } = this.state;
+    if (error !== null && failedWith !== null && error !== failedWith) throw error;
+    return this.props.children(error !== null, this.retry);
+  }
 }
 
 /**
@@ -113,8 +143,13 @@ function LiveRooms({
   intent = "signin",
   sampleEntry = false,
   enterSample = false,
+  listsFailed = false,
+  retryLists,
 }: {
   area?: LiveArea;
+  /** This room's lists could not be read (ListsBoundary): they are not asked again, and the room says so. */
+  listsFailed?: boolean;
+  retryLists?: () => void;
   invitationToken?: string;
   intent?: LiveEntryIntent;
   sampleEntry?: boolean;
@@ -193,7 +228,7 @@ function LiveRooms({
   }, [leavingForSample, clerk]);
   const churchPage = usePaginatedQuery(
     api.pages.churchesPage,
-    asking ? {} : "skip",
+    asking && !listsFailed ? {} : "skip",
     { initialNumItems: 30 },
   );
   const createChurch = useMutation(api.workspace.createChurch);
@@ -285,44 +320,46 @@ function LiveRooms({
   // Asked from the hour the app was opened, so the question stays the same and the first page is what is coming.
   // Read after the page wakes (0 on the server, which has no present hour), so the server can draw the door.
   const openedAt = useSyncExternalStore(noChange, hourOpened, () => 0);
+  // The room whose own lists are asked: none, once they could not be read (ListsBoundary).
+  const listsArea = listsFailed ? null : area;
   const commitmentPage = usePaginatedQuery(
     api.pages.commitmentsPage,
-    firstChurch && openedAt && (area === "commitments" || area === "mine")
-      ? { ...firstChurch, scope: area === "mine" ? "mine" : "all", from: openedAt }
+    firstChurch && openedAt && (listsArea === "commitments" || listsArea === "mine")
+      ? { ...firstChurch, scope: listsArea === "mine" ? "mine" : "all", from: openedAt }
       : "skip",
     { initialNumItems: 30 },
   );
   const peoplePage = usePaginatedQuery(
     api.pages.peoplePage,
-    churchId && area === "people" ? { churchId } : "skip",
+    churchId && listsArea === "people" ? { churchId } : "skip",
     { initialNumItems: 30 },
   );
   const taskPage = usePaginatedQuery(
     api.pages.tasksPage,
-    churchId && area === "tasks" ? { churchId } : "skip",
+    churchId && listsArea === "tasks" ? { churchId } : "skip",
     { initialNumItems: 30 },
   );
   const meetingPage = usePaginatedQuery(
     api.pages.meetingsPage,
-    churchId && area === "tasks" ? { churchId } : "skip",
+    churchId && listsArea === "tasks" ? { churchId } : "skip",
     { initialNumItems: 30 },
   );
   const requestPage = usePaginatedQuery(
     api.pages.requestsPage,
-    firstChurch && (area === "week" || area === "mine" || area === "commitments")
+    firstChurch && (listsArea === "week" || listsArea === "mine" || listsArea === "commitments")
       ? firstChurch
       : "skip",
     { initialNumItems: 30 },
   );
   const announcementPage = usePaginatedQuery(
     api.pages.announcementsPage,
-    firstChurch && area === "week" ? firstChurch : "skip",
+    firstChurch && listsArea === "week" ? firstChurch : "skip",
     { initialNumItems: 30 },
   );
   const invitationPage = usePaginatedQuery(
     api.pages.invitationsPage,
     churchId &&
-      area === "people" &&
+      listsArea === "people" &&
       dashboard?.people.find((person) => person.id === dashboard.user.id)
         ?.role === "owner"
       ? { churchId }
@@ -331,17 +368,17 @@ function LiveRooms({
   );
   const absencePage = usePaginatedQuery(
     api.pages.timeOffPage,
-    churchId && area === "time-off" ? { churchId } : "skip",
+    churchId && listsArea === "time-off" ? { churchId } : "skip",
     { initialNumItems: 30 },
   );
   const availabilityPage = usePaginatedQuery(
     api.pages.availabilityPage,
-    churchId && area === "time-off" ? { churchId } : "skip",
+    churchId && listsArea === "time-off" ? { churchId } : "skip",
     { initialNumItems: 30 },
   );
   const teamPage = usePaginatedQuery(
     api.pages.teamsPage,
-    churchId && area === "team" ? { churchId } : "skip",
+    churchId && listsArea === "team" ? { churchId } : "skip",
     { initialNumItems: 15 },
   );
   // A room's own first lists, on a first visit. A room seen in the last few minutes has them already.
@@ -354,7 +391,7 @@ function LiveRooms({
     "time-off": [absencePage, availabilityPage],
     team: [teamPage],
   };
-  const roomWaiting = (firstPages[area] ?? []).some((page) => page.status === "LoadingFirstPage");
+  const roomWaiting = !listsFailed && (firstPages[area] ?? []).some((page) => page.status === "LoadingFirstPage");
   // Behind a first look the week's own three readings are asked for too, so the signed-in room has every answer on
   // its first frame. They are let go a moment after the change, once the room itself is asking them.
   const [aheadOfWeek, setAheadOfWeek] = useState(viaSample);
@@ -394,7 +431,7 @@ function LiveRooms({
   const allowedHere = useQuery(api.access.canOpenNeighborRecords, keeping && churchId ? { churchId } : "skip");
   const noteHere = useQuery(api.drafts.weekNote, keeping && churchId && allowedHere ? { churchId, at: hour } : "skip");
   const draftsHere = useQuery(api.assistance.drafts, keeping && churchId && sampleVisitor ? { churchId } : "skip");
-  const keptNow = keeping && !roomWaiting && allowedHere !== undefined && (!allowedHere || noteHere !== undefined) && (!sampleVisitor || draftsHere !== undefined);
+  const keptNow = keeping && !listsFailed && !roomWaiting && allowedHere !== undefined && (!allowedHere || noteHere !== undefined) && (!sampleVisitor || draftsHere !== undefined);
   useEffect(() => {
     if (!keptNow || !dashboard) return;
     keepRoom(
@@ -555,6 +592,7 @@ function LiveRooms({
     <LiveWorkspace
       area={area}
       roomWaiting={roomWaiting}
+      listsFault={listsFailed ? retryLists : undefined}
       requestCommitments={requestPage.results.flatMap((request) => request.commitment ? [request.commitment] : [])}
       data={{
         ...dashboard,

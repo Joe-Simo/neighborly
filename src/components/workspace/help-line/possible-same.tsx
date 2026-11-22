@@ -10,6 +10,7 @@ import { useWorkspace } from "@/components/workspace/context";
 import { useQuery } from "@/components/workspace/query";
 import { LiveDialog, SheetCancel } from "@/components/workspace/live-dialog";
 import { LiveFailure, LiveWaiting } from "@/components/workspace/states";
+import { sayFailure } from "@/components/workspace/failure";
 import { useSave } from "@/components/workspace/help-line/use-save";
 import { recordHref } from "@/components/workspace/help-line/format";
 import { heldOutFigure } from "@/lib/duplicate-set";
@@ -134,10 +135,16 @@ type Words = (typeof said)["en" | "es"];
 type Candidate = { id: Id<"neighbors">; name: string; address: string; adults: number; children: number; sameBy: ("phone" | "address" | "name")[]; notesAgree: boolean };
 
 function Candidates({ found, w, neighborId, onMerged }: { found: Candidate[]; w: Words; neighborId: Id<"neighbors">; onMerged: (said: string) => void }) {
-  const { data, sampleSaid } = useWorkspace();
+  const { data, sampleSaid, words } = useWorkspace();
   const churchId = data.church.id;
   const dismiss = useMutation(api.duplicates.dismiss);
   const [merging, setMerging] = useState<Shown | null>(null);
+  // A "not the same" that does not go through is said under the list, and the pair stays for another try.
+  const [refused, setRefused] = useState("");
+  const notSame = (otherId: Id<"neighbors">) => {
+    setRefused("");
+    dismiss({ churchId, neighborId, otherId }).catch((cause: unknown) => setRefused(sayFailure(words.notices, cause, words.states.notSaved, words.states.offlineSave)));
+  };
   return (
     <section className="live-section" aria-labelledby="possible-same">
       <div className="live-section-head">
@@ -165,7 +172,7 @@ function Candidates({ found, w, neighborId, onMerged }: { found: Candidate[]; w:
                 variant="link"
                 className="help-text-action"
                 aria-label={w.notSameThis(sampleSaid(row.name))}
-                onClick={() => void dismiss({ churchId, neighborId, otherId: row.id }).catch(() => null)}
+                onClick={() => notSame(row.id)}
               >
                 {w.notSame}
               </Button>
@@ -173,6 +180,7 @@ function Candidates({ found, w, neighborId, onMerged }: { found: Candidate[]; w:
           </div>
         ))}
       </div>
+      {refused && <LiveFailure message={refused} kept="" />}
       {found.some((row) => row.notesAgree) && <p className="help-form-note">{w.measured(figure)}</p>}
       {merging && (
         <LiveDialog title={w.sheet(sampleSaid(merging.name))} onClose={() => setMerging(null)}>

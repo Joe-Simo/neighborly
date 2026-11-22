@@ -46,7 +46,9 @@ export function WebRequests() {
   useEffect(() => {
     if (!data.church.sample) void seen({ churchId }).catch(() => undefined);
   }, [churchId, data.church.sample, seen]);
-  if (settings === undefined || data.church.sample) return null;
+  if (data.church.sample) return null;
+  // Until both readings are in, the room is held (room-sheet.tsx), so the section never lands above calls already shown.
+  if (settings === undefined || (at !== 0 && requests === undefined)) return <span hidden data-room-pending="" />;
   const held = requests?.waiting.filter((row) => row.stage === "held") ?? [];
   const waiting = requests?.waiting.filter((row) => row.stage === "received") ?? [];
 
