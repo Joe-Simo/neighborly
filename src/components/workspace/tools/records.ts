@@ -1,4 +1,5 @@
 import Papa from "papaparse";
+import { formulaStart } from "@/lib/csv";
 
 /** Every record a conference keeps here, in the order a person would look for them: the people helped, the money, then the conference itself. */
 export const recordFiles = [
@@ -21,7 +22,7 @@ export const recordFiles = [
 export type RecordFileKey = (typeof recordFiles)[number]["key"];
 
 /** A spreadsheet program runs a cell that begins like a formula. A leading apostrophe makes it plain text again. */
-const plain = (cell: string) => (/^[=+\-@\t\r]/.test(cell) ? `'${cell}` : cell);
+const plain = (cell: string) => (formulaStart.test(cell) ? `'${cell}` : cell);
 
 /** One file as CSV text, with a byte-order mark so Excel reads accents correctly. */
 export function recordsCsv(columns: string[], rows: string[][]) {

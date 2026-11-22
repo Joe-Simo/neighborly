@@ -1,4 +1,4 @@
-import Papa from "papaparse";
+import { csvText } from "@/lib/csv";
 import type { FunctionReturnType } from "convex/server";
 import type { api } from "../../../../convex/_generated/api";
 import { formatDate, words as book, type Words } from "@/lib/words";
@@ -195,7 +195,7 @@ export function reportCsv(report: YearReport, groupName: string, sample = false,
   const w = words.rooms.reports.rows.csv;
   const lines = reportLines(report, words, said).map(({ section, line, number, money }) => [section, line, money ? number.toFixed(2) : number]);
   const members = memberLines(report, words);
-  return Papa.unparse([
+  return csvText([
     [groupName, periodLabel(report, words), longSpanLabel(report, words)],
     ...(sample ? [[w.sample]] : []),
     [],

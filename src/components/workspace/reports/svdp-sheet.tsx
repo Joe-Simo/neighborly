@@ -2,7 +2,7 @@
 
 import { saveFile } from "@/lib/save-file";
 import { useState } from "react";
-import Papa from "papaparse";
+import { csvText } from "@/lib/csv";
 import { Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LiveDialog } from "@/components/workspace/live-dialog";
@@ -46,7 +46,7 @@ export default function SvdpSheet({ report }: { report: YearReport }) {
 
   function download() {
     const rows = sections.flatMap((section) => section.lines.map((line) => [section.title, line.code, line.line, line.value === null ? notTracked(locale) : "cents" in line.value ? (line.value.cents / 100).toFixed(2) : line.value.count, line.note ?? ""]));
-    const text = Papa.unparse([[data.church.name, title, period], [], [w.section, w.line, w.what, w.value, w.note], ...rows]);
+    const text = csvText([[data.church.name, title, period], [], [w.section, w.line, w.what, w.value, w.note], ...rows]);
     saveFile(new Blob([text], { type: "text/csv;charset=utf-8" }), `svdp-annual-report-${report.year}.csv`);
   }
   function print() {
