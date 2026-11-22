@@ -981,7 +981,7 @@
   display: grid; grid-template-columns: minmax(0, 230px) minmax(0, 1fr) auto; align-items: center; gap: var(--space-8) clamp(16px, 3vw, 40px);
   padding: var(--space-20) 0; border-bottom: 1px solid #e0dccb;
 }
-.report-hours-lines h3 { margin: 0; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 22px; line-height: 1.15; }
+.report-hours-lines h3 { margin: 0; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 22px; line-height: 1.15; overflow-wrap: anywhere; }
 .report-hours-lines p { margin: var(--space-4) 0 0; font-size: 13px; color: var(--live-muted); }
 /* Each kind's share laid as a strip of its own paper on the cream, with a cut end. */
 .report-hours-strip { display: block; height: 14px; }
