@@ -196,7 +196,7 @@ function ShelfView({
                 <li key={row.id}>
                   <span>{dayLabel(words.locale, row.date)}</span>
                   <span>
-                    {fill(row.change > 0 ? w.cameIn : w.wentOut, { vouchers: w.vouchers(Math.abs(row.change)), item: row.item })}
+                    {fill(row.change > 0 ? w.cameIn : w.wentOut, { vouchers: w.vouchers(Math.abs(row.change)), item: sampleSaid(row.item) })}
                   </span>
                   <span>
                     {/* A request moves vouchers with one of two sentences the backend writes itself (treasury.ts): those are

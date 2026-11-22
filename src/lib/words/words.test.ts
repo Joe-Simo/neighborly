@@ -147,3 +147,39 @@ describe("refusals the backend writes out", () => {
   });
 });
 
+describe("refusals thrown by way of a helper, a choice or a name", () => {
+  test("each one is said in Spanish too", async () => {
+    const { sayRefused } = await import("../refusals");
+    const root = `${import.meta.dir}/../../../convex`;
+    const es = words("es").notices;
+    const missing: string[] = [];
+    let seen = 0;
+    for await (const file of new Bun.Glob("**/*.ts").scan(root)) {
+      if (file.includes(".test.") || file.startsWith("_generated")) continue;
+      const source = await Bun.file(`${root}/${file}`).text();
+      const named = new Map([...source.matchAll(/const (\w+)\s*=\s*"([^"]+)"/g)].map(([, name, sentence]) => [name, sentence]));
+      const sentences: string[] = [];
+      // Every literal inside a throw, so both sides of a choice; a constant thrown by its name.
+      for (const [, inside] of source.matchAll(/throw new (?:ConvexError|Error)\(([^;]*?)\);/gs)) {
+        for (const [, plain, built] of inside.matchAll(/"((?:[^"\\]|\\.)*)"|`([^`]*)`/g)) {
+          sentences.push(plain ?? built.replace(/\$\{[^}]*\}/g, (part) => (/[A-Z_]{3,}|most/i.test(part) ? "25" : "Rosa")));
+        }
+        const sentence = named.get(inside.trim());
+        if (sentence) sentences.push(sentence);
+      }
+      // A sentence handed to a helper that throws it, or returns it as the refusal.
+      for (const [, inside] of source.matchAll(/\b(?:named|short|refuse)\(([^;]*?)\)/gs)) {
+        for (const [, sentence] of inside.matchAll(/"([A-Z][^"]* [^"]*\.)"/g)) sentences.push(sentence);
+      }
+      for (const sentence of sentences) {
+        // A word chosen inside a built sentence is not a sentence of its own; the built one is checked above.
+        if (!/^[A-Z].* .*\.$/.test(sentence) || sentence.endsWith("with this Rosa.")) continue;
+        seen++;
+        if (sayRefused(es, sentence) === sentence) missing.push(`${file}: ${sentence}`);
+      }
+    }
+    expect(seen).toBeGreaterThan(150);
+    expect(missing).toEqual([]);
+  });
+});
+

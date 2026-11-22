@@ -140,6 +140,7 @@ export const serverRefusalsEs: Record<string, string> = {
   "Goods given are whole counts, up to 500 of each.": "Los bienes entregados son cantidades enteras, hasta 500 de cada uno.",
   "Ask for a month such as 2026-11.": "Pide un mes como 2026-11.",
   "The budget must be between $1 and $1,000,000.": "El presupuesto debe estar entre $1 y $1,000,000.",
+  "The household limit must be between $1 and $1,000,000.": "El límite por hogar debe estar entre $1 y $1,000,000.",
   "Say why the count is going down.": "Di por qué baja el conteo.",
   "Say why this entry is being reversed.": "Di por qué se anula este movimiento.",
   "Sign in to prepare a team draft.": "Inicia sesión para preparar un borrador del equipo.",
@@ -201,6 +202,16 @@ export const serverRefusalsEs: Record<string, string> = {
   "Write the note first.": "Primero escribe la nota.",
   "Year not found.": "No se encontró ese año.",
   "You already have a kind with this name.": "Ya tienes un tipo con este nombre.",
+  "Only a paid request can be reopened for payment.": "Solo una petición pagada se puede volver a abrir para pagarla.",
+  "This is more than what is left of the approved amount.": "Esto es más de lo que queda del monto aprobado.",
+  "This request is already paid in full.": "Esta petición ya está pagada por completo.",
+  "Say where the money came from.": "Di de dónde vino el dinero.",
+  "Say which conference the gift goes to.": "Di a qué conferencia va el donativo.",
+  "Say who was paid.": "Di a quién se le pagó.",
+  "Say what the voucher is for.": "Di para qué es el vale.",
+  "Give the kind a name.": "Dale un nombre al tipo.",
+  "Start the export again.": "Empieza la exportación otra vez.",
+  "Open the record again.": "Abre el registro otra vez.",
 };
 
 /** The field names the backend puts in its "is needed / is too long / must be a …" refusals, in Spanish. */
@@ -327,6 +338,9 @@ export const serverRefusalPatternsEs: ReadonlyArray<readonly [RegExp, (...parts:
   [/^(.+) must be a dollar amount\.$/, (label) => `${fieldEs(label)}: escribe un monto en dólares.`],
   [/^(.+) must be a whole number\.$/, (label) => `${fieldEs(label)}: escribe un número entero.`],
   [/^(.+) is away that day\.$/, (name) => `${name} no está disponible ese día.`],
+  [/^(.+) is away that day\. Ask someone else\.$/, (name) => `${name} no está disponible ese día. Pídeselo a otra persona.`],
+  [/^(.+) already has a commitment at that time\. Ask someone else\.$/, (name) => `${name} ya tiene un compromiso a esa hora. Pídeselo a otra persona.`],
+  [/^At most (\S+) commitments\.$/, (count) => `Hasta ${count} compromisos.`],
   [/^(.+) is not an approved member yet\.$/, (name) => `A ${name} todavía no se le ha aprobado como miembro.`],
   [
     /^(.+) has not said they are free that day\. Ask them to add the date under Time off, or ask someone else\.$/,

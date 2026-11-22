@@ -65,6 +65,37 @@ describe("the year, line by line", () => {
     expect(csvFileName(report, "St. Example Conference (sample)")).toBe("st-example-conference-sample-year-2026.csv");
   });
 
+  test("the $210 story: the screen, the printed lines and the spreadsheet show the same money", () => {
+    // The figures convex/story.test.ts reads back from the server after one $210 utility payment from a $500 collection.
+    const story = {
+      ...report, year: 2027, firstDay: "2026-10-01", lastDay: "2027-09-30", closed: false,
+      households: 1, people: 5, adults: 2, children: 3, householdsHelpedAgain: 0, householdsByLanguage: { en: 0, es: 1 },
+      visits: 1, peopleVisited: 5, visitHours: 3, visitMiles: 8, helpPaid: 21000,
+      kinds: report.kinds.map((kind) => (kind.kind === "utility" ? { ...kind, requests: 1, requestsPaid: 1, households: 1, people: 5, paid: 21000 } : { ...kind, requests: 0, requestsPaid: 0, households: 0, people: 0, paid: 0 })),
+      requests: { ...report.requests, received: 1, paid: 1, declined: 0, referred: 0, amountRequested: 24000, amountApproved: 21000, paidTowardThese: 21000 },
+      calls: { taken: 1, returned: 0, waiting: 1 },
+      money: { beginningBalance: 0, received: 50000, sources: [{ label: "Parish collection", amount: 50000 }], otherSpending: [], spent: 21000, endingBalance: 29000 },
+      months: Array.from({ length: 12 }, (_, index) => ({ month: index < 3 ? `2026-${10 + index}` : `2027-0${index - 2}`, calls: index === 1 ? 1 : 0, requests: index === 1 ? 1 : 0, visits: index === 1 ? 1 : 0, households: index === 1 ? 1 : 0, paid: index === 1 ? 21000 : 0, moneyIn: index === 1 ? 50000 : 0 })),
+    } satisfies YearReport;
+    const lines = reportLines(story);
+    const shown = (line: string) => lines.filter((row) => row.line === line).map((row) => [row.value, row.number]);
+    // On screen and on paper the money reads $210, $240, $500 and $290; in the spreadsheet as dollars to add up.
+    expect(shown("All help paid")).toEqual([["$210", 210]]);
+    expect(shown("Spent: help paid")).toEqual([["$210", 210]]);
+    expect(shown("Ending balance")).toEqual([["$290", 290]]);
+    expect(lines.filter((row) => row.money).every((row) => row.value === money(Math.round(row.number * 100)))).toBe(true);
+    const rows = Papa.parse<string[]>(reportCsv(story, "St. Example Conference")).data;
+    expect(rows).toContainEqual(["Help paid", "All help paid", "210.00"]);
+    expect(rows).toContainEqual(["Cash in and out", "All money received", "500.00"]);
+    expect(rows).toContainEqual(["Cash in and out", "Ending balance", "290.00"]);
+    // The kinds of help add up to the total, and the twelve months' payments to the same.
+    const paidSection = rows.filter((row) => row[0] === "Help paid" && row[1] !== "All help paid");
+    expect(paidSection.reduce((sum, row) => sum + Math.round(Number(row[2]) * 100), 0)).toBe(story.helpPaid);
+    const months = rows.slice(rows.findIndex((row) => row[0] === "Month") + 1, rows.findIndex((row) => row[0] === "Month") + 13);
+    expect(months[1]).toEqual(["November 2026", "1", "1", "1", "1", "210.00", "500.00"]);
+    expect(months.reduce((sum, row) => sum + Math.round(Number(row[5]) * 100), 0)).toBe(story.helpPaid);
+  });
+
   test("a year is blank only when nothing at all was recorded", () => {
     expect(isBlank(report)).toBe(false);
     const nothing = { ...report, households: 0, visits: 0, calls: { taken: 0, returned: 0, waiting: 0 }, requests: { ...report.requests, received: 0 }, time: { ...report.time, shiftHours: 0 }, money: { ...report.money, beginningBalance: 0, received: 0, spent: 0 } };

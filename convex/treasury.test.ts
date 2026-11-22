@@ -379,7 +379,92 @@ describe("deposits", () => {
   });
 });
 
+describe("a deposit beside the statement day", () => {
+  test("a deposit made after the as-of day is not yet a line: its gifts wait one by one and cannot clear before it", async () => {
+    const { ids, as, income } = await setup();
+    const owner = as(ids.owner);
+    const a = await income(64000, day(6)), b = await income(2500, day(5), "Donation");
+    const depositId = await owner.mutation(api.treasury.recordDeposit, { churchId: ids.church, entryIds: [a, b], date: day(2) });
+    const before = await owner.query(api.treasury.reconciliation, { churchId: ids.church, asOf: day(4) });
+    expect(before.deposits).toEqual([]);
+    expect(before.waiting.map((row) => row.id)).toEqual([a, b]);
+    expect(before).toMatchObject({ waitingCount: 2, onItsWayIn: 66500, cleared: 0, books: 66500 });
+    // Marking one of its gifts on that day is the deposit's mark, refused before the deposit was made.
+    await expect(owner.mutation(api.treasury.setCleared, { churchId: ids.church, entryId: a, clearedOn: day(4) })).rejects.toThrow("before the day it was made");
+    const on = await owner.query(api.treasury.reconciliation, { churchId: ids.church, asOf: day(2) });
+    expect(on.deposits).toEqual([{ id: depositId, date: day(2), total: 66500, memo: "", count: 2 }]);
+    expect(on).toMatchObject({ waiting: [], waitingCount: 1 });
+  });
+
+  test("marking one gift of a deposit, or taking its mark off, moves the whole deposit", async () => {
+    const { ids, as, income, entries } = await setup();
+    const owner = as(ids.owner);
+    const a = await income(64000, day(6)), b = await income(2500, day(5), "Donation");
+    const depositId = await owner.mutation(api.treasury.recordDeposit, { churchId: ids.church, entryIds: [a, b], date: day(4) });
+    await owner.mutation(api.treasury.clearDeposit, { churchId: ids.church, depositId, clearedOn: day(3) });
+    const cleared = await owner.query(api.treasury.reconciliation, { churchId: ids.church });
+    expect(cleared.lately.map((row) => row.id).sort()).toEqual([a, b].sort());
+    // "Mark not cleared" on one line of the deposit.
+    await owner.mutation(api.treasury.setCleared, { churchId: ids.church, entryId: a, clearedOn: null });
+    expect((await entries()).map((row) => row.clearedOn)).toEqual([undefined, undefined]);
+    const after = await owner.query(api.treasury.reconciliation, { churchId: ids.church });
+    expect(after).toMatchObject({ cleared: 0, lately: [], waiting: [], waitingCount: 1, deposits: [{ id: depositId, total: 66500, count: 2 }] });
+    await owner.mutation(api.treasury.setCleared, { churchId: ids.church, entryId: b, clearedOn: day(3) });
+    expect((await entries()).map((row) => row.clearedOn)).toEqual([day(3), day(3)]);
+  });
+
+  test("marking everything through a day leaves a gift whose deposit was made later", async () => {
+    const { ids, as, income, entries } = await setup();
+    const owner = as(ids.owner);
+    const a = await income(64000, day(6)), b = await income(2500, day(5), "Donation");
+    await owner.mutation(api.treasury.recordDeposit, { churchId: ids.church, entryIds: [b], date: day(2) });
+    expect(await owner.mutation(api.treasury.clearThrough, { churchId: ids.church, through: day(4) })).toEqual({ marked: 1, more: false });
+    const rows = await entries();
+    expect(rows.find((row) => row._id === a)?.clearedOn).toBe(day(4));
+    expect(rows.find((row) => row._id === b)?.clearedOn).toBeUndefined();
+  });
+});
+
+describe("the budget and what waits to be paid", () => {
+  test("the month counts approved help by decision day; payable lists only what is left to pay, oldest decision first", async () => {
+    const { t, ids, as, request } = await setup();
+    const owner = as(ids.owner);
+    const month = now.toFormat("yyyy-MM");
+    const decidedAt = now.startOf("month").plus({ hours: 12 }).toMillis();
+    const createdAt = decidedAt - 3_600_000;
+    const older = await request({ amountApproved: 20000 }), newer = await request({ amountApproved: 5000 });
+    await t.run(async (ctx) => {
+      await ctx.db.patch("assistanceRequests", older, { decidedAt: decidedAt - 1, createdAt });
+      await ctx.db.patch("assistanceRequests", newer, { decidedAt, createdAt });
+    });
+    await owner.mutation(api.treasury.setBudget, { churchId: ids.church, budget: 100000 });
+    expect(await owner.query(api.treasury.budget, { churchId: ids.church, month })).toEqual({ budget: 100000, approved: 25000, householdCap: null });
+    await expect(owner.query(api.treasury.budget, { churchId: ids.church, month: "2026-13" })).rejects.toThrow("Ask for a month");
+    await expect(owner.mutation(api.treasury.setHouseholdCap, { churchId: ids.church, cap: 50 })).rejects.toThrow("The household limit must be between");
+
+    await owner.mutation(api.treasury.recordPayment, { paidSeen: 0, churchId: ids.church, requestId: newer, amount: 5000, date: day() });
+    await owner.mutation(api.treasury.recordPayment, { paidSeen: 0, churchId: ids.church, requestId: older, amount: 1500, date: day() });
+    expect(await owner.query(api.treasury.payable, { churchId: ids.church })).toMatchObject([{ requestId: older, amountApproved: 20000, paid: 1500, remaining: 18500 }]);
+    // Paid in full is still help approved this month.
+    expect((await owner.query(api.treasury.budget, { churchId: ids.church, month })).approved).toBe(25000);
+  });
+});
+
 describe("the voucher shelf", () => {
+  test("giving more than is on hand goes below zero, and a take-back brings the count back", async () => {
+    const { t, ids, as, request } = await setup();
+    const owner = as(ids.owner);
+    await owner.mutation(api.treasury.recordVouchers, { churchId: ids.church, item: "Bus pass", change: 1, date: day(2) });
+    const requestId = await request({ payeeKind: "vendor", payeeName: "Transit office", amountApproved: 0 });
+    const give = (quantity: number) => t.run(async (ctx) => voucherGiven(ctx, (await ctx.db.get("memberships", ids.owner.memberId))!, { requestId, item: "Bus pass", quantity }));
+    await give(3);
+    expect((await owner.query(api.treasury.voucherShelf, { churchId: ids.church })).items).toEqual([{ item: "Bus pass", onHand: -2, received: 1, given: 3 }]);
+    await give(0);
+    const shelf = await owner.query(api.treasury.voucherShelf, { churchId: ids.church });
+    expect(shelf.items).toEqual([{ item: "Bus pass", onHand: 1, received: 1, given: 0 }]);
+    expect(shelf.lately[0]).toMatchObject({ change: 3, note: "Back on the shelf", forRequest: true });
+  });
+
   test("the count is what came in less what was given, and giving on a request is counted once", async () => {
     const { t, ids, as, request } = await setup();
     const owner = as(ids.owner);
