@@ -197,7 +197,8 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 }
 .tools-agencies { list-style: none; padding: 0; margin: var(--space-24) 0 0; max-width: 640px; }
 .tools-agencies li { padding: var(--space-16) 0; border-bottom: 1px solid var(--live-line, #dcd8cb); }
-.tools-agency { display: flex; flex-direction: column; gap: 2px; font-size: 17px; }
+.tools-agency { display: flex; flex-direction: column; gap: 2px; font-size: 17px; min-width: 0; }
+.tools-agency > * { overflow-wrap: anywhere; }
 .tools-agency span { color: var(--live-muted); font-size: 15px; }
 /* Edit / Remove are quiet text actions on the phone line, so a long list never grows a column of buttons. */
 .tools-agency-line { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-16); }

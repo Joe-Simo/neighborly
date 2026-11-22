@@ -641,7 +641,7 @@
 }
 .treasury-paper dt { margin-bottom: var(--space-12); font-size: 13px; font-weight: 650; text-transform: uppercase; letter-spacing: var(--caps-track); color: #52644f; }
 .treasury-paper dd { margin: 0; }
-.treasury-paper small { display: block; margin-top: var(--space-12); font-size: 15px; line-height: 1.4; color: var(--live-muted); }
+.treasury-paper small { overflow-wrap: anywhere; display: block; margin-top: var(--space-12); font-size: 15px; line-height: 1.4; color: var(--live-muted); }
 .treasury-balance-stand { display: inline-grid; margin-top: var(--space-8); }
 .treasury-balance-figure {
   font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400;
