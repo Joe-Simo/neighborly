@@ -216,3 +216,7 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 .tools-file-pick { margin-top: var(--space-16); }
 .tools-file-pick input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
 .tools-file .tools-file-open { height: auto; padding: 0; justify-content: flex-start; text-align: left; white-space: normal; font-size: inherit; overflow-wrap: anywhere; }
+/* A file's name is a link to open it, not a field: no box drawn around it by the room's button styles. */
+.live-app .tools-file .tools-file-open[data-slot="button"] { min-height: 32px; border: 0; background: none; box-shadow: none; color: var(--paper-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+/* The small picture before a card's heading sits on its line, beside the words, never on top of them. */
+.live-app .tools-leaf > h2 > svg { display: inline-block; vertical-align: -2px; margin-right: 6px; color: var(--live-muted); }

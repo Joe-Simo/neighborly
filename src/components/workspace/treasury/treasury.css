@@ -722,3 +722,11 @@
   margin: 0;
   color: var(--help-ochre-ink);
 }
+/* On a phone the month's totals wrap onto a second line when the money in and the money out will not both fit,
+   rather than running the money out and the balance off the right edge. */
+@media screen and (max-width: 850px) {
+  .live-app table.help-ledger tfoot tr { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: baseline; }
+  .live-app table.help-ledger tfoot tr > :nth-child(2),
+  .live-app table.help-ledger tfoot tr > [data-total] { flex: 1 0 100%; }
+  .live-app table.help-ledger tfoot tr > [data-total] { text-align: right; }
+}

@@ -287,7 +287,7 @@
 /* Written up: two lines a visit. Who was visited and who went; what they found, and the hours and miles it gave.
    The whole row opens the request it was for. */
 .live-app .help-row.visits-written { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 20px; row-gap: 2px !important; align-items: center; padding-block: var(--space-16); min-height: 0; }
-.visits-written > p { grid-column: 1; margin: 0; min-width: 0; }
+.visits-written > p, .live-app .help-row.visits-written > p { grid-column: 1; margin: 0; min-width: 0; }
 .visits-written > .help-row-arrow { grid-column: 2; grid-row: 1 / span 2; }
 .visits-written-who { display: flex; align-items: baseline; gap: var(--space-12) 12px; min-width: 0; }
 .visits-written-who strong { font: 400 22px/1.25 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.015em; color: var(--live-ink); white-space: nowrap; }
