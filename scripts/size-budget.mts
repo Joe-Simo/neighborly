@@ -5,6 +5,7 @@
 import { gzipSync } from "node:zlib";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { helpPage } from "../src/lib/intake/help-pages";
 
 const NEXT = ".next";
 const CAPS = "scripts/size-budget.json";
@@ -24,8 +25,9 @@ const pages: Record<string, string> = {
 };
 // The "Ask for help" pages are for someone on a cheap phone and a bad line, so their cap is set ahead and never moved by --write:
 // 100 KB, all of it. React's own runtime alone is over that, so these pages are sent as plain HTML with a form that posts without
-// script. Each is checked once its prerendered HTML exists.
-const askForHelp: Record<string, string> = { "/help": "help.html", "/ayuda": "ayuda.html" };
+// script. They are route handlers (src/app/help/route.ts), so no HTML of theirs is prerendered: the form is drawn here by the
+// same function the handler calls, and weighed with the one script it names (public/help-botid.js, written by the build) and its fonts.
+const askForHelp = { "/help": "en", "/ayuda": "es" } as const;
 const ASK_CAP = 100 * 1024;
 const rooms: Record<string, string> = {
   week: "WeekSection", team: "TeamsSection", people: "PeopleSection", commitments: "CommitmentsSection", mine: "MineSection",
@@ -63,9 +65,14 @@ for (const [room, section] of Object.entries(rooms)) {
 }
 
 const fixed: Record<string, number> = {};
-for (const [route, file] of Object.entries(askForHelp)) {
-  if (existsSync(join(app, file))) fixed[route] = sum(named(readFileSync(join(app, file), "utf8")));
-  else console.log(`wait ${route.padEnd(24)} not built yet; its cap is ${ASK_CAP / 1024} KB`);
+for (const [route, language] of Object.entries(askForHelp)) {
+  const html = helpPage(language, { kind: "form" });
+  const scripts = [...html.matchAll(/<script src="\/([\w.-]+\.js)"/g)].map((match) => join("public", match[1] ?? ""));
+  const missing = scripts.find((file) => !existsSync(file));
+  if (missing) throw new Error(`${route} names ${missing}, which the build did not write.`);
+  // Its fonts too, as they are (woff2 is compressed already).
+  const fonts = [...new Set([...html.matchAll(/url\(\/(fonts\/[\w.-]+\.woff2)\)/g)].map((match) => join("public", match[1] ?? "")))];
+  fixed[route] = gzipSync(html).length + scripts.reduce((total, file) => total + gzipSync(readFileSync(file)).length, 0) + fonts.reduce((total, file) => total + readFileSync(file).length, 0);
 }
 
 const kb = (size: number) => `${(size / 1024).toFixed(1)} KB`;
