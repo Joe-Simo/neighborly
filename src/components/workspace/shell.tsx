@@ -161,7 +161,13 @@ export function LiveWorkspace({
   const groupName = data.church.name;
   // Before paint, in the same frame as the frame's own (live-frame.tsx), so no other name shows between.
   useLayoutEffect(() => {
-    if (tabTitle) document.title = `${tabTitle} · ${groupName} · Kind Helps`;
+    if (!tabTitle) return;
+    document.title = `${tabTitle} · ${groupName} · Kind Helps`;
+    // The conference's name leaves the tab with the room: the sign-in sheet that follows a sign-out puts back the
+    // title it found when it leaves, and that must never name the last member's conference to the next one.
+    return () => {
+      if (document.title === `${tabTitle} · ${groupName} · Kind Helps`) document.title = `${tabTitle} · Kind Helps`;
+    };
   }, [tabTitle, groupName]);
   // Every room reads in the person's own language, the leaders' rooms included (words/rooms).
   const translatedHeadings: Partial<Record<LiveArea, { title: string; deck: string }>> = words.headings;

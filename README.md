@@ -50,6 +50,7 @@ bun run lint
 bun run typecheck
 bun run test       # Bun unit tests (src) and Vitest with convex-test (convex)
 bun run a11y       # axe and a Tab walk over sign-in and every room at 1440, 390 and 200% zoom, against bun run dev
+bun run member-switch  # two members on one browser: nothing of the first shows to or stays for the second, against next start
 ```
 
 The backend tests simulate sign-in. `convex/sampleYear.test.ts` builds the sample year and holds the figures on the public pages to the yearly report.
