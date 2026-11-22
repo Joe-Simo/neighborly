@@ -31,9 +31,9 @@ const en = (t: Terms) => ({
 
 const es = (t: Terms): ReturnType<typeof en> => ({
   title: "Los archivos de tu conferencia",
-  deck: `Actas, formularios y cualquier otra cosa que tu ${t.group} guarde. Solo para coordinadores y dueños.`,
+  deck: `Actas, formularios y cualquier otra cosa que tu ${t.group} guarde. Solo para coordinadores y responsables.`,
   neighborTitle: "Archivos",
-  neighborDeck: "Un contrato de alquiler, una factura de servicios o cualquier otra cosa guardada con este expediente. Solo para coordinadores y dueños.",
+  neighborDeck: "Un contrato de alquiler, una factura de servicios o cualquier otra cosa guardada con este registro. Solo para coordinadores y responsables.",
   choose: "Agregar un archivo",
   help: "PDF, JPEG, PNG, HEIC, Word o Excel, de hasta 10 MB cada uno.",
   empty: "Todavía no hay archivos.",

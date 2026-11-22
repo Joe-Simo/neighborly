@@ -28,8 +28,8 @@ const en = (t: Terms) => ({
 
 const es = (t: Terms): ReturnType<typeof en> => ({
   title: "Agencias a las que refieres",
-  deck: `Los lugares de tu zona a los que tu ${t.group} envía a los vecinos por la ayuda que no da por sí misma. La línea de ayuda los ofrece por nombre cuando se decide una solicitud.`,
-  empty: "Todavía no hay agencias. Agrega la primera abajo, o nombra una en una solicitud y se guarda aquí.",
+  deck: `Los lugares de tu zona a los que tu ${t.group} envía a los vecinos por la ayuda que no da por sí misma. La línea de ayuda los ofrece por nombre cuando se decide una petición.`,
+  empty: "Todavía no hay agencias. Agrega la primera abajo, o nombra una en una petición y se guarda aquí.",
   loading: "Reuniendo tus agencias",
   name: "Nombre",
   phone: "Teléfono",
@@ -41,7 +41,7 @@ const es = (t: Terms): ReturnType<typeof en> => ({
   remove: "Quitar",
   removeSure: "Sí, quitarla",
   keep: "Dejarla",
-  removeQuestion: "¿Quitar esta agencia de la lista? Las solicitudes que la nombraron conservan el nombre.",
+  removeQuestion: "¿Quitar esta agencia de la lista? Las peticiones que la nombraron conservan el nombre.",
   added: "Se agregó la agencia.",
   saved: "Se guardó la agencia.",
   removed: "Se quitó la agencia.",
