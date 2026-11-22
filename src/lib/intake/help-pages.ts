@@ -254,6 +254,7 @@ a{color:inherit;text-underline-offset:4px;text-decoration-thickness:1px}
 a:hover{text-decoration-thickness:2px}
 :focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:4px}
 .bar{display:flex;justify-content:space-between;align-items:center;gap:16px;max-width:1040px;margin:0 auto;padding:16px 24px}
+.mark,.lang,.slip p a{display:inline-flex;align-items:center;min-height:44px}
 .mark{font:400 24px/1 Georgia,"Times New Roman",serif;letter-spacing:-.02em;text-decoration:none}
 .lang{font-size:16px}
 .exit{position:fixed;top:12px;right:12px;z-index:2;display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:4px;background:var(--ink);color:var(--sheet);font-weight:600;text-decoration:none;box-shadow:0 2px 6px #283c3240}
