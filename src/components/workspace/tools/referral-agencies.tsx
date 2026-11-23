@@ -56,7 +56,7 @@ export default function ReferralAgencies() {
   };
 
   return (
-    <section className="tools-leaf" aria-labelledby="referral-agencies-name">
+    <section className="tools-leaf tools-leaf-list" aria-labelledby="referral-agencies-name">
       <h2 id="referral-agencies-name"><Building2 size={18} aria-hidden="true" /> {text.title}</h2>
       <p className="tools-leaf-deck">{text.deck}</p>
       {error && <LiveFailure message={error} kept="" />}
