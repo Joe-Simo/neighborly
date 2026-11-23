@@ -1799,6 +1799,16 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 @media (min-width: 700px) {
   .live-head-art { --tear: 0%; }
 }
+/* My commitments: where the head's place is narrower than the picture (a tablet, a wide window's room column), the
+   picture would run on past the place's left side and be cut there in a straight line through the parcel, past its
+   own torn edge. There it fills the place instead, keeping its right and top, so the tear is the edge you see. */
+@media (min-width: 700px) {
+  .live-head-art[data-area="mine"] { container-type: size; }
+  @container (max-aspect-ratio: 3 / 2) {
+    .live-head-art[data-area="mine"] > .relief { inset: 0; width: 100%; aspect-ratio: auto; }
+    .live-head-art[data-area="mine"] > .relief img { object-fit: cover; }
+  }
+}
 
 /* A room's one figure (Home visits, People, Help line): in ink on the page's own paper, its words under it; lining tabular
    figures; nothing moves. */
