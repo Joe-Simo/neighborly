@@ -80,8 +80,8 @@ const en = {
   lines: enLines,
   // The conference's side, in Your files.
   joinTitle: "Councils",
-  joinDeck: "A district or particular council can add your year's counts to its report. Only counts and money totals go to it, never a neighbor, a call or a note.",
-  code: "Your conference's code",
+  joinDeck: "A district or particular council can add your year’s counts to its report. Only counts and money totals go to it, never a neighbor, a call or a note.",
+  code: "Your conference’s code",
   codeDeck: "Give this code to the council that asks for it.",
   invitedBy: (council: string) => `${council} asks to count your conference.`,
   countedBy: (council: string) => `${council} counts your conference.`,

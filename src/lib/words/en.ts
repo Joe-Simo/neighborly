@@ -187,6 +187,8 @@ export function en(set: WordSet) {
       accepted: "Accepted commitments",
       addToCalendar: "Add these to your phone’s calendar",
       emptyTitle: "Room for your first yes.",
+      /** Above it the member already has home visits, so a "first" yes would read wrong. */
+      emptyTitleBeside: "Room for a commitment too.",
       emptyDetail:
         "Say yes to a commitment and it is kept here, with what to prepare.",
     },

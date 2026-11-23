@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { DateField } from "@/components/workspace/date-field";
 import { useWorkspace } from "@/components/workspace/context";
 import { formatDate } from "@/lib/words";
-import { readDays } from "@/components/workspace/volunteer/days";
+import { DaysWords } from "@/components/workspace/volunteer/days-words";
 import { LiveField, LiveLoading, markWrong } from "@/components/workspace/primitives";
 import type { LiveWorkspaceData } from "@/components/workspace/types";
 
@@ -127,7 +127,7 @@ function TimeOffConfirmation({
   return (
     <div className="live-form volunteer-review">
       <h3 ref={heading} tabIndex={-1} className="volunteer-review-days outline-none">
-        {readDays(words, review.start, review.end)}
+        <DaysWords words={words} start={review.start} end={review.end} />
       </h3>
       <h4 className="volunteer-review-count">
         {words.timeOffForm.affected(snapshot.length)}

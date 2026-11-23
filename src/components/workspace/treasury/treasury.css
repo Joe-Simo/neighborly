@@ -145,6 +145,12 @@
   font-size: 17px;
   margin: 0;
 }
+/* A reversed entry's sheet says so in one sentence: a paragraph, not the two-column list .live-detail lays out, which
+   squeezed it into the sheet's left half. */
+.treasury-dialog p.live-detail {
+  display: block;
+  max-width: 52ch;
+}
 @media (prefers-reduced-motion: reduce) {
   .live-app .help-what [data-slot="button"] {
     transition: none;
@@ -636,8 +642,10 @@
 .help-ledger.treasury-shelf :is(td, th[scope="row"]) {
   font-feature-settings: "lnum" 1, "tnum" 1;
 }
+/* Only an amount stands right (the statements matched); the shelf's movement is a sentence and reads from the left,
+   next to its date, instead of floating mid-row away from it. */
 @media (min-width: 851px) {
-  .treasury-lines li > :nth-child(2) {
+  .treasury-moves:not(.treasury-lately) .treasury-lines li > :nth-child(2) {
     text-align: right;
   }
 }
@@ -794,4 +802,9 @@
 .live-dialog input[list="treasury-voucher-items"]::-webkit-calendar-picker-indicator {
   width: 16px; height: 16px; margin-right: 2px; opacity: 0.6; color: transparent;
   background: no-repeat center / 16px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23283c32' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/* An entry's words that run to a second line take a few words down with them, never one left alone under the rest. */
+.help-ledger :is(td, th[scope="row"]).help-what {
+  text-wrap: pretty;
 }

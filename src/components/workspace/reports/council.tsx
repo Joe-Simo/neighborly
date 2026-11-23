@@ -8,6 +8,7 @@ import { Download } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/components/workspace/context";
 import { LiveField, LiveLoading } from "@/components/workspace/primitives";
 import { HousingFrame } from "@/components/workspace/reports/housing-providers";
@@ -88,7 +89,7 @@ function CreateCouncil() {
       <p className="housing-note">{w.startDeck}</p>
       {error && <LiveFailure message={error} kept="" />}
       <LiveField label={w.councilName}>
-        <input name="council" required maxLength={120} value={name} onChange={(event) => setName(event.target.value)} />
+        <Input name="council" required maxLength={120} value={name} onChange={(event) => setName(event.target.value)} />
       </LiveField>
       <Button type="submit" disabled={busy}>{w.create}</Button>
     </form>
@@ -155,7 +156,7 @@ function Council({ council, year, money }: { council: CouncilRow; year: number; 
         }}
       >
         <LiveField label={w.inviteCode}>
-          <input name="code" required maxLength={64} autoComplete="off" value={code} onChange={(event) => setCode(event.target.value)} />
+          <Input name="code" required maxLength={64} autoComplete="off" value={code} onChange={(event) => setCode(event.target.value)} />
         </LiveField>
         <Button type="submit" variant="outline">{w.invite}</Button>
       </form>

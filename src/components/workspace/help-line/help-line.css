@@ -268,6 +268,8 @@
 @media (max-width: 700px) {
   .help-row-arrow { display: none; }
   .help-neighbor .live-row-actions:not(:has(.live-status)) { display: none; }
+  /* What a household waits on wraps as one short list: a request and its visit sit a line apart, not a paragraph. */
+  .live-app .help-neighbor .live-row-actions { row-gap: var(--space-4); }
 }
 /* The side column: who is on the line today and who is calling back. Names in ink, the rest quiet, hairlines between. */
 .help-aside-list { list-style: none; margin: 0; padding: 0; }
@@ -506,4 +508,10 @@
    lines ("Visitas domiciliarias") both figures still start on one line. */
 @media (max-width: 850px) {
   .live-main:has(.help-record-head) .help-figures > div:not(:first-child) { display: grid; grid-row: span 2; grid-template-rows: subgrid; }
+}
+/* "Not the same" stands beside "Merge into this record" at the button's size, so the pair reads as one choice. */
+.live-app .help-row .help-same-actions .help-text-action[data-slot="button"] { font-size: 15px; }
+/* On a phone what was paid stands under the line it pays for, so the line keeps the column and does not wrap a word a line. */
+@media (max-width: 560px) {
+  .help-timeline li > .help-amount { grid-column: 2 / -1; justify-self: start; margin-top: var(--space-4); }
 }

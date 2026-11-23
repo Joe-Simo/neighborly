@@ -32,10 +32,10 @@ export const en = (t: Terms, place: string) => ({
   edit: {
     title: "Edit commitment",
     deck: (zone: string) => `Times are ${zone}. You’ll review the changes before saving.`,
-    role: "Role or title",
+    role: "Title",
     starts: "Starts",
     ends: "Ends",
-    where: "Where",
+    where: "Where to meet",
     preparation: "Preparation",
     review: "Review changes",
     releases:
@@ -93,10 +93,10 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     edit: {
       title: "Cambiar el compromiso",
       deck: (zone) => `Horario: ${zone}. Revisarás los cambios antes de guardar.`,
-      role: "Rol o título",
+      role: "Título",
       starts: "Empieza",
       ends: "Termina",
-      where: "Dónde",
+      where: "Dónde reunirse",
       preparation: "Preparación",
       review: "Revisar los cambios",
       releases:

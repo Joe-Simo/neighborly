@@ -85,6 +85,7 @@ export default function ReferralAgencies() {
               ) : (
                 <div className="tools-agency">
                   <strong>{row.name}</strong>
+                  {row.helpsWith && <span>{row.helpsWith}</span>}
                   <div className="tools-agency-line">
                     {row.phone && <span>{row.phone}</span>}
                     {removing === row.id ? (
@@ -100,7 +101,6 @@ export default function ReferralAgencies() {
                       </>
                     )}
                   </div>
-                  {row.helpsWith && <span>{row.helpsWith}</span>}
                 </div>
               )}
             </li>

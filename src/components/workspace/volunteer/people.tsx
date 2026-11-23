@@ -158,9 +158,9 @@ export function PeopleSection() {
         removing ? (
           <RemoveForGood person={managing} churchId={data.church.id} onClose={() => { setRemoving(false); setManagingId(null); }} />
         ) : (
-        <LiveDialog title={managing.name} description={<><span className="people-address-full"><span>{managing.email.slice(0, managing.email.lastIndexOf("@"))}</span><wbr /><span>{managing.email.slice(managing.email.lastIndexOf("@"))}</span></span>{managing.active ? (roles[managing.role] ?? managing.role) : words.people.removed} · {managing.approved ? text.manage.ready : words.people.waiting}</>} onClose={() => setManagingId(null)}>
+        <LiveDialog title={managing.name} description={<><span className="people-address-full"><span>{managing.email.slice(0, managing.email.lastIndexOf("@"))}</span><wbr /><span>{managing.email.slice(managing.email.lastIndexOf("@"))}</span></span>{managing.active ? <>{roles[managing.role] ?? managing.role} · {managing.approved ? text.manage.ready : words.people.waiting}</> : words.people.removed}</>} onClose={() => setManagingId(null)}>
           <div className="live-manage">
-                <Button
+                {managing.active && <Button
                   variant="outline"
                   size="sm"
                   disabled={pending}
@@ -186,7 +186,7 @@ export function PeopleSection() {
                 >
                   {managing.approved ? text.manage.markNotReady : text.manage.markReady}
                   <small>{managing.approved ? text.manage.markNotReadyNote : text.manage.markReadyNote}</small>
-                </Button>
+                </Button>}
                 <Button
                   variant="outline"
                   size="sm"

@@ -266,11 +266,11 @@ function Visits() {
       {step?.kind === "writeUp" && (
         <LiveDialog
           title={text.dialogs.writeUpTitle(step.visit.neighborName)}
-          description={capital(fill(text.dialogs.writeUpDeck, {
+          description={nameKeeper(step.visit.visitors.map((visitor) => sampleSaid(visitor.name)))(capital(fill(text.dialogs.writeUpDeck, {
             day: format(step.visit.scheduledAt, { weekday: "long", month: "long", day: "numeric" }),
             time: time(step.visit.scheduledAt),
             visitors: together(text, step.visit.visitors.map((visitor) => sampleSaid(visitor.name))),
-          }))}
+          })))}
           onClose={() => setStep(null)}
         >
           <WriteUpForm
@@ -296,9 +296,10 @@ type VisitText = ReturnType<typeof visitsWords>;
 /** Under "Renee can’t go": who the new visitor goes with, by name when the other seat is still held. */
 function replaceDeck(text: VisitText, visit: Visit, leaving: Visit["visitors"][number]) {
   const other = visit.visitors.find((visitor) => visitor.memberId !== leaving.memberId)?.name;
-  return other
+  // Each name kept whole, so "Jean-Luc" never parts at its hyphen at the line's end.
+  return nameKeeper(other ? [visit.neighborName, other] : [visit.neighborName])(other
     ? fill(text.dialogs.replaceDeck, { neighbor: visit.neighborName, other })
-    : text.dialogs.replaceDeckOther(visit.neighborName);
+    : text.dialogs.replaceDeckOther(visit.neighborName));
 }
 
 /** Two people as one pair. joining plays the two sets of initials sliding together, once. */

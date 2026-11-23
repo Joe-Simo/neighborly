@@ -348,6 +348,14 @@
   .live-app .visits-mine .help-row > :first-child { grid-row: 1 / span 2; align-self: start; }
   .live-app .visits-mine .help-row > .live-row-actions { grid-column: 2; justify-content: flex-start; }
 }
+/* The room's own lists mix the same shapes in that band when no side column stands beside them (an iPad's width), and
+   a two-button row's date was centred on its two rows while its neighbours' dates sat at the top: every row takes the
+   one shape, the date at the top beside the pair. */
+@media (min-width: 851px) and (max-width: 1279px) {
+  .live-app .visits-room .help-row:not(.visits-written) { grid-template-columns: 96px minmax(0, 1fr); row-gap: var(--space-16); }
+  .live-app .visits-room .help-row:not(.visits-written) > :first-child { grid-row: 1 / span 2; align-self: start; }
+  .live-app .visits-room .help-row:not(.visits-written) > .live-row-actions { grid-column: 2; justify-content: flex-start; }
+}
 
 /* In the write-up's two columns an amount fills its column, so each pair of boxes ends on one edge with the select beside it. */
 .live-dialog .visits-write-up .live-form-grid .live-field input[inputmode="decimal"] { max-width: none; }

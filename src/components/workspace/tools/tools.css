@@ -199,6 +199,8 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 }
 .tools-agencies { list-style: none; padding: 0; margin: var(--space-24) 0 0; max-width: 640px; }
 .tools-agencies li { padding: var(--space-16) 0; border-bottom: 1px solid var(--live-line, #dcd8cb); }
+/* The first agency starts the list's 24px under the deck, as every other card's first block does, not 40px down. */
+.tools-agencies li:first-child { padding-top: 0; }
 .tools-agency { display: flex; flex-direction: column; gap: 2px; font-size: 17px; min-width: 0; }
 .tools-agency > * { overflow-wrap: anywhere; }
 .tools-agency span { color: var(--live-muted); font-size: 15px; }
@@ -217,7 +219,11 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 .tools-files li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-8); padding: var(--space-12, 12px) 0; border-bottom: 1px solid var(--live-line, #dcd8cb); }
 .tools-file { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 17px; overflow-wrap: anywhere; }
 .tools-file span { color: var(--live-muted); font-size: 15px; }
+/* A row of the files list is not the import card's file block: no 24px drop above its name, so the name and date sit centred on the row's Remove press and the list starts under the deck like the other cards. */
+.tools-files .tools-file { max-width: none; margin-top: 0; }
 .tools-file-pick { margin-top: var(--space-16); }
+/* The note beside Add a file sits on the button's line, centred with it, not dropped by the paragraph margin it carries elsewhere. */
+.tools-file-pick > .tools-small { margin-top: 0; }
 .tools-file-pick input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
 .tools-file .tools-file-open { height: auto; padding: 0; justify-content: flex-start; text-align: left; white-space: normal; font-size: inherit; overflow-wrap: anywhere; }
 /* A file's name is a link to open it, not a field: no box drawn around it by the room's button styles. */
@@ -226,6 +232,8 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 .live-app .tools-leaf > h2 > svg { display: inline-block; vertical-align: -2px; margin-right: 6px; color: var(--live-muted); }
 /* A council's row in Your files: the sentence on the left, its buttons on one right-hand edge, so every row's buttons line up. */
 .tools-leaf .council-list li { padding: var(--space-12, 12px) 0; }
+/* With no council asking yet, the empty list takes no room, so the card closes under its code as the other cards close. */
+.tools-leaf .council-list:empty { display: none; }
 .tools-leaf .council-list li > span:first-child { margin-right: auto; }
 /* A heading with its icon turns its words beside the icon, never leaving one word on the icon's line. */
 .live-app .tools-leaf > h2:has(> svg) { display: flex; align-items: baseline; gap: 8px; text-wrap: balance; }

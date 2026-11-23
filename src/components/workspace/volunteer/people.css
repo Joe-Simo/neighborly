@@ -88,8 +88,9 @@
     /* Just under a desk's width the name has room to spare, so the wait column holds "Not yet ready to serve" /
        "Esperando a que se una" on one line. Narrower (an iPad held upright) the address keeps that room. */
     @container people-list (min-width: 820px) {
-      .live-app .people-row:not(.people-invited) { grid-template-columns: minmax(0, 1fr) 110px 196px 24px; }
-      .live-app .people-invited { grid-template-columns: minmax(0, 1fr) 110px 196px 150px; }
+      /* The arrow's column is as wide as an invitation's Revoke, so a person's wait and an invitation's wait start
+         on one line down the list. (Upright on an iPad the name needs that width more, so there it stays 24px.) */
+      .live-app .people-row:not(.people-invited), .live-app .people-invited { grid-template-columns: minmax(0, 1fr) 110px 196px 150px; }
     }
     /* An address is longer than a name, so the invited role sits under it and the address takes both columns. */
     .people-invited .live-person { grid-column: span 2; }
@@ -138,6 +139,14 @@
      takes the line below, in every card alike, rather than only where the members link happens to push it. */
   .live-app .team-card .live-team-line { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 44px; }
   .live-app .team-card .team-add { grid-column: 1; justify-self: start; }
+  /* The faces and the count take the first line whole; "Hide members" is longer than a card has room for beside
+     them, so the members link shares the add button's line, at the right edge. */
+  .live-app .team-card .team-faces { grid-column: 1 / -1; }
+  .live-app .team-card .team-faces ~ .tools-quiet { grid-row: 2; grid-column: 2; justify-self: end; align-self: center; }
+  .live-app .team-card .tools-quiet + .team-add { grid-row: 2; }
+  /* Every card's second line is one 44px step, so the add buttons stand level whether or not the link sits beside them. */
+  .live-app .team-card .live-team-line { grid-auto-rows: 44px; }
+  .live-app .team-card .team-add { align-self: center; }
 }
 /* Two teams side by side need a desk; below it each team has the full width for its members. */
 @media (max-width: 900px) {

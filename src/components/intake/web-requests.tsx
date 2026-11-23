@@ -264,7 +264,7 @@ function Review({ churchId }: { churchId: Id<"churches"> }) {
   const decideShared = useMutation(api.intakeReview.decideShared);
   const { save, error, pending } = useSave();
   if (!list) return null;
-  const day = (at: number) => new Intl.DateTimeFormat(words.locale === "es" ? "es-US" : "en-US", { month: "short", day: "numeric" }).format(at);
+  const day = (at: number) => new Intl.DateTimeFormat(words.locale === "es" ? "es-US" : "en-US", { month: "short", day: "numeric" }).format(at).replace(/ /g, "\u00a0");
   const actions = (decide: (genuine: boolean) => Promise<null>) => (
     <span className="live-row-actions">
       <Button type="button" variant="outline" disabled={pending} onClick={() => void save(() => decide(true))}>{w.genuine}</Button>

@@ -576,7 +576,7 @@
   .report-months p:not(.help-amount) { font-size: 15px; }
   .report-months:not([data-months="3"]) p:not(.help-amount) { font-size: 13px; white-space: nowrap; }
   .report-months[data-months="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .live-app .report-every-line { width: 100%; }
+  /* The press keeps the size of its words on a phone, as the landlord and council presses below it do. */
   .report-legend { display: grid; gap: var(--space-8) 10px; }
   .report-form { columns: 1; }
 }
@@ -995,6 +995,12 @@
 }
 .report-hours-lines h3 { margin: 0; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 22px; line-height: 1.15; overflow-wrap: anywhere; }
 .report-hours-lines p { margin: var(--space-4) 0 0; font-size: 13px; color: var(--live-muted); }
+/* Above a phone the hours' lines set their names and counts at the sizes of the kinds of help above them (help.css),
+   so the two lists of the same report read as one type. A phone keeps 22px and 13px, as the kinds do there. */
+@media screen and (min-width: 601px) {
+  .report-hours-lines h3 { font-size: 24px; line-height: 1.2; letter-spacing: -0.015em; }
+  .report-hours-lines p { font-size: 15px; }
+}
 /* Each kind's share laid as a strip of its own paper on the cream, with a cut end. */
 .report-hours-strip { display: block; height: 14px; }
 .report-hours-strip i {
@@ -1023,6 +1029,9 @@
 .housing-table td { font-feature-settings: "lnum" 1, "tnum" 1; text-align: right; }
 .housing-table td .housing-none { color: var(--live-muted); }
 .housing-table th, .housing-table td { padding: var(--space-8); border-bottom: 1px solid var(--live-line); text-align: right; white-space: nowrap; color: var(--live-ink); }
+/* The months and the year's total head their figures from the right, over the dollars, as the cells set them: the
+   room's own `.live-app th` would set the heads left, away from the figures under them. */
+.live-app .housing-table thead th:not(:first-child) { text-align: right; }
 /* The landlord column stays put on the room's paper; its 1px rule is an inset shadow, because a collapsed border is painted by the table and would scroll away from the sticky cell. */
 .housing-table th[scope="row"], .housing-table thead th:first-child { text-align: left; position: sticky; left: 0; z-index: 1; background: var(--housing-surface); box-shadow: inset -1px 0 0 var(--live-line); }
 /* While more months wait to the right, the frame's right edge fades 24px into paper; at the end it does not. housing-providers.tsx sets data-more from an IntersectionObserver on the last column, so nothing runs in the scroll loop. */
@@ -1045,14 +1054,24 @@
   .housing-table th[scope="row"], .housing-table thead th:first-child { width: var(--housing-name); min-width: var(--housing-name); max-width: var(--housing-name); white-space: normal; overflow-wrap: anywhere; hyphens: auto; }
   .housing-table th, .housing-table td { padding: var(--space-8) var(--space-4) var(--space-8) var(--space-12); }
   .housing-table th[scope="row"], .housing-table thead th:first-child { padding-left: 0; }
+  /* A column head wider than its column (a conference's name in the council table) turns between its words inside
+     the column, never running over the next head. */
+  .housing-table thead th:not(:first-child) { white-space: normal; vertical-align: bottom; }
 }
 @media print { .housing-section { display: none; } .housing-frame::after { display: none; } }
 .council-one { margin-top: var(--space-24); border-top: 1px solid var(--live-line); padding-top: var(--space-16); }
 .council-one h3, .council-form h3 { margin: 0 0 var(--space-8); font-size: 17px; color: var(--live-ink); }
 .council-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-8) var(--space-16); margin: var(--space-16) 0; }
+/* Starting a council reads top down: its title and sentence each take the whole line, then the name field with its
+   press beside it, instead of title, sentence and field squeezed side by side on one row. */
+.council-form > :is(h3, p, [role="alert"]) { flex: 1 0 100%; }
+.council-form > h3 + p { margin-top: calc(var(--space-8) * -1); }
+.council-form .live-field { margin: 0; }
 .council-list { list-style: none; margin: var(--space-8) 0; padding: 0; }
 .council-list li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-8); padding: var(--space-8) 0; border-bottom: 1px solid var(--live-line); color: var(--live-ink); }
 .council-list small { color: var(--live-muted); }
+/* Each conference's Remove stands at the row's right, so the presses line up down the list. */
+.council-list li > [data-slot="button"]:first-of-type { margin-left: auto; }
 .council-code { font-size: 15px; overflow-wrap: anywhere; user-select: all; }
 @media print { .council-section { display: none; } }
 

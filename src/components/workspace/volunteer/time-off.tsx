@@ -6,6 +6,7 @@ import { LiveEmpty, LiveField, markWrong } from "@/components/workspace/primitiv
 import { DateField } from "@/components/workspace/date-field";
 import { useWorkspace } from "@/components/workspace/context";
 import { readDays } from "@/components/workspace/volunteer/days";
+import { DaysWords } from "@/components/workspace/volunteer/days-words";
 import { MonthAway } from "@/components/workspace/volunteer/asides";
 import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/types";
 
@@ -27,7 +28,7 @@ export function TimeOffSection() {
               <div className="live-row volunteer-days-row" key={item.id}>
                 <div>
                   <h3 className="volunteer-days">
-                    {readDays(words, item.start, item.end)}
+                    <DaysWords words={words} start={item.start} end={item.end} />
                   </h3>
                   {item.note && <p>{sampleSaid(item.note)}</p>}
                 </div>
@@ -103,7 +104,7 @@ function LiveAvailability({
           .map((item) => (
             <div className="live-row volunteer-days-row" key={item.id}>
               <div>
-                <h3 className="volunteer-days">{readDays(words, item.start, item.end)}</h3>
+                <h3 className="volunteer-days"><DaysWords words={words} start={item.start} end={item.end} /></h3>
               </div>
               <Button
                 aria-label={`${words.timeOff.removeDates}: ${readDays(words, item.start, item.end)}`}
