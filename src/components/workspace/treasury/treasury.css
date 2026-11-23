@@ -159,7 +159,9 @@
   border-color: #6f5f93;
   box-shadow: 0 0 0 1px #6f5f93;
 }
-/* The way from the ledger to the bank statement, and back. */
+/* The way from the ledger to the bank statement, and back. Under the ledger the table's own last rule opens it: a
+   second rule of its own would run parallel to that one a step below. */
+.live-table-scroll + .treasury-foot { margin-top: var(--space-32); border-top: 0; }
 .treasury-foot {
   margin-top: var(--space-56);
   border-top: 1px solid var(--live-line);
@@ -661,7 +663,7 @@
    money in and out beside it, in ink on the page's own paper. The relief is on the paper only, never on a glyph, and nothing moves. */
 .treasury-paper {
   display: grid; grid-template-columns: minmax(0, 1fr) repeat(2, minmax(0, 200px)); align-items: end; gap: var(--space-24) clamp(20px, 3vw, 40px);
-  margin: 0 0 var(--space-48); padding-top: var(--space-24); border-top: 2px solid #596e51;
+  margin: 0 0 var(--space-48);
   font-feature-settings: "lnum" 1, "tnum" 1;
 }
 .treasury-paper dt { margin-bottom: var(--space-12); font-size: 13px; font-weight: 650; text-transform: uppercase; letter-spacing: var(--caps-track); color: #52644f; }
