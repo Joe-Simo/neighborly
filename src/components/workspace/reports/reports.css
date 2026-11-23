@@ -1054,6 +1054,9 @@
   .housing-table th[scope="row"], .housing-table thead th:first-child { width: var(--housing-name); min-width: var(--housing-name); max-width: var(--housing-name); white-space: normal; overflow-wrap: anywhere; hyphens: auto; }
   .housing-table th, .housing-table td { padding: var(--space-8) var(--space-4) var(--space-8) var(--space-12); }
   .housing-table th[scope="row"], .housing-table thead th:first-child { padding-left: 0; }
+  /* A column head wider than its column (a conference's name in the council table) turns between its words inside
+     the column, never running over the next head. */
+  .housing-table thead th:not(:first-child) { white-space: normal; vertical-align: bottom; }
 }
 @media print { .housing-section { display: none; } .housing-frame::after { display: none; } }
 .council-one { margin-top: var(--space-24); border-top: 1px solid var(--live-line); padding-top: var(--space-16); }
