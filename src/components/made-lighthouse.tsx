@@ -5,7 +5,7 @@ import type { Language } from "@/lib/words";
 type Said = (typeof madeWords)[Language]["lighthouse"];
 
 const days = { en: new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }), es: new Intl.DateTimeFormat("es-US", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }) };
-const seconds = { en: new Intl.NumberFormat("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 }), es: new Intl.NumberFormat("es-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) };
+const seconds = { en: new Intl.NumberFormat("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 }), es: new Intl.NumberFormat("es", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) };
 const fill = (text: string, values: Record<string, string>) => text.replace(/\{(\w+)\}/g, (_, key: string) => values[key] ?? "");
 
 /**

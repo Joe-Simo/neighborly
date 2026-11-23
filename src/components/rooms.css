@@ -54,3 +54,8 @@
   .neighborly-rooms li p{font-size:calc(17px * var(--big))}
   .neighborly-rooms .neighborly-together-statement{font-size:calc(40px * var(--big))}
 }
+/* Each room's picture is cut square to its card: the painting's own paper corners (a sliver of cream at a corner, a wedge of white) are trimmed off, so the picture turns with its card, edge for edge. */
+.neighborly-rooms picture{overflow:hidden}
+.neighborly-rooms img{scale:1.1}
+/* Beside its picture the words keep the card's own margin at the right, as the picture does at the left. */
+@media(min-width:1800px){.neighborly-rooms li>div{padding-right:round(nearest,clamp(8px,1vw,20px),4px)}}

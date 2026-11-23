@@ -195,7 +195,8 @@ export async function yearPaperCanvas(canvas: HTMLCanvasElement, gone: () => boo
       stageWidth = width; stageHeight = height;
       place = { x: box.x / width, y: box.y / height, w: box.w / width, h: box.h / height };
       aspect = box.w / box.h;
-      const ratio = Math.min(2, devicePixelRatio || 1), w = Math.round(width * ratio), h = Math.round(height * ratio);
+      // A one-to-one screen is drawn at one and a half and scaled down: the slips' cut edges, at an angle, would otherwise step. Where the context gives no multisampling this is the only smoothing.
+      const ratio = Math.min(2, Math.max(1.5, devicePixelRatio || 1)), w = Math.round(width * ratio), h = Math.round(height * ratio);
       // Setting a canvas's size clears it: an unchanged size is left alone, so the frame already drawn stays.
       if (w === canvas.width && h === canvas.height) return;
       canvas.width = w; canvas.height = h;

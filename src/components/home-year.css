@@ -68,3 +68,8 @@
 /* The piles are not drawn (kept in place, unseen, as the slip is laid to where they stand): the opening registers --sheet as not inherited, so they have never had height here, and the year is laid out without them.
      What showed was only each pile's top face, a stray sliver over three figures. */
 .home-year-stack{visibility:hidden}
+/* With the piles unseen, their contact shades went too: alone they read as stray short rules over three of the four figures. */
+.home-year-foot{visibility:hidden}
+/* Whose year this is sits on its own line just above the rule, not on it. */
+.relief-words p.home-year-label{margin-bottom:6px}
+.relief-words p.home-year-label + .home-year{margin-top:0}

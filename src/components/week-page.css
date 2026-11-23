@@ -60,8 +60,20 @@
   .public-week .public-week-day h2{max-width:12ch;font-size:clamp(56px,6vw,104px);line-height:var(--lead-2);letter-spacing:var(--track-2)}
 }
 /* From 1600 each day's piece takes the room its picture is cut for (960 of its own 1024 pixels), not a phone's column, so the spread is not two-thirds bare paper. The words' column is 36rem and heads there run up to 96px, so every head (Spanish "Dos miembros visitan.") takes two lines at most. */
-@media(min-width:1600px){.public-words.public-week .public-week-day{grid-template-columns:minmax(0,36rem) minmax(0,960px)}.public-week-day .public-week-piece{max-width:none}.public-week .public-week-day h2{max-width:none;font-size:clamp(72px,4.6vw,96px)}}
+@media(min-width:1600px){.public-words.public-week :is(.public-week-day,.public-week-close){grid-template-columns:minmax(0,36rem) minmax(0,960px)}.public-week-close>div{grid-column:1}.public-week-day .public-week-piece{max-width:none}.public-week .public-week-day h2{max-width:none;font-size:clamp(72px,4.6vw,96px)}}
 /* From 1024 to 1599 a day's head column grows with the window, so every head at display size takes two lines at most (es "Dos miembros visitan.", en "The write-up, and the yes."). */
-@media(min-width:1024px) and (max-width:1599px){.public-words.public-week .public-week-day{grid-template-columns:clamp(24rem,37vw,36rem) minmax(0,1fr)}.public-week .public-week-day h2{max-width:none}.public-words.public-week .public-week-day>.public-week-head{max-width:none}}
+@media(min-width:1024px) and (max-width:1599px){.public-words.public-week :is(.public-week-day,.public-week-close){grid-template-columns:clamp(24rem,37vw,36rem) minmax(0,1fr)}.public-week .public-week-day h2{max-width:none}.public-words.public-week .public-week-day>.public-week-head{max-width:none}}
 /* Below 1280 the title is set a size smaller, so "en San Ejemplo" keeps real clearance from the picture beside it. */
 @media(min-width:1024px) and (max-width:1279px){.public-words.public-week h1{font-size:7.8vw}}
+/* The close lies in the column the last day's words use (above: right of the head to 1599, under it from 1600), not on a grid of its own. */
+/* Under 1024 the opening and each day's head keep the sheets' one 476px column: the opening starts on the heads' left edge, and a day's head
+   runs the column's width (it fits on one line from 561), not the shared 14ch head measure that broke "The write-up, and / the yes." */
+@media(max-width:1023px){.public-week .public-week-lede>div{max-width:476px}}
+@media(min-width:561px) and (max-width:1023px){.public-week .public-week-day h2{max-width:none}}
+/* On a phone the title's picture takes the text's whole column, its left edge on the words' (as every day's piece does), not a narrower right-hung one. */
+@media(max-width:480px){
+  .public-week{--relief-h:calc((100vw - 24px - 2 * clamp(20px,5.4vw,104px)) / 1.5)}
+  .public-week .public-words-relief{width:calc(100% - 2 * clamp(20px,5.4vw,104px));margin-inline:clamp(20px,5.4vw,104px)}
+}
+/* At display size the second day's head breaks after its second word ("Two members / visit.", "Dos miembros / visitan."): balanced, it left "Two" alone on the first line. */
+@media(min-width:1024px){.public-week .public-week-day:nth-of-type(3) h2{text-wrap:wrap}}

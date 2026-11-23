@@ -149,9 +149,9 @@ const en = {
     { title: "Measured, not guessed", table: "frames", blocks: [
       "The rule every change that moves something is held to: it is filmed on a Mac at desktop and phone widths, and it lands only when no frame runs over 33 milliseconds or, where a page already ran over, when it is no slower than before.",
       [
-        { lead: "Under a second.", rest: "The sample conference opens in about 0.85 seconds at desk width and 1.1 on a phone, measured on our test machine." },
+        { lead: "Under a second.", rest: "The sample conference opens in about {#0.85} seconds at desk width and 1.1 on a phone, measured on our test machine." },
         { lead: "Three frames.", rest: "On the same machine, the first scroll is answered by the third frame, or within 60 pixels." },
-        { lead: "Two seconds.", rest: "The iPhone app opens into its room in 1.6 to 2 seconds in the simulator." },
+        { lead: "Two seconds.", rest: "The iPhone app opens into its room in {#1.6} to 2 seconds in the simulator." },
         { lead: "Not one frame over.", rest: "The courtyard that stands up on a first visit was filmed at 390 pixels with the processor slowed four times, and at 1440, in light and dark: 91 frames each time, none over 33 milliseconds, including the first run after the server had just started." },
         { lead: "With Reduce Motion too.", rest: "The same films are run again with Reduce Motion on. Then the courtyard is simply there." },
       ],
@@ -216,8 +216,8 @@ const es: typeof en = {
     before: "Antes",
     after: "Después",
     pairs: [
-      { key: "end", why: "En el teléfono, la última pantalla cortaba el cierre debajo de su título. Ahora la pintura, sus palabras y las dos entradas terminan enteras juntas.", alt: ["La última pantalla de la portada en un teléfono: la pintura y “Bring this to your people” (en inglés), con los enlaces de abajo cortados en el borde.", "La misma pantalla después del cambio: la pintura, el título y los dos enlaces enteros en una sola pantalla."] },
-      { key: "words", why: "La serif de los títulos va muy apretada, y el espacio entre palabras se cerró con ella hasta que “How we” se leía “Howwe”. Cada título recuperó su espacio entre palabras.", alt: ["El título de la página, How we made it (en inglés), con las palabras casi tocándose.", "El mismo título con un espacio claro entre cada palabra."] },
+      { key: "end", why: "En el teléfono, la última pantalla cortaba el cierre debajo de su título. Ahora la pintura, sus palabras y las dos entradas terminan enteras juntas.", alt: ["La última pantalla de la portada en un teléfono: la pintura y «Bring this to your people» (en inglés), con los enlaces de abajo cortados en el borde.", "La misma pantalla después del cambio: la pintura, el título y los dos enlaces enteros en una sola pantalla."] },
+      { key: "words", why: "La serif de los títulos va muy apretada, y el espacio entre palabras se cerró con ella hasta que «How we» se leía «Howwe». Cada título recuperó su espacio entre palabras.", alt: ["El título de la página, How we made it (en inglés), con las palabras casi tocándose.", "El mismo título con un espacio claro entre cada palabra."] },
       { key: "relief", why: "Cada sección tenía su propia sombra, tono y borde. Ahora toda superficie que se levanta toma una de tres alturas de una sola escala.", alt: ["Las tarjetas de las secciones en la portada, en tono crema con borde marrón.", "Las mismas tarjetas en el único tono y borde de papel de la aplicación, con su sombra de tarjeta."] },
       { key: "slip", why: "Un papelito de Una semana tenía su propio blanco y tinta marrón. Ahora se apoya en el papel como todos los papelitos de la aplicación.", alt: ["El recuadro de un día en Una semana, en su propio blanco con sombra marrón.", "El mismo recuadro como papelito, en el tono del papel con la sombra de papelito."] },
     ],
@@ -308,9 +308,9 @@ const es: typeof en = {
     { title: "Medido, no supuesto", table: "frames", blocks: [
       "La regla que cumple cada cambio que mueve algo: se filma en una Mac en anchos de escritorio y de teléfono, y entra solo cuando ningún cuadro pasa de 33 milisegundos o, donde una página ya pasaba, cuando no va más lenta que antes.",
       [
-        { lead: "Menos de un segundo.", rest: "La conferencia de muestra abre en unos 0.85 segundos en el ancho de escritorio y en 1.1 en un teléfono, medido en nuestra máquina de pruebas." },
+        { lead: "Menos de un segundo.", rest: "La conferencia de muestra abre en unos {#0.85} segundos en el ancho de escritorio y en {#1.1} en un teléfono, medido en nuestra máquina de pruebas." },
         { lead: "Tres cuadros.", rest: "En la misma máquina, el primer desplazamiento responde a más tardar en el tercer cuadro, o dentro de 60 píxeles." },
-        { lead: "Dos segundos.", rest: "La aplicación del iPhone abre su sección en 1.6 a 2 segundos en el simulador." },
+        { lead: "Dos segundos.", rest: "La aplicación del iPhone abre su sección en {#1.6} a 2 segundos en el simulador." },
         { lead: "Ni un cuadro de más.", rest: "El patio que se levanta en la primera visita se filmó a 390 píxeles con el procesador cuatro veces más lento, y a 1440, en claro y en oscuro: 91 cuadros cada vez, ninguno de más de 33 milisegundos, incluida la primera vez tras arrancar el servidor." },
         { lead: "También con Reducir movimiento.", rest: "Las mismas grabaciones se repiten con Reducir movimiento activado. Entonces el patio simplemente está ahí." },
       ],

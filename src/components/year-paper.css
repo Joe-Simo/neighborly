@@ -32,3 +32,8 @@
 /* The stage fills the window, so a ring set off its edge would fall outside the window and never be seen. Focused, the ring is drawn round the caption's sheet, which names the slip the arrow keys are on; round the slips themselves it would cut across the book. */
 .year-paper .year-paper-stage[tabindex]:focus-visible{outline:none}
 .year-paper .year-paper-stage[tabindex]:focus-visible figcaption{outline:2px solid #283c32;outline-offset:3px}
+/* The ending stands on the year's own paper here: the strip laid over its cut is that paper, not the lighter page under the chapters, which read as a band with a straight edge. */
+.year-paper + .neighborly-together{--paper-above:#eee7d7;background:#eee7d7}
+/* The caption's sheet throws its shade below the stage: the paper runs on past it, so the shade fades out on the paper and is never cut off flat by the cut below. */
+.year-paper:has(+ .neighborly-together){padding-bottom:72px}
+@media(prefers-reduced-motion:reduce){.year-paper:has(+ .neighborly-together){padding-bottom:0}}
