@@ -62,3 +62,8 @@
 /* The web form's sentences end on more than one word: no "No / genuina los mantiene." on a tablet. */
 .web-requests :is(p, .web-partner > span:first-child) { text-wrap: pretty; }
 .web-reach > span { white-space: nowrap; }
+/* Partners and Passed on are peers of the review's title, so they wear the same small-caps kicker. */
+.web-requests .web-partners h3,
+.web-requests .web-traces h3 { font-family: inherit; font-size: 13px; font-weight: 650; line-height: 1.4; text-transform: uppercase; letter-spacing: var(--caps-track); color: #52644f; }
+.web-requests .web-traces h3 { margin: var(--space-24, 24px) 0 var(--space-8, 8px); }
+.web-requests .web-partners h3 { margin: 0 0 var(--space-8, 8px); }
