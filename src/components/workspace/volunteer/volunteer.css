@@ -40,6 +40,8 @@
 @media (max-width: 560px) { .live-app .volunteer-choice .volunteer-choice-row > .volunteer-given { margin-top: var(--space-4); } }
 .live-app .volunteer-given[data-no] { color: var(--live-muted); font-weight: 400; }
 .volunteer-meeting .live-row-actions { gap: var(--space-8) 22px; }
+/* The agenda button stands on its own line under the reply, not butted against it. */
+.volunteer-meeting > .live-row-actions { margin-top: var(--space-16); }
 .live-app .volunteer-said { margin: 0 0 var(--space-32); }
 .volunteer-said:focus, .volunteer-given:focus { outline: none; }
 /* The line that says an answer waits for the connection: a little air above it, inside the line, so its room opens and closes with it. */
