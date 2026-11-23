@@ -462,3 +462,8 @@
 .help-history > .help-empty { max-width: none; }
 /* Two short boxes side by side fill their columns, so their right edges line up with the full-width boxes around them. */
 @media (min-width: 561px) { .help-form .live-form-grid .live-field :is(input[type="number"], input[inputmode="decimal"], input[inputmode="numeric"]) { max-width: none; } }
+/* When a long name pushes the number to its own line, it starts flush under the name, not a gap's width in. */
+@media (min-width: 851px) {
+  .help-row h3:has(> .help-phone) { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; }
+  .help-row h3 > .help-phone { margin-left: 0; }
+}
