@@ -218,6 +218,8 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 .tools-file { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 17px; overflow-wrap: anywhere; }
 .tools-file span { color: var(--live-muted); font-size: 15px; }
 .tools-file-pick { margin-top: var(--space-16); }
+/* The note beside Add a file sits on the button's line, centred with it, not dropped by the paragraph margin it carries elsewhere. */
+.tools-file-pick > .tools-small { margin-top: 0; }
 .tools-file-pick input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
 .tools-file .tools-file-open { height: auto; padding: 0; justify-content: flex-start; text-align: left; white-space: normal; font-size: inherit; overflow-wrap: anywhere; }
 /* A file's name is a link to open it, not a field: no box drawn around it by the room's button styles. */
