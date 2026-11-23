@@ -292,3 +292,10 @@
     .live-app .live-list > .live-commitment-row .live-meta > .live-commitment-time::before { content: none; }
   }
 }
+
+/* The line that says a task was done stands as far above the Tasks heading as it stands under the head's rule,
+   not crowded down onto the heading. */
+.live-app .live-main:has(.volunteer-tasks-list) > .live-success.help-done { margin-bottom: var(--space-32); }
+@media (max-width: 699px) {
+  .live-app .live-main:has(.volunteer-tasks-list) > .live-success.help-done { margin-bottom: var(--space-24); }
+}
