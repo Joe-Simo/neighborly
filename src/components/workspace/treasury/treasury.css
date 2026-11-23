@@ -717,6 +717,11 @@
 /* The budget's field says what an empty amount means at the size every sheet's field help is set (paper.css). */
 .treasury-budget .live-field small { font-size: 15px; line-height: 1.45; }
 .treasury-budget > form { flex-basis: 100%; }
+/* On a phone the budget's two presses start at the room's left edge, as every other press in the foot does, also
+   when Spanish words put them on a line each. The form's own Save and Cancel keep the sheet's right-hand end. */
+@media (max-width: 599px) {
+  .treasury-budget > .live-form-actions { justify-content: flex-start; }
+}
 /* The month check: what waits on a person, a flag the assistant raised included, is ochre; nothing is red. */
 /* The month check is its own row, set 24px clear of the budget's line, so it never reads as one of the budget's buttons. */
 .treasury-check { display: flex; flex-direction: column; align-items: flex-start; flex: 0 0 100%; width: 100%; margin-top: var(--space-24); padding-top: 0; }
