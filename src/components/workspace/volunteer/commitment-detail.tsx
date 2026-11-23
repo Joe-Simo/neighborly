@@ -166,10 +166,10 @@ function LiveCoverChooser({
         {text.askDeck}
       </p>
       {waiting.map((request) => (
-        <div className="live-note" key={request.id}>
+        <div className="live-note volunteer-waiting-note" key={request.id}>
           {((name: string | undefined) => (name ? text.awaiting(name) : text.awaitingMember))(
             data.people.find((person) => person.id === request.recipientId)?.name,
-          )}{" "}
+          )}
           <Button
             variant="ghost"
             size="sm"
