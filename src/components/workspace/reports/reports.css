@@ -1029,6 +1029,9 @@
 .housing-table td { font-feature-settings: "lnum" 1, "tnum" 1; text-align: right; }
 .housing-table td .housing-none { color: var(--live-muted); }
 .housing-table th, .housing-table td { padding: var(--space-8); border-bottom: 1px solid var(--live-line); text-align: right; white-space: nowrap; color: var(--live-ink); }
+/* The months and the year's total head their figures from the right, over the dollars, as the cells set them: the
+   room's own `.live-app th` would set the heads left, away from the figures under them. */
+.live-app .housing-table thead th:not(:first-child) { text-align: right; }
 /* The landlord column stays put on the room's paper; its 1px rule is an inset shadow, because a collapsed border is painted by the table and would scroll away from the sticky cell. */
 .housing-table th[scope="row"], .housing-table thead th:first-child { text-align: left; position: sticky; left: 0; z-index: 1; background: var(--housing-surface); box-shadow: inset -1px 0 0 var(--live-line); }
 /* While more months wait to the right, the frame's right edge fades 24px into paper; at the end it does not. housing-providers.tsx sets data-more from an IntersectionObserver on the last column, so nothing runs in the scroll loop. */
