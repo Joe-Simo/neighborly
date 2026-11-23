@@ -122,6 +122,7 @@ export function NeighborlyExperience() {
         write("--entry-door", "1");
         write("--entry-caption", "1");
         for (const part of element.querySelectorAll<HTMLElement>(".painted-world-track,.fresco-stage")) part.removeAttribute("data-away");
+        for (const [piece] of beneath) piece.removeAttribute("data-under");
         return;
       }
       const scrolled = read;
