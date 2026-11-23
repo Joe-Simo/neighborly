@@ -8,6 +8,9 @@
 /* A team is one group, its name over its marks: the shared table rule (paper.css) drew a line between the two and another
    under the marks, a hair above the key's own rule. Teams are parted by the rule above the next team alone. */
 .live-aside-sheet table.volunteer-teams-week tbody :is(th, td) { border-bottom: 0; }
+/* The month's last week ends on the key's rule alone when a key follows: the shared table rule under the last row sat
+   16px above it, a double rule. */
+.live-aside-sheet table.volunteer-month:has(+ .volunteer-key) tbody tr:last-child td { border-bottom: 0; }
 .live-aside-sheet .volunteer-teams-week thead th[data-today] { font-weight: 600; color: var(--live-ink); }
 .live-aside-sheet .volunteer-month td { height: 36px; padding: 0; text-align: center; font-size: 15px; color: var(--live-ink); }
 .live-aside-sheet .volunteer-month tbody tr:first-child td { padding-top: var(--space-8); }
