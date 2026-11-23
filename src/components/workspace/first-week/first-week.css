@@ -17,3 +17,9 @@
 @media (hover: hover) { .live-app .first-week-slip a:hover .first-week-arrow { transform: translateX(3px); } }
 @media (max-width: 700px) { .live-app .first-week-slips { grid-template-columns: 1fr; gap: var(--space-8) 8px; } .live-app .first-week-slip a { padding: var(--space-16) 44px var(--space-16) 16px; } }
 @media (prefers-reduced-motion: reduce) { .live-app .first-week-arrow { transition: none; } }
+/* Side by side, the three slips share their rows: a name that wraps to two lines moves no other slip's sentence out of line. */
+@media (min-width: 701px) {
+  .live-app .first-week-slips { row-gap: 0; }
+  .live-app .first-week-slip { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: 0; }
+  .live-app .first-week-slip a { display: grid; grid-row: 1 / -1; grid-template-rows: subgrid; justify-items: start; row-gap: var(--space-8); }
+}

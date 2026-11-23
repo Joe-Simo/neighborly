@@ -33,7 +33,7 @@ export function MineSection() {
     <>
       <IncomingRequests {...requests} place={words.mine.accepted} />
       <MyVisits />
-      <section className="live-section">
+      <section className="live-section mine-accepted">
         <h2 className={mine.length ? undefined : "sr-only"}>{words.mine.accepted}</h2>
         <CommitmentRows items={mine} fresh={fresh} empty={{ title: words.mine.emptyTitle, detail: words.mine.emptyDetail, go: "commitments" }} />
         {accepted && <p className="tools-quiet">

@@ -158,7 +158,7 @@ export function PeopleSection() {
         removing ? (
           <RemoveForGood person={managing} churchId={data.church.id} onClose={() => { setRemoving(false); setManagingId(null); }} />
         ) : (
-        <LiveDialog title={managing.name} description={<><span className="people-address-full">{managing.email.slice(0, managing.email.lastIndexOf("@"))}<wbr />{managing.email.slice(managing.email.lastIndexOf("@"))}</span>{managing.active ? (roles[managing.role] ?? managing.role) : words.people.removed} · {managing.approved ? text.manage.ready : words.people.waiting}</>} onClose={() => setManagingId(null)}>
+        <LiveDialog title={managing.name} description={<><span className="people-address-full"><span>{managing.email.slice(0, managing.email.lastIndexOf("@"))}</span><wbr /><span>{managing.email.slice(managing.email.lastIndexOf("@"))}</span></span>{managing.active ? (roles[managing.role] ?? managing.role) : words.people.removed} · {managing.approved ? text.manage.ready : words.people.waiting}</>} onClose={() => setManagingId(null)}>
           <div className="live-manage">
                 <Button
                   variant="outline"

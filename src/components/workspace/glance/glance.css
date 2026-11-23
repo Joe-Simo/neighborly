@@ -21,5 +21,7 @@
   .glance-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .glance-tiles a:nth-child(2n) { padding-left: 0; border-left: 0; }
   .glance-tiles a:not(:nth-child(4n + 1)) { padding-left: clamp(12px, 1.6vw, 24px); border-left: 1px solid var(--live-line); }
+  /* Two figures of one's own: their rule ends where they do, on the same columns as the conference's four below. */
+  .glance-tiles:not(:has(> a:nth-child(3))) { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 50%; }
 }
 @media print { .glance { display: none; } }

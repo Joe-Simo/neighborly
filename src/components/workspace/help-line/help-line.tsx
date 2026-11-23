@@ -852,7 +852,8 @@ function HelpLineView({
       {/* Requests from the public web form (kindhelps.com/help): where the team helps, and the web-only actions. */}
       {!late && <WebRequests />}
       {none ? (
-        <EmptyLine first line={text.noneTitle} />
+        // The web form section stands above it, so it takes the same rule over its head as "To call back" would.
+        <EmptyLine first={!!late} line={text.noneTitle} />
       ) : (
       <section>
         <div className="live-section-head">

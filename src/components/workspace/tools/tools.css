@@ -229,3 +229,5 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 /* A heading with its icon turns its words beside the icon, never leaving one word on the icon's line. */
 .live-app .tools-leaf > h2:has(> svg) { display: flex; align-items: baseline; gap: 8px; text-wrap: balance; }
 .live-app .tools-leaf > h2:has(> svg) > svg { flex: none; margin-right: 0; translate: 0 2px; }
+/* An empty list's line inside a card keeps clear of the deck above it, so its top rule never sits on the words. */
+.live-app .tools-leaf > .help-empty-line { margin-top: var(--space-16); }

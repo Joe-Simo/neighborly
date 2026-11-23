@@ -25,8 +25,11 @@
   .help-row[data-call]:not([data-quiet]) > :nth-child(2) { grid-area: 1 / 2; }
   .help-row[data-call]:not([data-quiet]) > .live-row-actions { grid-area: 1 / 3 / span 2; }
   .help-row[data-call]:not([data-quiet]) > .help-row-more { grid-area: 2 / 2; }
+  /* The leaf and "Mark returned" hang from the top of a waiting call, as they do on a returned one, however long its words run. */
+  .help-row[data-call]:not([data-quiet]) > :is(:first-child, .live-row-actions) { align-self: start; }
 }
 .help-text-action[data-slot="button"], .live-app .help-row .help-text-action[data-slot="button"], .live-app .help-actions .help-text-action[data-slot="button"] { min-height: 44px; height: auto; padding: 0; border: 0; background: none; font-size: inherit; font-weight: 400; color: #35553c; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; flex: 0 0 auto; }
+.live-app .help-sheet .help-sheet-print[data-slot="button"] { font-size: inherit; }
 .help-matches .live-row { border-bottom: 0; border-top: 1px solid var(--live-line); margin-top: var(--space-8); }
 .help-sheet .help-assistant-line { display: flex; align-items: baseline; max-width: none; margin: var(--space-16) 0 0; padding-top: var(--space-16); border-top: 1px solid var(--live-line); font-size: 16px; }
 .help-assistant-line svg { position: relative; top: 2px; }
@@ -77,7 +80,7 @@
 /* An adult's work sits under the line on its own, with its labels always shown. */
 .help-line-row .help-work { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-8) 12px; align-items: end; }
 .help-lines[data-shape] .help-line-row .help-work .live-field > span { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
-.help-line-row > [data-slot="button"] { position: absolute; right: 0; bottom: 14px; width: 44px; height: 44px; min-height: 44px; padding: 0; color: var(--live-muted); }
+.help-line-row > [data-slot="button"] { position: absolute; right: 0; bottom: 17px; width: 44px; height: 44px; min-height: 44px; padding: 0; color: var(--live-muted); }
 @media (max-width: 700px) {
   /* An account on a phone: each field takes the full width, and the way to remove it sits on the account's first line. */
   .help-lines[data-shape="four"] .help-line-row { grid-template-columns: minmax(0, 1fr); padding-right: 0; }
@@ -218,7 +221,7 @@
 .help-sheet .help-reading-title { margin: var(--space-4) 0 var(--space-16); font: 400 22px / 34px "Newsreader", "Newsreader Fallback", Georgia, serif; color: var(--live-muted); }
 /* The way on from the line that says what changed. */
 .help-done { flex-wrap: wrap; }
-.help-done > span, .help-done > .contents > span { flex: 1 1 14rem; min-width: 0; }
+.help-done > span, .help-done > .contents > span { flex: 1 1 9rem; min-width: 0; }
 .help-done > :is(a, [data-slot="button"]) { margin-left: auto; }
 .help-done > a { min-height: 44px; display: inline-flex; align-items: center; }
 @media (prefers-reduced-motion: reduce) { .help-reading-title { animation: none; } }
@@ -288,7 +291,7 @@
 .closing-first p { margin: 0; font-size: 17px; color: var(--live-ink); }
 /* On a phone, a sheet for an act that cannot be undone gives its actions the full width. */
 @media (max-width: 699px) {
-  .live-dialog .help-for-good .live-form-actions [data-slot="button"] { width: 100%; min-height: 44px; }
+  .live-dialog .help-for-good .live-form-actions :is([data-slot="button"], [data-slot="dialog-close"]) { width: 100%; min-height: 44px; }
 }
 /* A name said back under the box is not broken across lines while it is short enough to fit a phone. */
 .help-name-whole { white-space: nowrap; }
@@ -447,8 +450,11 @@
 /* A record's files read as its other sections do: the rows run the full measure under a rule, and the button to add
    one sits on the same line as its hint, with room before the next heading. */
 .live-section:has(> .tools-file-pick) > .tools-files { max-width: none; border-top: 1px solid var(--live-line); }
-.live-section:has(> .tools-file-pick) > .tools-file-pick { margin: var(--space-24) 0 var(--space-24); }
+.live-section:has(> .tools-file-pick) > .help-empty-line { margin-top: var(--space-16); }
+.live-section:has(> .tools-file-pick) { padding-bottom: var(--space-32); }
+.live-section:has(> .tools-file-pick) > .tools-file-pick { margin: var(--space-24) 0 0; }
 .live-section:has(> .tools-file-pick) > .tools-file-pick .tools-small { margin: 0; }
+.live-section:has(> .tools-file-pick) .tools-files .help-actions > .tools-small { margin: 0; }
 /* Who opened the record: a turned line never leaves the time alone on the last line. */
 .help-opened li { text-wrap: pretty; }
 /* The decision sheet's place for the household's lines, while nothing has come: out of the form's flow, so it adds
@@ -458,3 +464,21 @@
 .live-app .help-empty .help-text-action[data-slot="button"] { padding-inline: 0; }
 /* A record with no history yet: the empty state's rules run the full measure, as the heading above them does. */
 .help-history > .help-empty { max-width: none; }
+/* Two short boxes side by side fill their columns, so their right edges line up with the full-width boxes around them. */
+@media (min-width: 561px) { .help-form .live-form-grid .live-field :is(input[type="number"], input[inputmode="decimal"], input[inputmode="numeric"]) { max-width: none; } }
+/* When a long name pushes the number to its own line, it starts flush under the name, not a gap's width in. */
+@media (min-width: 851px) {
+  .help-row h3:has(> .help-phone) { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; }
+  .help-row h3 > .help-phone { margin-left: 0; }
+}
+/* A neighbor's record has no picture in its head, so its facts line runs to a reading measure instead of
+   stopping where the art would begin: in Spanish it read four short lines at a tablet's width. */
+@media (min-width: 700px) {
+  .live-app .live-main:has(.help-record-head) .live-page-head[data-plain] .live-head-words { max-width: min(660px, 100%); }
+  .live-app .live-main:has(.help-record-head) .live-page-head[data-plain] .live-deck { max-width: 46ch; min-height: 0; }
+}
+/* A neighbor's figures: the year's larger sum stands taller than the two beside it, so each line under a figure
+   sits on the column's foot, and the three read across as one line. */
+.live-main:has(.help-record-head) .help-figures > div { display: flex; flex-direction: column; }
+.live-main:has(.help-record-head) .help-figures dd { flex: 1; display: flex; flex-direction: column; align-items: flex-start; }
+.live-main:has(.help-record-head) .help-figures dd small { margin-top: auto; padding-top: var(--space-12); }

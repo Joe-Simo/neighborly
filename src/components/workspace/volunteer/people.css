@@ -36,6 +36,8 @@
 .people-address { display: flex; flex-wrap: wrap; max-width: 100%; }
 /* In the dialog the whole address is read, so it breaks at the at sign first and inside a piece only when it must. */
 .people-address-full { display: block; overflow-wrap: anywhere; }
+/* Each piece is kept whole while it fits, so a hyphen inside the domain is never chosen over the at sign. */
+.people-address-full > span { display: inline-block; max-width: 100%; }
 .people-address > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .people-row .live-avatar { width: 44px; height: 44px; letter-spacing: 0.02em; }
 .people-row .live-meta > span { font-size: 16px; text-wrap: balance; }
@@ -72,6 +74,12 @@
     /* A person row holds at most a short wait and the arrow, so those columns give the name and address their width. */
     .live-app .people-row { grid-template-columns: minmax(0, 1fr) 110px 150px 132px; }
     @media (min-width: 900px) { .live-app .people-row:not(.people-invited) { grid-template-columns: minmax(0, 1fr) 110px 120px 24px; } }
+    /* Just under a desk's width the name has room to spare, so the wait column holds "Not yet ready to serve" /
+       "Esperando a que se una" on one line. Narrower (an iPad held upright) the address keeps that room. */
+    @container people-list (min-width: 820px) {
+      .live-app .people-row:not(.people-invited) { grid-template-columns: minmax(0, 1fr) 110px 196px 24px; }
+      .live-app .people-invited { grid-template-columns: minmax(0, 1fr) 110px 196px 150px; }
+    }
     /* An address is longer than a name, so the invited role sits under it and the address takes both columns. */
     .people-invited .live-person { grid-column: span 2; }
     .people-invited .people-role { display: block; font: 400 15px/1.4 "Source Sans 3", "Source Sans 3 Fallback", sans-serif; letter-spacing: 0; color: var(--live-muted); }
@@ -89,6 +97,8 @@
   .people-role { display: block; font: 400 15px/1.4 "Source Sans 3", "Source Sans 3 Fallback", sans-serif; letter-spacing: 0; color: var(--live-muted); }
   .people-row .live-meta > .people-role-wide, .people-row .live-meta > span:empty { display: none; }
   .people-row .live-meta > span { padding-left: 59px; font-size: 15px; }
+  /* The role is the name's second line, so the address follows it at the same step as the wait under it. */
+  .people-row:not(.people-invited) h3 { margin-bottom: 0; }
   .live-app .people-row { grid-template-columns: minmax(0, 1fr) auto; }
   .people-invited h3 { display: grid; gap: 0; }
   .live-app .people-invited .live-row-actions { grid-column: 1 / -1; grid-row: auto; justify-content: flex-start; padding-left: 59px; margin-top: var(--space-8); }
@@ -106,8 +116,14 @@
 .team-faces .live-avatar + .live-avatar { margin-left: -8px; }
 .team-faces .live-meta { margin: 0 0 0 12px; white-space: nowrap; }
 .live-app .team-card .live-team-line { gap: var(--space-8) 20px; min-height: 44px; }
-/* Teams side by side keep their members on one line across: each description holds two lines' room. */
-@media (min-width: 1181px) { .live-app .team-card > p { min-height: 2lh; } }
+/* Teams side by side share their rows: name, description, a word on joining, members. Whichever card's name or note
+   runs longer, the members' line of every card in that row stands at one height, with no room held for a line not written. */
+@media (min-width: 901px) {
+  /* The grid's own row gap would fall between a card's rows too, so the cards hold it as their margin instead. */
+  .live-app .live-teams { row-gap: 0; }
+  .live-app .team-card { display: grid; grid-row: span 4; grid-template-rows: subgrid; row-gap: 0; align-content: start; margin-bottom: var(--space-32); }
+  .live-app .team-card > :last-child { grid-row: 4; align-self: start; }
+}
 /* Two teams side by side need a desk; below it each team has the full width for its members. */
 @media (max-width: 900px) {
   .live-app .live-teams { grid-template-columns: minmax(0, 1fr); }
@@ -171,5 +187,5 @@
 /* An expired invitation's two acts stand as one stack of equal width in their column, never wider than it. */
 @media (min-width: 701px) {
   .live-app .people-invitations .live-row-actions:has(> :nth-child(2)) { flex-direction: column; align-items: stretch; gap: var(--space-8); width: max-content; justify-self: end; }
-  .live-app .people-invitations .live-row-actions [data-slot="button"] { padding-inline: 10px; }
+  .live-app .people-invitations .live-row-actions [data-slot="button"] { padding-inline: 14px; }
 }

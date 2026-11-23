@@ -109,12 +109,12 @@
   .volunteer-choice-row, .volunteer-meeting .help-sheet-body { grid-template-columns: minmax(0, 1fr); }
   .volunteer-meetings .help-sheet { padding: var(--space-24) 20px; }
   :is(.volunteer-choice, .volunteer-meeting) h3 { font-size: 24px; padding-right: 26px; }
-  /* The title has the row to itself; the button sits on the line of who and when, at the right. */
+  /* The title has the row to itself, then who and when, then the button at the right: every row the same shape. */
   .live-row.volunteer-task { align-items: center; flex-wrap: wrap; gap: var(--space-8) 12px; }
   .volunteer-task > div { display: contents; }
   .volunteer-task h3 { flex: 1 1 100%; margin: 0; }
-  /* The line keeps its natural width, so a button that does not fit beside it drops under it; a name never breaks. */
-  .volunteer-task p { flex: 0 1 auto; min-width: 0; }
+  /* The line of who and when takes its own row, so the button never sits beside one row's line and under the next. */
+  .volunteer-task p { flex: 1 1 100%; min-width: 0; }
   .volunteer-task > [data-slot="button"] { min-height: 44px; margin-left: auto; }
   .volunteer-task > .volunteer-task-act { display: flex; margin-left: auto; }
   .volunteer-task-act [data-slot="button"] { min-height: 44px; }
@@ -165,3 +165,34 @@
 .live-dialog .volunteer-review-when { color: var(--live-muted); font-feature-settings: "lnum" 1, "tnum" 1; white-space: nowrap; }
 .live-dialog .live-form.volunteer-review { gap: var(--space-16); }
 .live-dialog .volunteer-review-explain { margin: var(--space-8) 0 0; line-height: 1.5; }
+
+/* My commitments sets its accepted rows on the same columns as the home visits above them, so every stamp and every
+   title in the room starts on one line instead of two. */
+@media (min-width: 721px) {
+  /* The list's columns are the rows' subgrid: the stamp's column and its 22px gap end where a visit's title begins. */
+  .live-app .mine-accepted .live-list:has(> .live-commitment-row) { grid-template-columns: 104px minmax(0, 1fr) auto auto; }
+  .live-app .mine-accepted .live-list > .live-commitment-row:not(#x) { grid-template-columns: 104px minmax(0, 1fr); }
+  .live-app .mine-accepted .live-commitment-row > .live-date-leaf { justify-self: stretch; margin-right: 8px; }
+}
+@container (min-width: 680px) {
+  .live-app .mine-accepted .live-list > .live-commitment-row:not(#x) { grid-template-columns: subgrid; }
+}
+/* Where a visit's stamp stands at the top of its row, so does a commitment's. */
+@media (min-width: 851px) and (max-width: 1279px) {
+  .live-app .mine-accepted .live-commitment-row > .live-date-leaf { align-self: start; }
+}
+@media (min-width: 721px) and (max-width: 850px) {
+  .live-app .mine-accepted .live-list:has(> .live-commitment-row) { grid-template-columns: 62px minmax(0, 1fr) auto auto; }
+  .live-app .mine-accepted .live-list > .live-commitment-row:not(#x) { grid-template-columns: 62px minmax(0, 1fr); }
+  .live-app .mine-accepted .live-commitment-row > .live-date-leaf { margin-right: 0; }
+}
+@media (min-width: 561px) and (max-width: 720px) {
+  .live-app .mine-accepted .live-commitment-row { grid-template-columns: 66px minmax(0, 1fr) auto; column-gap: 18px; }
+}
+@media (max-width: 560px) {
+  .live-app .mine-accepted .live-commitment-row { grid-template-columns: 66px minmax(0, 1fr); column-gap: 16px; }
+}
+/* Where the deck keeps to 24ch, an even break put "yes" and "to," on two lines; this deck breaks greedily, and "and\u00a0how" (en) holds its second line together after the comma. */
+@media (min-width: 700px) and (max-width: 1200px) {
+  .live-app .live-main:has(.mine-accepted) .live-page-head .live-deck { text-wrap: wrap; }
+}
