@@ -493,3 +493,6 @@
 .live-main:has(.help-record-head) .help-figures > div { display: flex; flex-direction: column; }
 .live-main:has(.help-record-head) .help-figures dd { flex: 1; display: flex; flex-direction: column; align-items: flex-start; }
 .live-main:has(.help-record-head) .help-figures dd small { margin-top: auto; padding-top: var(--space-12); }
+
+/* No neighbors yet: the block closes with a rule as wide as the page head's above it, not one cut short at 760px. */
+.live-app .help-empty.help-neighbors-none { max-width: none; }
