@@ -7,6 +7,7 @@ import { wrongControl } from "@/components/workspace/failure";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { useWorkspace } from "@/components/workspace/context";
 import { formatDate, type Language } from "@/lib/words";
+import { conferenceDay } from "@/components/workspace/zone";
 
 // The calendar library is needed only once a month is opened. It is fetched when the page is idle after the first
 // room (fetchMonthAhead, with the rooms ahead), and marked as React marks a promise it has read, so a month opened
@@ -24,10 +25,9 @@ const toValue = (day: Date) =>
   `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
 
 /** A typed day: 2026-11-19, or numbers in the order the language writes them (11/19 in English, 19/11 in Spanish). */
-function readTyped(text: string, language: Language): string | undefined {
+function readTyped(text: string, language: Language, thisYear: number): string | undefined {
   const parts = text.trim().split(/[^0-9]+/).filter(Boolean).map(Number);
   if (parts.length < 2 || parts.length > 3) return undefined;
-  const thisYear = new Date().getFullYear();
   const [year, month, day] =
     parts[0] > 31 ? parts : language === "en" ? [parts[2] ?? thisYear, parts[0], parts[1]] : [parts[2] ?? thisYear, parts[1], parts[0]];
   const read = new Date(year < 100 ? year + 2000 : year, month - 1, day);
@@ -71,7 +71,10 @@ export function DateField({
   /** The day said short ("Wed, Sep 30" / "mié, 30 sept"; "Sep 29, 2027" in another year), for a field that shares its row, so the whole date always shows. */
   short?: boolean;
 }) {
-  const { words } = useWorkspace();
+  const { words, data, now } = useWorkspace();
+  // Today is the conference's day, as the room's own calendar marks it (MonthAway), not the browser's.
+  const today = toDay(conferenceDay(now, data.church.timeZone));
+  const thisYear = today.getFullYear();
   const sheet = useSyncExternalStore(watchNarrow, () => matchMedia(narrow).matches, () => false);
   const [open, setOpen] = useState(false);
   const [own, setOwn] = useState(defaultValue);
@@ -96,14 +99,14 @@ export function DateField({
   const said = chosen
     ? formatDate(words.locale, toDay(chosen).getTime(), {
         // Said short, a day in another year gives up its weekday for the year, so the whole date still fits.
-        ...(short && toDay(chosen).getFullYear() !== new Date().getFullYear() ? {} : { weekday: short ? "short" : "long" }),
+        ...(short && toDay(chosen).getFullYear() !== thisYear ? {} : { weekday: short ? "short" : "long" }),
         month: short ? "short" : "long",
         day: "numeric",
-        ...(toDay(chosen).getFullYear() === new Date().getFullYear() ? {} : { year: "numeric" }),
+        ...(toDay(chosen).getFullYear() === thisYear ? {} : { year: "numeric" }),
       })
     : "";
   const keep = () => {
-    const read = typed === undefined ? undefined : readTyped(typed, words.locale);
+    const read = typed === undefined ? undefined : readTyped(typed, words.locale, thisYear);
     if (read && allowed(read)) choose(read);
     else setTyped(undefined);
   };
@@ -111,6 +114,7 @@ export function DateField({
     <Suspense fallback={null}>
     <Month
       language={words.locale}
+      today={today}
       selected={chosen ? toDay(chosen) : undefined}
       defaultMonth={chosen ? toDay(chosen) : min ? toDay(min) : undefined}
       min={min ? toDay(min) : undefined}

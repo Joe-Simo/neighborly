@@ -11,8 +11,8 @@ afterAll(() => {
   GlobalRegistrator.unregister();
 });
 
-// The field reads only the person's words from the workspace.
-const workspace = { words: words("en") } as Workspace;
+// The field reads the person's words, and the conference's zone and the moment, for its today.
+const workspace = { words: words("en"), data: { church: { timeZone: "America/Chicago" } }, now: Date.now() } as unknown as Workspace;
 const frames = () => act(() => new Promise((done) => setTimeout(done, 60)));
 
 describe("the date field on a desktop", () => {
