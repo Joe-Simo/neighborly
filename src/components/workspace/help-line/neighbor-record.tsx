@@ -785,7 +785,8 @@ function NeighborRecordView({
                   <h3>{requestTitle(request)}</h3>
                   <p>
                     {sampleSaid(request.summary)}
-                    {request.source === "import" && ` ${text.also.brought}`}
+                    {/* A summary typed without a closing stop still ends its sentence before the note that follows. */}
+                    {request.source === "import" && `${/(^|[.!?…])\s*$/.test(sampleSaid(request.summary)) ? "" : "."} ${text.also.brought}`}
                   </p>
                 </div>
                 <div className="live-row-actions">
