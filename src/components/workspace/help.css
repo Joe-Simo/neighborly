@@ -351,3 +351,17 @@ td.help-money[data-balance] { color: var(--live-muted); }
   isolation: isolate;
   clip-path: inset(-1px -48px -72px -48px);
 }
+
+/* Neighbors: from 1700px the head's picture stops at the room's column edge (paper.css), and this room's painting
+   runs off its right side (the plum hill, the sleeve), so it ended on a hard vertical cut short of the paper's edge.
+   It fades out into the paper on that side; with no side column it keeps the left fade it already has. */
+@media (min-width: 1700px) {
+  .live-app .live-main > .live-page-head .live-head-art[data-area="neighbors"] {
+    -webkit-mask-image: linear-gradient(90deg, #000 84%, transparent);
+    mask-image: linear-gradient(90deg, #000 84%, transparent);
+  }
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art[data-area="neighbors"] {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
+  }
+}
