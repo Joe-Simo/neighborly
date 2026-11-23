@@ -33,7 +33,7 @@ export function ServiceAreaForm({
   const r = 18 + Math.sqrt(miles / 100) * 62;
   return (
     <form
-      className="live-form"
+      className="live-form service-area-form"
       onSubmit={async (event) => {
         event.preventDefault();
         if (!event.currentTarget.checkValidity()) return;

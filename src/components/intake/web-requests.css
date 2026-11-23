@@ -40,3 +40,11 @@
 /* The list after the web requests (To call back, or its empty line) starts a section of its own: it keeps a
    section's space above it, so its title and rule never sit on the last request's Close. */
 .live-app .web-requests + * { margin-top: var(--space-40); }
+/* Where the team helps: the reach choices wrap as the help sheet's place chips do, so on a phone the form keeps to
+   the screen (the field and Save are never cut at its edge); the address keeps a line's measure on a desk; its note
+   is read at the room's note size. */
+.service-area-form { min-width: 0; max-width: 100%; }
+.service-area-form input[name="address"] { max-width: 640px; }
+.service-area-form [data-slot="toggle-group"] { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
+.service-area-form [data-slot="toggle-group-item"] { min-height: 44px; padding-inline: 16px; font-size: 16px; border: 1px solid #7d8874; border-radius: 4px; background: #fbfaf6; flex: 0 0 auto; }
+.service-area-form [data-slot="toggle-group-item"][data-state="on"] { background: var(--help-sage-wash, #e7ecdf); border-color: #596e51; color: var(--live-ink); box-shadow: inset 0 0 0 1px #596e51; }
