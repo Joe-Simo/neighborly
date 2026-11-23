@@ -205,3 +205,8 @@
 
 /* A canceled commitment's note stands where Edit and Cancel stand on a live one, at the same distances from the team above and the details below. */
 .live-dialog.live-detail-dialog .live-kicker + .live-note { margin-block: 0; }
+
+/* With no task or meeting yet, the empty place's rule runs the room's full measure, as the head's rule above it
+   does, instead of stopping short at 760px; its words keep their reading measure. */
+.live-app :is(.volunteer-tasks-list, .volunteer-meetings-list) > .live-empty { max-width: none; }
+.live-app :is(.volunteer-tasks-list, .volunteer-meetings-list) > .live-empty > div { max-width: 600px; }

@@ -58,7 +58,7 @@ export function TasksSection() {
   return (
     <>
       <NextMeeting />
-      <section>
+      <section className="volunteer-tasks-list">
         <div className="live-section-head">
           <h2 tabIndex={-1} data-tasks-head className={data.tasks.length ? undefined : "sr-only"}>{words.tasks.tasks}</h2>
           {/* The tasks still open as paper: the figure on a cut slip. */}
@@ -134,7 +134,7 @@ export function TasksSection() {
           </LiveEmpty>
         )}
       </section>
-      <section className="live-section">
+      <section className="live-section volunteer-meetings-list">
         <div className="live-section-head">
           <h2 className={data.meetings.length ? undefined : "sr-only"}>{words.tasks.meetings}</h2>
           {/* With no meeting yet the button goes into the empty place below, as its one act, rather than stand alone. */}
