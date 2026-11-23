@@ -10,7 +10,7 @@
 /* Something here waits for a person: a small ochre corner, the paper rule's colour for waiting. */
 .glance-tiles a[data-waits]::before { content: ""; position: absolute; top: 0; right: 0; width: 10px; height: 10px; background: linear-gradient(225deg, var(--help-ochre, #b98a2f) 50%, transparent 50%); }
 .glance-tiles .count-up { font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: clamp(30px, 3.4vw, 44px); line-height: 1; letter-spacing: -0.02em; font-feature-settings: "lnum" 1, "tnum" 1; overflow-wrap: anywhere; }
-.glance-tiles small { display: grid; gap: 2px; font-size: 13px; line-height: 1.35; color: var(--live-muted); }
+.glance-tiles small { display: grid; gap: 2px; font-size: 13px; line-height: 1.35; color: var(--live-muted); text-wrap: balance; }
 .glance-pace { position: relative; height: 4px; margin: 2px 0; background: #e4dfd3; }
 .glance-pace::before { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--spent); background: #596e51; }
 .glance-pace::after { content: ""; position: absolute; top: -3px; bottom: -3px; left: var(--day); width: 2px; background: var(--live-ink); }

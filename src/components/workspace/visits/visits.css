@@ -296,7 +296,12 @@
 .visits-written-found > span:last-child { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .visits-written-found .visits-given { flex: none; color: var(--live-ink); }
 /* Side by side, the facts hold one width so every row's note begins at the same x. */
-@media (min-width: 851px) { .visits-written-found .visits-given { min-width: 15em; } }
+@media (min-width: 851px) {
+  /* The facts' width is one number, so what the assistant read can start on the note's x, under the note. */
+  .live-app .visits-written { --visits-facts: 255px; }
+  .visits-written-found .visits-given { min-width: var(--visits-facts); }
+  .live-app .visits-written > .visits-found { padding-inline-start: calc(var(--visits-facts) + 16px); }
+}
 @media (max-width: 699px) {
   .visits-written-who { flex-wrap: wrap; row-gap: 0; }
   .visits-written-found { flex-wrap: wrap; row-gap: 2px; }

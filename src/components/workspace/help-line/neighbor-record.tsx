@@ -132,6 +132,10 @@ function StillCovered({
   );
 }
 
+/** A short phrase whose words stay on one line (a long one, past 32 letters, is left free to wrap). */
+const keepPhrase = (phrase: string | undefined) =>
+  phrase && phrase.length <= 32 ? phrase.replace(/ /g, "\u00a0") : phrase;
+
 /** Opens one record: the opening is written down first, and only then is the record read. */
 export function NeighborRecord({
   neighborId,
@@ -187,11 +191,14 @@ export function NeighborRecord({
       // One quiet line under the name: where they live, who lives there, the language. The phone and the
       // email stay under At home, where they are changed.
       record.neighbor.address,
-      size === 1 ? text.deck.livesAlone : text.deck.householdOf(size),
+      // The short phrases hold together, so a wrap never parts "speaks" from the language ("habla / inglés").
+      keepPhrase(size === 1 ? text.deck.livesAlone : text.deck.householdOf(size)),
       // The name recorded for another language stays as it was typed.
-      record.neighbor.language === "other" && record.neighbor.languageName
-        ? text.deck.speaksNamed(record.neighbor.languageName)
-        : text.deck.speaks[record.neighbor.language],
+      keepPhrase(
+        record.neighbor.language === "other" && record.neighbor.languageName
+          ? text.deck.speaksNamed(record.neighbor.languageName)
+          : text.deck.speaks[record.neighbor.language],
+      ),
       text.deck.since(format(record.since, { day: undefined, month: "long", year: "numeric" })),
     ]
       .filter(Boolean)
@@ -767,7 +774,7 @@ function NeighborRecordView({
           </div>
           <div className="live-list">
             {alsoOpen.map((request) => (
-              <div className="help-row" key={request.id}>
+              <div className="help-row help-also-row" key={request.id}>
                 <DateLeaf said={format(request.createdAt, { month: "long", day: "numeric" })}>
                   <span>{format(request.createdAt, { day: undefined })}</span>
                   <strong>

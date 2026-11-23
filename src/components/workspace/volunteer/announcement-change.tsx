@@ -108,23 +108,22 @@ export default function AnnouncementChange({
           <Textarea name="body" required rows={5} maxLength={5000} defaultValue={item.body} />
         </LiveField>
         {error && <LiveFailure message={error} />}
+        {/* The sheet ends on its row of buttons, so taking it off is asked and answered above that row, and its
+            button stands in the row itself, at the left, apart from the save: never under the sheet's foot. */}
+        {asking && (
+          <div role="group" aria-label={text.remove}>
+            <p>{text.removeQuestion}</p>
+            <div className="live-row-actions">
+              <Button type="button" variant="outline" disabled={busy} onClick={() => setAsking(false)}>{text.keep}</Button>
+              <Button type="button" variant="outline" disabled={busy} onClick={() => void takeOff()}>{text.removeSure}</Button>
+            </div>
+          </div>
+        )}
         <div className="live-form-actions">
+          {!asking && <Button type="button" variant="outline" className="mr-auto" disabled={busy} onClick={() => setAsking(true)}>{text.remove}</Button>}
           <Button type="submit" disabled={busy}>{busy ? text.saving : text.save}</Button>
         </div>
       </form>
-      {asking ? (
-        <div className="live-form" role="group" aria-label={text.remove}>
-          <p>{text.removeQuestion}</p>
-          <div className="live-form-actions">
-            <Button variant="outline" disabled={busy} onClick={() => setAsking(false)}>{text.keep}</Button>
-            <Button variant="outline" disabled={busy} onClick={() => void takeOff()}>{text.removeSure}</Button>
-          </div>
-        </div>
-      ) : (
-        <p>
-          <Button variant="outline" disabled={busy} onClick={() => setAsking(true)}>{text.remove}</Button>
-        </p>
-      )}
     </LiveDialog>
   );
 }

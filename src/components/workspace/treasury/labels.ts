@@ -64,7 +64,7 @@ export function entryLines(words: TreasuryWords, given: BankEntry, typed: Say = 
   const check = entry.checkNumber ? say.check(entry.checkNumber) : "";
   const note = [check, entry.memo]
     .filter(Boolean)
-    .map((part) => ` · ${part}`)
+    .map((part) => `\u00a0· ${part}`)
     .join("");
   if (entry.reverses)
     return {
@@ -75,10 +75,10 @@ export function entryLines(words: TreasuryWords, given: BankEntry, typed: Say = 
     return { title: entry.summary, detail: `${say.paidTo(entry.payee)}${note}` };
   if (entry.category === TWINNING_GIFT)
     return { title: words.twinningGift, detail: `${say.to(entry.payee)}${note}` };
-  const who = `${entry.kind === "income" ? say.from(entry.payee) : say.paidTo(entry.payee)}${check ? ` · ${check}` : ""}`;
+  const who = `${entry.kind === "income" ? say.from(entry.payee) : say.paidTo(entry.payee)}${check ? `\u00a0· ${check}` : ""}`;
   const category = categoryLabel(words, entry.category, typed);
   return entry.memo
-    ? { title: entry.memo, detail: `${category} · ${who}` }
+    ? { title: entry.memo, detail: `${category}\u00a0· ${who}` }
     : { title: category, detail: who };
 }
 

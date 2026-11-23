@@ -36,7 +36,10 @@ export function HelpEmpty({
   children,
   action,
   first,
+  className,
 }: {
+  /** A room's own touch on its empty state. */
+  className?: string;
   /** True when this is the first thing under the page head, which already draws a rule. */
   first?: boolean;
   title: string;
@@ -45,7 +48,7 @@ export function HelpEmpty({
 }) {
   const named = useId();
   return (
-    <div className="help-empty" data-first={first ? "" : undefined} role="group" aria-labelledby={named}>
+    <div className={className ? `help-empty ${className}` : "help-empty"} data-first={first ? "" : undefined} role="group" aria-labelledby={named}>
       <PaperScene kind="empty" />
       <div>
         {/* h2 straight under the room's h1, h3 under a section's h2: no level is skipped. */}

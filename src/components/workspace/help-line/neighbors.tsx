@@ -248,6 +248,7 @@ function NeighborListView({
     return (
       <HelpEmpty
         first
+        className="help-neighbors-none"
         title={text.list.none.title}
         action={
           bring ? (

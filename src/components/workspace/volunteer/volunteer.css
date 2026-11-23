@@ -103,7 +103,8 @@
 }
 .volunteer-replies { flex: 1 1 100%; }
 .volunteer-replies .live-row { min-height: 56px; padding: var(--space-12) 0; font-size: 17px; }
-.volunteer-replies .live-status { text-transform: capitalize; }
+/* The list ends with the card: its last reply draws no rule of its own a little above the card's edge. */
+.volunteer-replies .live-list > .live-row:last-child { border-bottom: 0; }
 
 @media (max-width: 699px) {
   .volunteer-choice-row, .volunteer-meeting .help-sheet-body { grid-template-columns: minmax(0, 1fr); }
@@ -141,6 +142,10 @@
    with the middle of its button instead of a few pixels above it. */
 .live-app .volunteer-days-row > div > :last-child { margin-bottom: 0; }
 .live-app .live-row.volunteer-days-row { align-items: center; }
+/* The days take the room they need and wrap inside their own column, so the Remove button keeps to the right of
+   the row on every width instead of dropping below it, left-aligned, the moment the dates run to two lines. */
+.live-app .volunteer-days-row > div:first-child { flex: 1 1 auto; min-width: 0; }
+.live-app .volunteer-days-row > [data-slot="button"] { flex: none; margin-left: auto; }
 /* A span of dates breaks as two even lines, never leaving a year alone on the second. */
 .live-app .live-row > .volunteer-days { display: block; text-wrap: balance; }
 
@@ -153,6 +158,8 @@
 .live-app .live-list > .live-week-label:first-child { padding-top: var(--space-8); }
 /* Awaiting a reply: the sentence and its withdraw stand apart, the press at the note's far edge, centred on the words. */
 .live-note.volunteer-waiting-note { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-8) 16px; }
+/* It is waiting, so it is said in ochre, as every waiting thing is: paper inside a warm hairline, never the olive of a plain note. */
+:is(.live-app, .live-dialog) .live-note.volunteer-waiting-note { background: #fffdf7; border: 1px solid color-mix(in srgb, var(--paper-ochre, #c8962e) 26%, #f7f4ed); border-left: 3px solid var(--paper-ochre, #c8962e); border-radius: 0 3px 3px 0; }
 
 /* Two day fields side by side are narrower than a month: while one is open the pair stacks, so the month never slides under its neighbour. */
 :is(.live-app, .live-dialog) .live-form-grid.volunteer-days-grid:has(.live-date[data-open]) { grid-template-columns: minmax(0, 1fr); }
@@ -196,3 +203,11 @@
 @media (min-width: 700px) and (max-width: 1200px) {
   .live-app .live-main:has(.mine-accepted) .live-page-head .live-deck { text-wrap: wrap; }
 }
+
+/* A canceled commitment's note stands where Edit and Cancel stand on a live one, at the same distances from the team above and the details below. */
+.live-dialog.live-detail-dialog .live-kicker + .live-note { margin-block: 0; }
+
+/* With no task or meeting yet, the empty place's rule runs the room's full measure, as the head's rule above it
+   does, instead of stopping short at 760px; its words keep their reading measure. */
+.live-app :is(.volunteer-tasks-list, .volunteer-meetings-list) > .live-empty { max-width: none; }
+.live-app :is(.volunteer-tasks-list, .volunteer-meetings-list) > .live-empty > div { max-width: 600px; }

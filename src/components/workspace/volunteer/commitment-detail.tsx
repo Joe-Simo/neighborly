@@ -53,8 +53,9 @@ export function CommitmentDetail({
                 >
                   {text.edit}
                 </Button>
+                {/* Cancelling removes the date: ink inside the same hairline as Edit, so the pair reads as one row. */}
                 <Button
-                  variant="ghost"
+                  variant="destructive"
                   size="sm"
                   onClick={() => {
                     confirm({

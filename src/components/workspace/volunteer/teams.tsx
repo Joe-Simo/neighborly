@@ -205,7 +205,7 @@ function LiveTeamRoster({
           </Button>
         )}
         {team.canCoordinate && (
-          <Button variant="outline" size="sm" onClick={add}>
+          <Button className="team-add" variant="outline" size="sm" onClick={add}>
             <Plus size={15} aria-hidden="true" /> {text.addMember}
           </Button>
         )}

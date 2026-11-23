@@ -4,6 +4,8 @@
 /* ── People ───────────────────────────────────────────────────────────── */
 .live-app .people-row { min-height: 80px; padding-block: var(--space-16); }
 .people-row h3 { font-size: 19px; }
+/* A name with no address under it (the owner's own row) sits on the row's centre line, level with its role. */
+.people-row .live-person h3:only-child { margin-bottom: 0; }
 .people-row .live-person p { margin: 2px 0 0; font-size: 16px; overflow-wrap: normal; }
 .people-row .live-person, .people-row .live-person > div { min-width: 0; }
 /* A row the owner can open is one target: the name is the control, its reach is the whole row, and a
@@ -54,7 +56,8 @@
 .people-row .live-meta > span[data-waits]:not(:empty)::before { flex: none; margin-top: 0.4em; }
 /* Open invitations are rows in the people's own columns; the last column is wide enough for the act's whole name. */
 .people-invitations { margin-top: var(--space-24); }
-.live-app .people-row { grid-template-columns: minmax(0, 1fr) 150px 210px 150px; }
+/* The role column holds "Invitación como coordinador" on one line, so every invited role reads the same way. */
+.live-app .people-row { grid-template-columns: minmax(0, 1fr) 210px 210px 150px; }
 .people-invited .live-avatar { border: 1px dashed #b9bca9; background: none; color: #68715f; }
 .people-invited h3 { min-width: 0; margin: 0; font-size: 19px; }
 .people-invited .live-person { align-items: center; }
@@ -65,6 +68,9 @@
 .people-row .live-meta > span[data-joined] { color: var(--paper-green); }
 .people-invitations + .live-empty, .people-deck + .live-empty { margin-top: var(--space-24); }
 .live-app .people-deck { margin-bottom: 0; }
+/* The deck's two sentences stand one to a line (each balanced if a phone must turn it); balancing them as one
+   text broke the first mid-thought. */
+.people-deck > span { display: block; text-wrap: balance; }
 
 /* Between a phone and a desk the columns give the name room, so an address stays on one line. The list's own
    width decides, not the screen's: on an iPad the side column takes its share before the rows do. */
@@ -73,7 +79,12 @@
   @container people-list (max-width: 939px) {
     /* A person row holds at most a short wait and the arrow, so those columns give the name and address their width. */
     .live-app .people-row { grid-template-columns: minmax(0, 1fr) 110px 150px 132px; }
-    @media (min-width: 900px) { .live-app .people-row:not(.people-invited) { grid-template-columns: minmax(0, 1fr) 110px 120px 24px; } }
+    /* An upright iPad: the wait column holds "Not yet ready to serve" / "Esperando a que se una" on one line; the
+       name and address keep more than they need. */
+    @media (min-width: 900px) {
+      .live-app .people-row:not(.people-invited) { grid-template-columns: minmax(0, 1fr) 110px 180px 24px; }
+      .live-app .people-invited { grid-template-columns: minmax(0, 1fr) 110px 180px 150px; }
+    }
     /* Just under a desk's width the name has room to spare, so the wait column holds "Not yet ready to serve" /
        "Esperando a que se una" on one line. Narrower (an iPad held upright) the address keeps that room. */
     @container people-list (min-width: 820px) {
@@ -123,6 +134,10 @@
   .live-app .live-teams { row-gap: 0; }
   .live-app .team-card { display: grid; grid-row: span 4; grid-template-rows: subgrid; row-gap: 0; align-content: start; margin-bottom: var(--space-32); }
   .live-app .team-card > :last-child { grid-row: 4; align-self: start; }
+  /* A card is too narrow for faces, the members link and the add button on one line, so the add button always
+     takes the line below, in every card alike, rather than only where the members link happens to push it. */
+  .live-app .team-card .live-team-line { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 44px; }
+  .live-app .team-card .team-add { grid-column: 1; justify-self: start; }
 }
 /* Two teams side by side need a desk; below it each team has the full width for its members. */
 @media (max-width: 900px) {
@@ -132,6 +147,8 @@
   /* Faces and the count on one line; the two things to do share the next. */
   .team-faces { flex-basis: 100%; }
   .live-app .team-card .live-team-line { justify-content: space-between; }
+  /* Alone on its line (a team you are invited to has no members link), the add button keeps the right edge too. */
+  .live-app .team-card .team-add { margin-left: auto; }
 }
 
 /* An invitation to a team waits on you: an ochre corner until you answer, green when you join. */

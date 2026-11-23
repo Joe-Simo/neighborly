@@ -112,6 +112,9 @@
 .book-corner:active { cursor: grabbing; }
 
 .book-foot { display: flex; align-items: center; gap: var(--space-8) 8px; margin-top: var(--space-16); font-size: 15px; }
+/* The foot is as wide as the book above it, so "Print these pages" ends at the sheet's right edge, not past it. */
+.book-desk + .book-foot { width: min(100%, 520px); }
+.book-desk[data-facing] + .book-foot { width: min(100%, 1040px); }
 /* The page arrows are 44px presses, like every control. */
 .book-foot [data-slot="button"] { width: 44px; height: 44px; }
 /* The notes row (report-book.tsx NoteRow) draws as the notes once did under the table: no rule, plain small words. */
