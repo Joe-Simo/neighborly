@@ -17,6 +17,8 @@
   .public-words.public-made section>div{grid-column:1;grid-row:2;max-width:60ch}
   .public-words.public-made :is(.public-made-figure,.public-made-eval,.public-made-anatomy){grid-column:2;grid-row:1/span 2;align-self:start;margin:0}
   .public-words.public-made .public-made-figure{display:block}
+  /* The depth map fills its column like the charts and stills beside it, so its right edge meets theirs at wide windows too. */
+  .public-words.public-made .public-made-figure img{max-width:none}
   .public-words.public-made section>.public-made-trace,
   .public-words.public-made section>.public-made-process{grid-column:1/-1;grid-row:3;width:auto;max-width:none}
   .public-words.public-made .public-made-figure figcaption{margin-top:10px;max-width:none}
@@ -90,3 +92,5 @@
 .public-made-named{font-style:italic}
 /* The sheet after the courtyard lies on the bare table, not under another sheet, so its top is torn as well as its foot instead of a straight cut. */
 .public-words.public-made>.made-courtyard+section::before{-webkit-mask:var(--cut,var(--cut-a)) bottom/100% 30px no-repeat,url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M0 10H100V4C84 7 70 2 52 3S20 8 0 5Z'/%3E%3C/svg%3E") top/100% 24px no-repeat,linear-gradient(#000,#000) 0 23px/100% calc(100% - 52px) no-repeat;mask:var(--cut,var(--cut-a)) bottom/100% 30px no-repeat,url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M0 10H100V4C84 7 70 2 52 3S20 8 0 5Z'/%3E%3C/svg%3E") top/100% 24px no-repeat,linear-gradient(#000,#000) 0 23px/100% calc(100% - 52px) no-repeat}
+/* From 1024 to 1199 the relief came down to (or over) the first line of "Why it exists"; a step narrower, it ends with room above the words. */
+@media(min-width:1024px) and (max-width:1199px){.public-words.public-made .public-words-relief{width:276px}}
