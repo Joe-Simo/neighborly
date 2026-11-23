@@ -252,3 +252,13 @@
 .live-dialog:has(.volunteer-commitment-facts) :is(h2, .live-kicker, p, dd) { overflow-wrap: anywhere; }
 /* Time off with none planned: the list already draws its top rule, so the empty state does not lay a second one on it. */
 .live-app .live-list > .live-empty:only-child { border-top: 0; }
+
+/* My commitments: from 1700px with no side column the head's picture stops at the room's column edge (paper.css), and
+   this room's painting (the hand, the plum ground) runs off its right side, so it ended on a hard vertical cut. It
+   fades out into the paper on that side too, as Visits and Your files do. */
+@media (min-width: 1700px) {
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art[data-area="mine"] {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
+  }
+}
