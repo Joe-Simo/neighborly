@@ -39,7 +39,9 @@ export function MadeCourtyard({ label, apart, whole, hold, hint, amount }: {
     const measure = () => {
       const { top, height } = element.getBoundingClientRect();
       start = top + scrollY;
-      run = Math.max(1, height - innerHeight);
+      // The run is as long as the stage is held: a window on a wide screen, only what it holds on a phone.
+      const stage = element.querySelector<HTMLElement>(".made-courtyard-stage");
+      run = Math.max(1, height - (stage ? stage.offsetHeight : innerHeight));
     };
     const show = (value: number) => {
       const open = Math.round(Math.min(1, Math.max(0, value)) * 1000) / 1000;

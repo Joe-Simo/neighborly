@@ -84,7 +84,7 @@ export function MadePage({ language }: { language: Language }) {
           {/* Four fixed stills, nothing moves: the same sheets as the courtyard above, from whole to apart. */}
           {stills && <ol className="public-made-stills" aria-label={stills.label}>{stills.items.map(([caption, alt], still) => <li key={caption}><figure>
             {/* eslint-disable-next-line @next/next/no-img-element -- fixed stills at two widths, shown as they are */}
-            <img src={`/assets/made/courtyard-apart-${still + 1}-640.webp`} srcSet={`/assets/made/courtyard-apart-${still + 1}-640.webp 640w, /assets/made/courtyard-apart-${still + 1}-1200.webp 1200w`} sizes="(max-width: 560px) 92vw, (max-width: 1023px) 46vw, 22vw" alt={alt} width={1200} height={750} loading="lazy" decoding="async" />
+            <img src={`/assets/made/courtyard-framed-${still + 1}-640.webp`} srcSet={`/assets/made/courtyard-framed-${still + 1}-640.webp 640w, /assets/made/courtyard-framed-${still + 1}-1200.webp 1200w`} sizes="(max-width: 560px) 92vw, (max-width: 1023px) 46vw, 22vw" alt={alt} width={1200} height={750} loading="lazy" decoding="async" />
             <figcaption>{caption}</figcaption></figure></li>)}</ol>}
         </section>
       </Fragment>)}
