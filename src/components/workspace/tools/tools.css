@@ -232,6 +232,8 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 .live-app .tools-leaf > h2 > svg { display: inline-block; vertical-align: -2px; margin-right: 6px; color: var(--live-muted); }
 /* A council's row in Your files: the sentence on the left, its buttons on one right-hand edge, so every row's buttons line up. */
 .tools-leaf .council-list li { padding: var(--space-12, 12px) 0; }
+/* With no council asking yet, the empty list takes no room, so the card closes under its code as the other cards close. */
+.tools-leaf .council-list:empty { display: none; }
 .tools-leaf .council-list li > span:first-child { margin-right: auto; }
 /* A heading with its icon turns its words beside the icon, never leaving one word on the icon's line. */
 .live-app .tools-leaf > h2:has(> svg) { display: flex; align-items: baseline; gap: 8px; text-wrap: balance; }
