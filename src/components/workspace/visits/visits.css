@@ -346,3 +346,8 @@
 
 /* In the write-up's two columns an amount fills its column, so each pair of boxes ends on one edge with the select beside it. */
 .live-dialog .visits-write-up .live-form-grid .live-field input[inputmode="decimal"] { max-width: none; }
+/* On a phone Coming up keeps its tally beside the title, so the tally stays set to the right edge, as on a wide screen. */
+@media (max-width: 700px) {
+  .visits-room .live-section-head > .room-tally { justify-items: end; }
+  .visits-room .live-section-head > .room-tally .live-count { text-align: right; }
+}
