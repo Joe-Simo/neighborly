@@ -1,5 +1,5 @@
 /* A public page of words, on the home page's paper: the name at the top, the words in one column, the closing band. */
-.public-page{min-height:100svh;background:#eee7d7;color:#293f32}
+.public-page{min-height:100svh;background:#eee7d7;color:#293f32;overflow-x:clip}
 .public-page a:focus-visible{outline:2px solid #283c32;outline-offset:3px;border-radius:4px}
 .public-page-header{display:flex;align-items:center;justify-content:space-between;gap:20px;height:76px;padding:0 max(20px,4%)}
 .public-page-brand{display:inline-flex;align-items:center;min-height:44px;font:400 46px/1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;color:inherit;text-decoration:none}
@@ -161,7 +161,7 @@
    right-aligned, one hairline under the head; the source line under it in the caption's type. */
 .public-made-eval{grid-column:1/-1;margin:clamp(20px,3vw,40px) 0 0}
 .public-made-eval table{width:100%;max-width:34em;border-collapse:collapse;font-size:17px;line-height:1.4;font-variant-numeric:tabular-nums}
-.public-made-eval caption{text-align:left;padding-bottom:10px;font:400 clamp(19px,1.5vw,24px)/1.3 'Newsreader','Newsreader Fallback',Georgia,serif;color:#22362a}
+.public-made-eval caption{text-align:left;padding-bottom:10px;font:400 clamp(19px,1.5vw,24px)/1.3 'Newsreader','Newsreader Fallback',Georgia,serif;color:#22362a;text-wrap:balance}
 .public-made-eval th,.public-made-eval td{padding:var(--space-8) 0;text-align:right;font-weight:400}
 .public-made-eval th:first-child{text-align:left;padding-right:16px}
 .public-made-eval thead th{font-size:15px;color:#3d4f43;border-bottom:1px solid #293f3240}
@@ -234,8 +234,9 @@
 .public-made-process-source{margin:0;font-size:15px}
 @media (max-width:639px){.public-made-process figure > div{grid-template-columns:1fr}}
 @media print{.public-made-process figure{break-inside:avoid}}
-/* The slip still is 390 pixels wide; it is never drawn larger than that, so it stays sharp at 1440 and 1920. */
-.public-made-process img[src*="/slip-"]{max-width:390px}
+/* The slip still is 390 pixels wide; it is never drawn larger than that, so it stays sharp at 1440 and 1920. Its frame still fills the column like
+   every other pair: the still sits at its own size, centred on its own paper (#f2eadf, the still's ground), with the same border as the others. */
+.public-made-process img[src*="/slip-"]{box-sizing:border-box;padding-inline:max(0px,calc((100% - 390px) / 2));background:#f2eadf;object-fit:contain}
 .public-made-trace{grid-column:1/-1;display:grid;gap:var(--space-24);margin:var(--space-32) 0 0}
 .public-made-trace ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-24);align-items:start}
 .public-words .public-made-trace li{margin:0;padding:0;text-indent:0;list-style:none}

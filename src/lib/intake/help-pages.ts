@@ -364,13 +364,14 @@ form:has(#safe-yes:checked) .when{display:none}
 @media(max-width:560px){.colophon nav{display:grid;grid-template-columns:repeat(2,max-content)}}
 @media(max-width:900px){.colophon{background:#f5f3ec}}
 @media(max-width:600px){.colophon{padding-bottom:calc(82px + 22vw + env(safe-area-inset-bottom))}}
-@media(min-width:901px){.colophon{flex-wrap:nowrap;min-height:clamp(92px,7.4vw,140px);gap:0 clamp(24px,3vw,48px);padding:0 max(7%,calc(env(safe-area-inset-right) + 6px)) min(env(safe-area-inset-bottom) * 999, env(safe-area-inset-bottom) + 6px) max(7%,calc(env(safe-area-inset-left) + 6px))}.colophon>span{flex:none}.colophon nav{flex:1 1 0;min-width:0;justify-content:center;gap:0 clamp(16px,2vw,28px)}.colophon .name{flex:none;min-height:44px;margin:0;font-size:clamp(48px,4.6vw,88px)}}
+@media(min-width:901px){.colophon{flex-wrap:nowrap;min-height:clamp(92px,7.4vw,140px);gap:0 clamp(24px,3vw,48px);padding:0 max(20px,4%,calc(env(safe-area-inset-right) + 6px)) min(env(safe-area-inset-bottom) * 999, env(safe-area-inset-bottom) + 6px) max(20px,4%,calc(env(safe-area-inset-left) + 6px))}.colophon>span{flex:none}.colophon nav{flex:1 1 0;min-width:0;justify-content:center;gap:0 clamp(16px,2vw,28px)}.colophon .name{flex:none;min-height:44px;margin:0;font-size:clamp(48px,4.6vw,88px)}}
 @media(max-width:900px){.colophon{padding-top:28px}}
 @media(max-width:600px){.colophon{padding-bottom:calc(48px + 8vw + env(safe-area-inset-bottom))}}
-@media(min-width:901px) and (max-width:1679.98px){.colophon{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"free name" "ways name";align-content:center;gap:2px clamp(24px,3vw,48px);padding-block:14px}.colophon>span{grid-area:free}.colophon nav{grid-area:ways;flex-wrap:nowrap;justify-content:flex-start;gap:0 clamp(16px,1.8vw,24px)}.colophon .name{grid-area:name;align-self:center}}
+@media(min-width:901px) and (max-width:1679.98px){.colophon{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"free name" "ways name";align-content:center;gap:2px clamp(24px,3vw,48px);padding-block:14px}.colophon>span{grid-area:free}.colophon nav{grid-area:ways;flex-wrap:wrap;justify-content:flex-start;gap:0 clamp(16px,1.8vw,24px)}.colophon .name{grid-area:name;align-self:center}}
 @media(min-width:1600px){.colophon{font-size:16px}}
 @media(forced-colors:active){.colophon .name{text-shadow:none}}
 body{padding-top:env(safe-area-inset-top)}
 .bar,.wall{padding-left:max(var(--gut,24px),calc(env(safe-area-inset-left) + 6px));padding-right:max(var(--gut,24px),calc(env(safe-area-inset-right) + 6px))}
 @media(max-width:559px){.bar,.wall{--gut:16px}}
-@media(max-width:900px){.colophon{padding-left:max(20px,calc(env(safe-area-inset-left) + 6px));padding-right:max(20px,calc(env(safe-area-inset-right) + 6px))}}`;
+@media(max-width:900px){.colophon{padding-left:max(20px,calc(env(safe-area-inset-left) + 6px));padding-right:max(20px,calc(env(safe-area-inset-right) + 6px))}.bar{padding-inline:20px}}
+@media(max-width:559px){.bar,.colophon{padding-inline:16px}}`;

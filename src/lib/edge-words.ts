@@ -11,7 +11,7 @@ export const edgeWords = {
   },
   es: {
     home: "Inicio de Kind Helps", skip: "Ir al contenido", back: "Volver a Kind Helps",
-    lost: "Esta puerta no está aquí.", lostSlip: "No hay nadie en esta dirección.", courtyard: "Volver al patio", lostTab: "Página no encontrada · Kind Helps",
+    lost: "Esta puerta no está aquí.", lostSlip: "No hay nadie en\u00a0esta dirección.", courtyard: "Volver al patio", lostTab: "Página no encontrada · Kind Helps",
     lostAbout: "La dirección puede ser vieja o tener un error.",
     offlineAbout: "Este dispositivo no tiene conexión, así que esta página no se abrió. Inténtalo de nuevo cuando vuelva la conexión.",
     failed: "Esta página no se abrió.", failedDeck: "Lo que guardaste está a salvo. Inténtalo de nuevo en un momento.", tryAgain: "Intentar de nuevo", failedTab: "Esta página no se abrió · Kind Helps",

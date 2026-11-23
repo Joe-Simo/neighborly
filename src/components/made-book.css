@@ -24,6 +24,8 @@
   .public-words.public-made section:has(>h2):not([data-figure])>div{grid-column:2;grid-row:1/span 2}
   .public-words.public-made section:has(>div>.public-words-last)>div{grid-column:1/-1;grid-row:1}
 }
+/* Between 1024 and 1280 the 60ch left column left a figureless chapter's words a phone-width strip beside a bare half sheet; there the words take the wider column. */
+@media(min-width:1024px) and (max-width:1279px){.public-words.public-made section:has(>h2):not([data-figure]){grid-template-columns:minmax(0,1fr) minmax(0,28em)}}
 /* A sticky head inside a turning sheet is drawn out of shape by the 3D turn, so it is held in place until the sheet lies flat. The turn ends with the sheet's
    top at 60% of the window, before the head would stick, so nothing jumps. */
 @media(min-width:1024px){.public-words.public-made>[data-leaf-turning]+section>h2{position:static}}
@@ -69,3 +71,5 @@
   .public-words .public-made-anatomy-labels li>span{font-size:15px}
   .public-made-anatomy-source{margin-top:28px;padding-top:12px;border-top:1px solid #293f3224}
 }
+/* On a wide screen the held-out table and the frame chart take the whole right column, so neither stands as a narrow strip beside bare paper. */
+@media(min-width:1600px){.public-words.public-made .public-made-eval table,.public-words.public-made .public-made-frames{max-width:none;width:100%}}

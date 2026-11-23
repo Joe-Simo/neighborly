@@ -64,7 +64,7 @@ main.painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fa
   .neighborly-together .neighborly-close-hand .thread-empty::after{content:"";position:absolute;left:-61.111cqw;width:100cqw;top:calc(var(--close-foot) - 44px);height:44px;background:var(--shade-close-bottom) 0 0/100% 100% no-repeat;pointer-events:none}
   /* The foot lies on a plain piece of the page's paper, as it does on a phone: the painted paper behind the ending is a small picture, and stretched this wide it goes soft. The band's cut edge falls on it. */
   .neighborly-together .neighborly-colophon{position:relative;isolation:isolate}
-  .neighborly-together .neighborly-colophon::before{content:"";position:absolute;z-index:-1;left:-8.14%;right:-8.14%;top:calc(-46px - clamp(28px,3.4vw,52px));bottom:0;background:#eee7d7}
+  .neighborly-together .neighborly-colophon::before{content:"";position:absolute;z-index:-1;left:calc(-1 * max(20px,4vw));right:calc(-1 * max(20px,4vw));top:calc(-46px - clamp(28px,3.4vw,52px));bottom:0;background:#eee7d7}
   .neighborly-together .neighborly-close{z-index:1}
 }
 /* The close, between a tablet and a wide window: the words stand under the picture, and they and the foot lie on plain paper too, with the picture's cut edge falling on it. */
@@ -73,7 +73,7 @@ main.painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fa
   .neighborly-together :is(.neighborly-close-words,.neighborly-colophon){position:relative;left:auto;top:auto;isolation:isolate}
   .neighborly-together :is(.neighborly-close-words,.neighborly-colophon)::before{content:"";position:absolute;z-index:-1;left:0;right:0;top:-46px;bottom:calc(-1px - clamp(28px,3.4vw,52px));background:#eee7d7}
   /* It reaches up under the picture's cut edge, so no strip of the lighter painted paper shows between the picture's foot and the band. */
-  .neighborly-together .neighborly-colophon::before{left:-8.14%;right:-8.14%;top:calc(-46px - clamp(28px,3.4vw,52px));bottom:0}
+  .neighborly-together .neighborly-colophon::before{left:calc(-1 * max(20px,4vw));right:calc(-1 * max(20px,4vw));top:calc(-46px - clamp(28px,3.4vw,52px));bottom:0}
 }
 /* The close, on a phone or tablet: the painted paper behind the band runs dark under it, so the foot lies on a piece of the page's own paper, cut by hand like the opening. */
 @media(max-width:900px){

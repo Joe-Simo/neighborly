@@ -10,15 +10,25 @@ import "./thread-card.css";
 type Pose = { x: number; y: number; w: number; r: number; o: number; k: number };
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 const mix = (from: number, to: number, t: number) => from + (to - from) * t;
-const swift = (t: number) => 1 - (1 - t) ** 3;
 const smooth = (t: number) => t * t * (3 - 2 * t);
 type Quad = [number, number][];
 /** The CSS matrix that lays a card's own 240 by 160 face onto four corners (top left, top right, bottom right, bottom left): a plane seen in depth, as the canvas draws it. */
-const onto = ([[x0, y0], [x1, y1], [x2, y2], [x3, y3]]: Quad) => {
+const plane = ([[x0, y0], [x1, y1], [x2, y2], [x3, y3]]: Quad) => {
   const dx1 = x1 - x2, dx2 = x3 - x2, dy1 = y1 - y2, dy2 = y3 - y2, sx = x0 - x1 + x2 - x3, sy = y0 - y1 + y2 - y3, d = dx1 * dy2 - dx2 * dy1 || 1e-9;
   const g = (sx * dy2 - dx2 * sy) / d, h = (dx1 * sy - sx * dy1) / d;
   const a = x1 - x0 + g * x1, b = x3 - x0 + h * x3, c = y1 - y0 + g * y1, e = y3 - y0 + h * y3;
+  return { a, b, c, e, g, h, x0, y0 };
+};
+const onto = (quad: Quad) => { const { a, b, c, e, g, h, x0, y0 } = plane(quad);
   return `matrix3d(${[a / 240, c / 240, 0, g / 240, b / 160, e / 160, 0, h / 160, 0, 0, 1, 0, x0, y0, 0, 1].map(v => +v.toFixed(6)).join(",")})`;
+};
+/** Where a point on the window lies on the card's own 240 by 160 face, once the face is laid onto those four corners: the plane's map, taken back. */
+const backOnto = (quad: Quad) => { const { a, b, c, e, g, h, x0, y0 } = plane(quad);
+  // (s, t, 1) goes to (a s + b t + x0, c s + e t + y0, g s + h t + 1): that 3 by 3, inverted by its adjugate.
+  const m = [[a, b, x0], [c, e, y0], [g, h, 1]], [[p, q, r], [u, v, w], [k, l, n]] = m;
+  const inv = [[v * n - w * l, r * l - q * n, q * w - r * v], [w * k - u * n, p * n - r * k, r * u - p * w], [u * l - v * k, q * k - p * l, p * v - q * u]];
+  return (x: number, y: number): [number, number] => { const X = x + 120, Y = y + 80, z = inv[2][0] * X + inv[2][1] * Y + inv[2][2] || 1e-9;
+    return [(inv[0][0] * X + inv[0][1] * Y + inv[0][2]) / z * 240, (inv[1][0] * X + inv[1][1] * Y + inv[1][2]) / z * 160]; };
 };
 /** Sideways first, then down: the card crosses to its picture's side before that chapter's words come up beside it. */
 const between = (from: Pose, to: Pose, t: number): Pose => ({ x: mix(from.x, to.x, 1 - (1 - t) ** 2), y: mix(from.y, to.y, smooth(t)), w: mix(from.w, to.w, t), r: mix(from.r, to.r, smooth(t)), o: mix(from.o, to.o, t), k: mix(from.k, to.k, t) });
@@ -92,6 +102,7 @@ export function ThreadCard() {
       const flight = Math.max(76, Math.min(124, innerWidth * .0722));
       let before: Stop | null = null;
       let behind = -Infinity;
+      let under: DOMRect | null = null;
       for (const stop of chapters) {
         const { at, panel } = stop, box = panel.getBoundingClientRect(), holds = box.height > height * 1.2;
         const rest = holds ? 0 : (height - box.height) / 2;
@@ -108,7 +119,8 @@ export function ThreadCard() {
         // Nor, leaving "The call.", does it cross that chapter's own heading and sentence on its way down: where they lie across its way, it is lifted off and set down.
         const left = before?.at.dataset.station === "call" ? before.panel.querySelector<HTMLElement>(".relief-words")?.getBoundingClientRect() : null, reach = Math.max(last.w, to.w) / 2 + 24;
         const overWords = !!left && Math.min(last.x, to.x) - reach < left.right && Math.max(last.x, to.x) + reach > left.left;
-        const hops = across || overSheet || overWords;
+        // Its way down to the year may run under the draft sheet, never over it: where the sheet lies across that way, the card is hidden by the sheet (clipped to it, below).
+        const hops = across || overWords || overSheet;
         // In one column there is less clear paper round a tucked place, so the card goes in over a shorter way.
         stop.short = hops;
         const ready = drawn(to, stop);
@@ -116,7 +128,9 @@ export function ThreadCard() {
         // Its way is a function of the scroll alone, and never quicker than 1.5px of travel to 1px of scroll: where the way between two places is long,
         // it sets out earlier, over as much scroll as it needs (its eases run at most about 2.2 times their mean pace). It still arrives where it always did.
         // A hop's way is its drop onto the place (set down from .7 of a card above, over the last .78 of its scroll, on an ease that runs at most 1.5 times its mean).
-        const travel = hops ? to.w * .7 * 1.3 + Math.abs(over.w - last.w) : Math.hypot(over.x - last.x, over.y - last.y) + Math.abs(over.w - last.w);
+        // Out to the year it comes down whole from the window's top, through where the sheet lay, and passes beneath the sheet if the sheet is still there.
+        const side = { x: over.x, y: -over.w * .75 };
+        const travel = hops ? (overSheet ? height * .3 + over.w * .75 : to.w * .7) * 1.3 + Math.abs(over.w - last.w) : Math.hypot(over.x - last.x, over.y - last.y) + Math.abs(over.w - last.w);
         // It sets out no earlier than its way to the place before is done (that way's scroll left, `behind`, falls as this one's does, so their difference holds).
         // Where that leaves too little scroll for the way, it lands that much later, rather than hurry.
         // On its way to the year it is drawn onto the slip over arrive .5 to .9 (warp, below), on an ease up to 1.5 times its mean pace: that is travel too.
@@ -134,15 +148,21 @@ export function ThreadCard() {
         // A card that waits over the book is done with its way only once it lies down: the next way sets out after that.
         if (waits) behind = Math.max(behind, holds ? lies + .95 * Math.max(1, box.height - height) : lies - rest + height * .18);
         // The place before lets its card out the way it went in, over the scroll just before the card leaves, and only then does the card leave.
+        // Any other hop is handed over by the page: the card rides away on the picture it lies in, and is found lying in the next as that picture comes up into the window.
+        const handed = hops && !overSheet && !!before && place.top < height;
+        if (opened <= 0 && handed && before) { draw(before, 0); pose = { ...ready, o: 1 }; landed = at; lift = 0; last = ready; break; }
         if (opened <= 0) { const out = 1 + opened * zone / (span * .12); if (out > 0 && before) draw(before, smooth(clamp(out))); break; }
         tone = 1;
         const arrive = clamp(opened);
         if (arrive < 1 && hops) {
-          const up = clamp(arrive / .2), down = clamp((arrive - .22) / .78), above: Pose = { ...over, y: over.y - to.w * (stop.tuck ? 0 : .7), r: over.r - (stop.tuck ? 0 : 6), o: 0 };
-          pose = down > 0 ? between(above, over, down) : { ...last, y: last.y - Math.min(to.w * .5, zone * .03) * swift(up), o: 1 - up };
-          pose.o = down > 0 ? clamp(down * 3) : before ? 1 - up : 0;
-          // Lifted off the sheet, it shows again only once it is clear of the sheet's foot: it never lies over the sheet's words.
-          if (overSheet && sheet && down > 0) pose.o *= clamp((pose.y - Math.hypot(pose.w / 2, pose.w * pose.k / 3) - sheet.bottom) / 24); lift = down > 0 ? 1 - down : up; landed = null;
+          // Handed over by place, never by fading: it stays in the picture it lies in (moving with the page) until the next picture comes up,
+          // or, out to the year, until its way down begins; then it comes down whole from the window's top and closes on its shadow as it lands.
+          const down = overSheet ? clamp((arrive - .22) / .78) : 0;
+          if (overSheet && sheet) under = sheet;
+          if (handed) { pose = { ...ready, o: 1 }; landed = at; lift = 0; }
+          else if (down > 0) { pose = between({ ...over, ...side, r: over.r + (side.x < over.x ? -6 : 6), o: 1 }, over, down); pose.o = 1; lift = 1 - down; landed = null; }
+          else if (before) { pose = { ...last, o: 1 }; landed = before.at; lift = 0; }
+          else { pose = { ...over, ...side, o: 1 }; landed = null; }
         }
         else if (arrive < 1) { pose = between(last, over, arrive); const air = Math.sin(arrive * Math.PI);
           // In the air it is a little larger than where it lies, rides a low arc and turns a few degrees; it closes on its shadow as it lands.
@@ -170,12 +190,22 @@ export function ThreadCard() {
       const shown = pose && !landed && pose.o > .01 && pose.y > -pose.w && pose.y < height + pose.w;
       // Over the last of its way to the year, its corners are drawn onto the slip's own (year-paper.tsx), so it is the slip, in depth, on the frame before the cut.
       const ledger = warp > 0 ? station("ledger") : null, quad = ledger?.dataset.quad ? JSON.parse(ledger.dataset.quad) as Quad : null, origin = ledger?.parentElement?.getBoundingClientRect();
-      let laidOn = "";
+      let laidOn = "", laidBack: ((x: number, y: number) => [number, number]) | null = null;
       if (pose && quad && origin) {
         const slant = pose.r * Math.PI / 180, cos = Math.cos(slant), sin = Math.sin(slant), hw = pose.w / 2, hh = pose.w * pose.k / 3, from = pose;
         const own: Quad = [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]].map(([u, v]) => [from.x + u * cos - v * sin, from.y + u * sin + v * cos]);
         // The card's box stands at (-120, -80) on the window (thread-card.css), so its corners are given from there.
-        laidOn = onto(own.map(([x, y], i) => [mix(x, quad[i][0] + origin.left, warp) + 120, mix(y, quad[i][1] + origin.top, warp) + 80]));
+        const corners: Quad = own.map(([x, y], i) => [mix(x, quad[i][0] + origin.left, warp) + 120, mix(y, quad[i][1] + origin.top, warp) + 80]);
+        laidOn = onto(corners); laidBack = backOnto(corners);
+      }
+      // Under the sheet: the part of the card that lies over the sheet is cut away, so it passes beneath the sheet's edge whole, never faded.
+      let cut = "";
+      if (pose && under && !landed) {
+        const slant = -pose.r * Math.PI / 180, cos = Math.cos(slant), sin = Math.sin(slant), sx = pose.w / 240, sy = pose.w * pose.k / 240, p = pose;
+        const own = (x: number, y: number): [number, number] => { const u = x - p.x, v = y - p.y; return [120 + (u * cos - v * sin) / sx, 80 + (u * sin + v * cos) / sy]; };
+        const local = (x: number, y: number) => (laidBack ?? own)(x, y).map(n => `${n.toFixed(1)}px`).join(" ");
+        const s = under;
+        cut = `polygon(evenodd,-2000px -2000px,2240px -2000px,2240px 2160px,-2000px 2160px,-2000px -2000px,${[local(s.left, s.top), local(s.right, s.top), local(s.right, s.bottom), local(s.left, s.bottom), local(s.left, s.top)].join(",")})`;
       }
       const at = pose, lands = landed;
       writes.push(() => {
@@ -184,6 +214,7 @@ export function ThreadCard() {
         // Unseen, it is still kept where its way has it, so it is never found anywhere else when it shows.
         if (at) {
           element.style.transformOrigin = laidOn ? "0 0" : "";
+          element.style.clipPath = cut;
           element.style.transform = laidOn || `translate3d(${at.x.toFixed(1)}px,${at.y.toFixed(1)}px,0) rotate(${at.r.toFixed(2)}deg) scale(${(at.w / 240).toFixed(4)},${(at.w * at.k / 240).toFixed(4)})`;
           element.style.setProperty("--lift", lift.toFixed(3));
           element.style.setProperty("--tone", tone.toFixed(3));
