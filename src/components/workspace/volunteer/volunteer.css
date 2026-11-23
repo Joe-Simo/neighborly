@@ -91,7 +91,8 @@
 .volunteer-meetings .help-sheet { margin: 0; padding: var(--space-24) 30px; }
 .volunteer-yes { --paper-corner: #365c46; }
 .volunteer-choice.paper-fold .help-sheet-label { color: #365c46; }
-.volunteer-meeting .help-sheet-body { align-items: center; }
+/* A meeting reads down at every width: the reply sits over its agenda button, never off at the right edge alone. */
+.volunteer-meeting .help-sheet-body { grid-template-columns: minmax(0, 1fr); align-items: start; }
 .volunteer-meeting-desk {
   display: flex;
   flex-wrap: wrap;
