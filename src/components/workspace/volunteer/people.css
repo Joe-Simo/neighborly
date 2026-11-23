@@ -76,7 +76,12 @@
   @container people-list (max-width: 939px) {
     /* A person row holds at most a short wait and the arrow, so those columns give the name and address their width. */
     .live-app .people-row { grid-template-columns: minmax(0, 1fr) 110px 150px 132px; }
-    @media (min-width: 900px) { .live-app .people-row:not(.people-invited) { grid-template-columns: minmax(0, 1fr) 110px 120px 24px; } }
+    /* An upright iPad: the wait column holds "Not yet ready to serve" / "Esperando a que se una" on one line; the
+       name and address keep more than they need. */
+    @media (min-width: 900px) {
+      .live-app .people-row:not(.people-invited) { grid-template-columns: minmax(0, 1fr) 110px 180px 24px; }
+      .live-app .people-invited { grid-template-columns: minmax(0, 1fr) 110px 180px 150px; }
+    }
     /* Just under a desk's width the name has room to spare, so the wait column holds "Not yet ready to serve" /
        "Esperando a que se una" on one line. Narrower (an iPad held upright) the address keeps that room. */
     @container people-list (min-width: 820px) {
