@@ -443,3 +443,9 @@
   .help-lists .live-section-head:has(> .room-tally) { flex-wrap: wrap; }
   .help-lists .live-section-head > .room-tally { flex: 1 0 100%; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-4) 12px; }
 }
+
+/* A record's files read as its other sections do: the rows run the full measure under a rule, and the button to add
+   one sits on the same line as its hint, with room before the next heading. */
+.live-section:has(> .tools-file-pick) > .tools-files { max-width: none; border-top: 1px solid var(--live-line); }
+.live-section:has(> .tools-file-pick) > .tools-file-pick { margin: var(--space-24) 0 var(--space-24); }
+.live-section:has(> .tools-file-pick) > .tools-file-pick .tools-small { margin: 0; }
