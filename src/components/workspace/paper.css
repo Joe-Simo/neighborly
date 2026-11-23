@@ -1208,13 +1208,16 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
    and its rule ends with the room's own column. */
 .live-app .live-main .live-page-head[data-plain] { min-height: 0; }
 /* In the framed room (from 1700px) the head keeps to the room's column: the picture's right edge is the column's
-   right edge, the same edge the body and side column stop at, never the paper past it. The rule runs from the words
-   to where the picture's sheet is laid and stops there, so no line runs under the torn edge or out past the picture. */
+   right edge, the same edge the body and side column stop at, never the paper past it. */
 @media (min-width: 1700px) {
   .live-app .live-main .live-page-head .live-head-art { right: 0; width: calc(var(--head-wide) * 0.46 - var(--live-pad)); }
+}
+/* From 1280 the rule under the head is the room's column: it runs exactly as far as the rows below it (the same
+   measure .live-main gives them, beside the side column where there is one), passing under the picture's foot,
+   so the head's edge and the list's edge are one line at every width. */
+@media (min-width: 1280px) {
   .live-app .live-main > .live-page-head { border-bottom-color: transparent; }
-  .live-app .live-main > .live-page-head::after { content: ""; position: absolute; left: 0; bottom: -1px; width: min(1040px, calc(100% - var(--head-wide) * 0.46 + var(--live-pad))); border-bottom: 1px solid var(--live-line); }
-  .live-app .live-main > .live-page-head[data-plain]::after { width: var(--room-wide, min(1040px, 100%)); }
+  .live-app .live-main > .live-page-head::after { right: auto; width: min(100%, var(--room-wide, max(1040px, min(100%, 1040px + (1104px - 100%) * 1000)))); border-bottom: 1px solid rgb(40 60 50 / 0.18); }
 }
 
 /* On a phone too, the rows of one list keep one shape, so they differ only where one truly says more.
@@ -1409,10 +1412,6 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
    down the head's sides (on a phone those would start right under the picture's torn foot). */
 .live-app .live-page-head { border-bottom-color: rgb(40 60 50 / 0.18); }
 .live-app .live-page-head::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; box-shadow: 0 3px 3px -3px rgb(40 60 50 / 0.34); pointer-events: none; }
-/* In the framed room the rule ends short of the picture, so its light and shade end there too. */
-@media (min-width: 1700px) {
-  .live-app .live-main > .live-page-head::after { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 3px 3px -3px rgb(40 60 50 / 0.34); }
-}
 @media (forced-colors: active) {
   .live-app .live-page-head::after { box-shadow: none; }
   .live-app .live-page-head::before { content: none; }
