@@ -41,6 +41,7 @@
 .lost-door-words button{min-height:44px;padding:0 20px;border:1px solid #7d8874;border-radius:4px;background:#fffdf7;box-shadow:0 1px 0 rgb(40 60 50 / .18);text-decoration:none}
 .lost-door-words button:hover{background:#efede2}
 .lost-door-words button:active{box-shadow:inset 0 1px 2px rgb(40 60 50 / .2)}
+@media(max-width:900px){.lost-door-brand{left:max(20px,calc(env(safe-area-inset-left) + 6px))}}
 @media(max-width:430px){.lost-door-brand{left:16px}.lost-door{padding-inline:16px}}
 
 /* Large screens: the piece, its line and the way back keep their share of the window, at the steps of --big (globals.css). */
@@ -51,6 +52,8 @@
 }
 
 /* The public foot under the page, one per language, the reader's shown. */
-.lost-door-foot{padding:0 max(7%,calc(env(safe-area-inset-right) + 6px)) 0 max(7%,calc(env(safe-area-inset-left) + 6px))}
+.lost-door-foot{padding:0 max(20px,4%,calc(env(safe-area-inset-right) + 6px)) 0 max(20px,4%,calc(env(safe-area-inset-left) + 6px))}
 @media(max-width:900px){.lost-door-foot.neighborly-continuation{padding-left:max(20px,var(--safe-l));padding-right:max(20px,var(--safe-r));background:#f5f3ec}}
 :root:lang(es) .lost-door-foot[lang="en"],:root:not(:lang(es)) .lost-door-foot[lang="es"]{display:none}
+
+@media(max-width:430px){.lost-door-foot.neighborly-continuation{padding-left:max(16px,var(--safe-l));padding-right:max(16px,var(--safe-r))}}

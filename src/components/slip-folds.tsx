@@ -19,13 +19,15 @@ export function SlipFolds() {
   useEffect(() => {
     const element = band.current, slip = element?.querySelector<HTMLElement>(".slip-folds-slip"), panel = element?.querySelector<HTMLElement>(".slip-folds-top");
     if (!element || !slip || !panel || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let top = 0, tall = 0, near = false;
+    const stage = element.querySelector<HTMLElement>(".slip-folds-stage");
+    let top = 0, tall = 0, held = 0, near = false;
     const set = { fold: "", lift: "", crease: "", risen: "" };
     // Read in the shared frame's first half, before any part of the page has written (scroll-frame.ts).
-    const read = () => { const box = element.getBoundingClientRect(); top = box.top; tall = box.height; near = box.bottom > -viewport.height && box.top < viewport.height * 2; };
+    const read = () => { const box = element.getBoundingClientRect(); top = box.top; tall = box.height; held = stage?.offsetHeight || viewport.height; near = box.bottom > -viewport.height && box.top < viewport.height * 2; };
     const write = () => {
       if (!near) return;
-      const run = Math.max(1, tall - viewport.height);
+      // The run is the band's length past its held stage: a window's height from 1024 up, the slip's own height below it (slip-folds.css).
+      const run = Math.max(1, tall - held);
       const through = clamp(-top / run);
       // The band's run (slip-folds.css): the fold takes its first 70%, and the slip settles onto the pile in the last 30%.
       const folded = clamp(through / .7), risen = clamp((through - .7) / .3);

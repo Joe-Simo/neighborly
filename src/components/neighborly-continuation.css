@@ -139,7 +139,7 @@
 @media(min-width:901px) and (max-width:1679.98px){
   .neighborly-continuation .neighborly-colophon{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"free name" "ways name";align-content:center;gap:2px clamp(24px,3vw,48px);padding-block:14px}
   .neighborly-continuation .neighborly-colophon>span{grid-area:free}
-  .neighborly-continuation .neighborly-colophon nav{grid-area:ways;flex-wrap:nowrap;justify-content:flex-start;gap:0 clamp(16px,1.8vw,24px)}
+  .neighborly-continuation .neighborly-colophon nav{grid-area:ways;flex-wrap:wrap;justify-content:flex-start;gap:0 clamp(16px,1.8vw,24px)}
   .neighborly-continuation .neighborly-colophon>a{grid-area:name;align-self:center}
 }
 @media(max-width:600px){.neighborly-continuation .neighborly-colophon{padding-bottom:calc(48px + 8vw + env(safe-area-inset-bottom))}}
@@ -155,3 +155,8 @@
 /* The foot's first line keeps a breath under the picture's torn edge: on a phone or tablet the cut paper starts 24px above it, between the tablet and the wide window the words stand right on the cut. */
 @media(max-width:900px){.neighborly-continuation .neighborly-colophon{padding-top:28px}}
 @media(min-width:901px) and (max-width:1279px){.neighborly-continuation .neighborly-colophon{padding-top:30px}}
+
+/* One gutter with the header wordmark: 16px on a small phone, 20px to 900px, then 4% of the page. */
+@media(max-width:430px){.neighborly-together{padding-left:max(16px,var(--safe-l));padding-right:max(16px,var(--safe-r))}}
+/* The foot's paper reaches the page's two edges and no further; the band clips sideways so nothing in it can scroll the page. */
+@media(min-width:901px){.neighborly-together>.neighborly-colophon{margin-inline:calc(max(20px,4vw) - 7vw)}.neighborly-together{overflow-x:clip}}
