@@ -1067,6 +1067,8 @@
 .council-list { list-style: none; margin: var(--space-8) 0; padding: 0; }
 .council-list li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-8); padding: var(--space-8) 0; border-bottom: 1px solid var(--live-line); color: var(--live-ink); }
 .council-list small { color: var(--live-muted); }
+/* Each conference's Remove stands at the row's right, so the presses line up down the list. */
+.council-list li > [data-slot="button"]:first-of-type { margin-left: auto; }
 .council-code { font-size: 15px; overflow-wrap: anywhere; user-select: all; }
 @media print { .council-section { display: none; } }
 
