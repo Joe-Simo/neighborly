@@ -1208,6 +1208,8 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   /* The two heads share one row, so when either heading turns onto a second line both heads grow together and their
      rules stay level. */
   .week-columns:not([data-far-screen]) > .live-section { grid-row: span 2; display: grid; grid-template-rows: subgrid; }
+  /* The shorter column's list keeps its rows at their own height instead of stretching them to the taller column's. */
+  .week-columns:not([data-far-screen]) > .live-section > :not(.live-section-head) { align-self: start; }
   .week-columns:not([data-far-screen]) > .live-section > .live-section-head { min-height: 44px; align-items: flex-end; margin-bottom: var(--space-16); }
   .week-columns:not([data-far-screen]) > .live-section > .live-section-head > * { margin-block: 0; }
   /* The link keeps its 44px reach but sets its words at its foot, on the heading's line, not floating mid-height. */
