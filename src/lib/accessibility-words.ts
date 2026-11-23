@@ -24,7 +24,7 @@ const en: PublicWords = {
     ]] },
     { title: "Known limits", blocks: [[
       ["A written visit’s notes", "show as one line ending in an ellipsis in the list, even at large text. The full notes open on the visit."],
-      ["An email address", "may break onto a new line partway through at large text, and so may a hyphenated word such as thank-you. A person’s name is never split."],
+      ["An email address", "may break onto a new line partway through at large text, and so may a hyphenated word such as thank\u2011you. A person’s name is never split."],
       ["Color contrast on art:", "where words sit near the painted paper art, axe cannot measure the contrast and asks for a person to look. Each of these was checked by eye; the words sit on solid paper."],
       ["Where we tested:", "the rooms were tested with the app’s sample conference, using the same screens a signed-in member sees. We have not yet tested with every screen reader or with people who use one every day."],
     ]] },

@@ -57,7 +57,8 @@
    sheet it lands under. Each day's head takes the home page's display size. Phones keep flat sheets and their own heads. */
 .public-week>section{transform-origin:50% 0}
 .public-week>[data-leaf-turning]+section{will-change:transform}
-.public-week>section[data-leaf-turning]::after{content:"";position:absolute;z-index:2;left:0;right:0;bottom:-14px;height:14px;pointer-events:none;background:linear-gradient(#3b2a121f,#3b2a1200)}
+/* The crease lies beneath the sheet's own paper and fades in and out, so it follows the torn edge and never draws a straight cut below it. */
+.public-week>section[data-leaf-turning]::after{content:"";position:absolute;z-index:-2;left:0;right:0;bottom:-14px;height:44px;pointer-events:none;background:linear-gradient(#3b2a1200,#3b2a1214 8px,#3b2a1214 30px,#3b2a1200)}
 @media(min-width:1024px){
   /* Laid square, the sheets' insides are square too: every day's number, head and words keep one left edge. */
   .public-words.public-week section{margin-inline:0;padding-inline:clamp(20px,5.4vw,104px)}
