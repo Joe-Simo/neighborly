@@ -137,6 +137,10 @@
   font-feature-settings: "lnum" 1, "tnum" 1;
 }
 
+/* A row of days and its Remove: the words end with their last line, no margin under it, so a lone date sits level
+   with the middle of its button instead of a few pixels above it. */
+.live-app .volunteer-days-row > div > :last-child { margin-bottom: 0; }
+.live-app .live-row.volunteer-days-row { align-items: center; }
 /* A span of dates breaks as two even lines, never leaving a year alone on the second. */
 .live-app .live-row > .volunteer-days { display: block; text-wrap: balance; }
 

@@ -24,7 +24,7 @@ export function TimeOffSection() {
           data.timeOff
             .filter((item) => item.personId === data.user.id)
             .map((item) => (
-              <div className="live-row" key={item.id}>
+              <div className="live-row volunteer-days-row" key={item.id}>
                 <div>
                   <h3 className="volunteer-days">
                     {readDays(words, item.start, item.end)}
@@ -101,7 +101,7 @@ function LiveAvailability({
         {data.availability
           .filter((item) => item.personId === data.user.id)
           .map((item) => (
-            <div className="live-row" key={item.id}>
+            <div className="live-row volunteer-days-row" key={item.id}>
               <div>
                 <h3 className="volunteer-days">{readDays(words, item.start, item.end)}</h3>
               </div>
