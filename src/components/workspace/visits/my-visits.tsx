@@ -81,12 +81,10 @@ function MyVisitsView({
           return (
             <div className="help-row" key={visit.id}>
               <DateLeaf said={format(visit.scheduledAt, { weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })}>
-                <span>
-                  {format(visit.scheduledAt, {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                  })}
+                {/* The weekday and the date are two pieces, so a narrow stamp breaks between them and never inside the date. */}
+                <span className="visits-mine-day">
+                  <span>{part(visit.scheduledAt, { weekday: "short" })}</span>
+                  <span>{format(visit.scheduledAt, { month: "short", day: "numeric" })}</span>
                 </span>
                 <strong>{time}</strong>
                 <span>{half}</span>

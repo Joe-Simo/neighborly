@@ -371,7 +371,7 @@ export function WriteUpForm({
   const { pending, error, save } = useSave();
   return (
     <form
-      className="live-form"
+      className="live-form visits-write-up"
       noValidate
       onSubmit={async (event) => {
         event.preventDefault();

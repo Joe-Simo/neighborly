@@ -40,6 +40,8 @@
 @media (max-width: 560px) { .live-app .volunteer-choice .volunteer-choice-row > .volunteer-given { margin-top: var(--space-4); } }
 .live-app .volunteer-given[data-no] { color: var(--live-muted); font-weight: 400; }
 .volunteer-meeting .live-row-actions { gap: var(--space-8) 22px; }
+/* The agenda button stands on its own line under the reply, not butted against it. */
+.volunteer-meeting > .live-row-actions { margin-top: var(--space-16); }
 .live-app .volunteer-said { margin: 0 0 var(--space-32); }
 .volunteer-said:focus, .volunteer-given:focus { outline: none; }
 /* The line that says an answer waits for the connection: a little air above it, inside the line, so its room opens and closes with it. */
@@ -145,3 +147,8 @@
 /* Where each week begins in the Commitments list: plain words before its first row, no rule, no colour. */
 .live-app .live-list > .live-week-label { margin: 0; padding: var(--space-24) 0 var(--space-8); font-size: 13px; font-weight: 600; line-height: 1.2; letter-spacing: 0.08em; text-transform: uppercase; color: var(--live-muted); }
 .live-app .live-list > .live-week-label:first-child { padding-top: var(--space-8); }
+/* Awaiting a reply: the sentence and its withdraw stand apart, the press at the note's far edge, centred on the words. */
+.live-note.volunteer-waiting-note { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-8) 16px; }
+
+/* Two day fields side by side are narrower than a month: while one is open the pair stacks, so the month never slides under its neighbour. */
+:is(.live-app, .live-dialog) .live-form-grid.volunteer-days-grid:has(.live-date[data-open]) { grid-template-columns: minmax(0, 1fr); }

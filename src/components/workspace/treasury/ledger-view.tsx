@@ -420,7 +420,7 @@ export function LedgerView({
           </table>
         </div>
       ) : (
-        <div className="help-empty">
+        <div className="help-empty treasury-quiet">
           <PaperScene kind="empty" />
           <div>
             <h3>{w.quiet.title}</h3>

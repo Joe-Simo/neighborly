@@ -67,7 +67,7 @@ export function LiveTimeOffForm({
         setReview({ ...draft });
       }}
     >
-      <div className="live-form-grid">
+      <div className="live-form-grid volunteer-days-grid">
         <LiveField label={words.timeOffForm.firstDay}>
           <DateField short name="start" value={draft.start} onChange={(start) => setDraft({ ...draft, start })} required />
         </LiveField>

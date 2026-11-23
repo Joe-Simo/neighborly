@@ -727,7 +727,8 @@
 .live-commitment-row .live-row-actions > .live-row-opens:only-child { margin-left: auto; }
 @media (max-width: 560px) {
   .live-app .live-commitment-row { grid-template-columns: 56px minmax(0, 1fr); }
-  .live-app .live-commitment-row .live-meta { display: flex; font-size: 13px; gap: 2px 10px; }
+  /* The team and the time each take a line in every row, so one row with a short team never runs them together. */
+  .live-app .live-commitment-row .live-meta { display: grid; font-size: 13px; gap: 2px; }
 }
 
 /* ── Stillness for those who ask for it ───────────────────────────────── */
@@ -880,6 +881,9 @@
 /* The sentence for a missing day sits under the pair, never between the day and its time. */
 .live-when > .live-date-missing { grid-column: 1 / -1; order: 1; }
 .live-app .live-time select, .live-dialog .live-time select { height: 46px; border: 1px solid #c9cfbd; border-radius: 6px; background: #fbfaf5; color: #283c32; font-size: 16px; padding-left: 12px; }
+/* Its words end clear of the chevron, and "Choose a time" is as quiet as "Choose a day" beside it. */
+.live-app .live-time select, .live-dialog .live-time select { padding-right: 38px; }
+.live-app .live-time select:has(> option[value=""]:checked), .live-dialog .live-time select:has(> option[value=""]:checked) { color: #66705f; }
 @media (hover: hover) { .live-time select:hover { border-color: #365c46; } }
 /* Two moments never share a row: each keeps room to say its day in words. */
 :is(.live-app, .live-dialog) .live-form-grid:has(> .live-field > .live-when) { grid-template-columns: minmax(0, 1fr); }
@@ -1160,9 +1164,8 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
     .live-app .live-list > .live-commitment-row { grid-template-columns: subgrid; align-items: center; }
     .live-app .live-list > .live-commitment-row .live-row-actions { display: contents; }
     .live-app .live-list > .live-commitment-row .live-date-leaf { grid-row: auto; }
-    .live-app .live-list > .live-commitment-row .live-row-opens { justify-self: stretch; justify-content: space-between; }
-    /* A row with no state still puts its press in the presses' column, not under the others' states. */
-    .live-app .live-list > .live-commitment-row .live-row-actions > :last-child { grid-column: -2; margin-left: 0; }
+    /* The press keeps the presses' column in every row, so a row with no state never puts it under the others' states. */
+    .live-app .live-list > .live-commitment-row .live-row-opens { grid-column: -2; margin-left: 0; justify-self: stretch; justify-content: space-between; }
     /* Between the two, the team and the time each take a line in every row, so no one row breaks alone. */
     .live-app .live-list > .live-commitment-row .live-meta { display: grid; gap: 0; }
   }

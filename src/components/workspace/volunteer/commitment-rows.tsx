@@ -73,7 +73,7 @@ export function CommitmentRows({
               <h3>{keepNames(sampleSaid(item.title))}</h3>
               <p>
                 {/* Named only when this reader may see the person; never a bare role in their place. */}
-                {[item.assigneeId ? (data.people.some((person) => person.id === item.assigneeId) ? personName(item.assigneeId) : "") : words.commitments.placeOpen, item.location ? sampleSaid(item.location) : ""].filter(Boolean).join(" · ")}
+                {[item.assigneeId ? (data.people.some((person) => person.id === item.assigneeId) ? personName(item.assigneeId) : "") : item.status === "cancelled" ? "" : words.commitments.placeOpen, item.location ? sampleSaid(item.location) : ""].filter(Boolean).join(" · ")}
               </p>
             </div>
             <div className="live-row-actions">

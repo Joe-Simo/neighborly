@@ -25,6 +25,16 @@
   text-align: center;
   color: var(--help-ochre-ink);
 }
+/* In the ledger's table a neighbor's name turns between its words, never inside one: breaking anywhere let the
+   table squeeze the For column to a letter's width on a tablet. */
+.live-app .help-ledger td[data-for] .live-name { overflow-wrap: break-word; }
+/* Beside the menu on a tablet (a room of about 700px) six columns do not fit: the For column steps aside, as it does
+   on a phone, and the neighbor is named in the entry's own sheet. The amounts keep their whole width. */
+@media screen and (min-width: 851px) and (max-width: 1100px) {
+  .help-ledger:not(.treasury-shelf) thead th:nth-child(3),
+  .help-ledger:not(.treasury-shelf) tfoot td:nth-child(3),
+  .help-ledger:not(.treasury-shelf) :is(td, th)[data-for] { display: none; }
+}
 .help-ledger tr[data-reversed] .help-what,
 .help-ledger tr[data-reversed] :is(td, th[scope="row"]).help-money:not([data-balance]) {
   color: var(--live-muted);
@@ -100,6 +110,9 @@
   text-underline-offset: 5px;
   transition: text-decoration-color 200ms ease;
 }
+/* A button is always laid as one box, and a box's baseline is its last line: an entry whose title wraps would set the
+   row's date and amounts against its second line. As a block (only as wide as its words) it is read by its first. */
+.live-app .help-ledger .help-what [data-slot="button"] { display: block; width: fit-content; max-width: 100%; }
 /* The line reads as words, yet takes a tap or click of full height: padding that reaches past the line without moving it. */
 .live-app .help-what [data-slot="button"] { padding-block: var(--space-8); margin-block: -10px; }
 @media (pointer: coarse) { .live-app .help-what [data-slot="button"] { padding-block: var(--space-16); margin-block: -14px; } }
@@ -239,7 +252,8 @@
   .live-app .treasury-statement input[name="statement"] {
     width: 100%;
   }
-  .treasury-foot [data-slot="button"],
+  /* The ways on from the ledger keep their presses at the size of their words, as the budget's and the waiting
+     requests' are just above and below them: no full-width bar among them. */
   .treasury-budget > [data-slot="button"],
   .treasury-starter > [data-slot="button"] {
     width: 100%;
@@ -629,6 +643,10 @@
 }
 .treasury-waiting .help-row p { text-wrap: balance; }
 
+/* A quiet month's rules run the room's full width, as the ledger's and the budget's below it do; its words keep
+   their own measure. */
+.help-empty.treasury-quiet { max-width: none; }
+
 /* The money still on hand reads as a sentence, never a line of eighty letters on a wide screen. */
 .live-app .treasury-on-hand { max-width: 36em; }
 
@@ -642,6 +660,11 @@
 .treasury-paper dt { margin-bottom: var(--space-12); font-size: 13px; font-weight: 650; text-transform: uppercase; letter-spacing: var(--caps-track); color: #52644f; }
 .treasury-paper dd { margin: 0; }
 .treasury-paper small { overflow-wrap: anywhere; display: block; margin-top: var(--space-12); font-size: 15px; line-height: 1.4; color: var(--live-muted); }
+/* Beside the balance, the three stand on one line: each note keeps room for two lines, so a note that wraps never
+   lifts its slip's figure and label above the other's. */
+@container (min-width: 941px) {
+  .treasury-paper small { min-height: 2.8em; }
+}
 .treasury-balance-stand { display: inline-grid; margin-top: var(--space-8); }
 .treasury-balance-figure {
   font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400;
@@ -673,6 +696,10 @@
 @container (max-width: 940px) {
   .treasury-paper { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
   .treasury-balance { grid-column: 1 / -1; }
+  /* Side by side, the two slips share their rows: a label that wraps (Spanish "Entradas de noviembre") lowers its
+     neighbour's label with it, so both figures stand on one line. */
+  .treasury-paper > div:not(.treasury-balance) { display: grid; grid-template-rows: subgrid; grid-row: span 2; row-gap: 0; }
+  .treasury-paper > div:not(.treasury-balance) dt { align-self: end; }
   .treasury-paper b { --figure-room: calc(50cqi - 20px); }
 }
 @container (max-width: 760px) {
@@ -698,7 +725,14 @@
 .treasury-budget { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-20) 40px; padding: var(--space-24) 0; border-bottom: 1px solid var(--live-line); }
 .treasury-budget h2 { font: 400 26px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; margin: 0 0 var(--space-8); font-feature-settings: "lnum", "tnum"; }
 .treasury-budget p { margin: 0; color: var(--live-muted); font-size: 17px; }
+/* The budget's field says what an empty amount means at the size every sheet's field help is set (paper.css). */
+.treasury-budget .live-field small { font-size: 15px; line-height: 1.45; }
 .treasury-budget > form { flex-basis: 100%; }
+/* On a phone the budget's two presses start at the room's left edge, as every other press in the foot does, also
+   when Spanish words put them on a line each. The form's own Save and Cancel keep the sheet's right-hand end. */
+@media (max-width: 599px) {
+  .treasury-budget > .live-form-actions { justify-content: flex-start; }
+}
 /* The month check: what waits on a person, a flag the assistant raised included, is ochre; nothing is red. */
 /* The month check is its own row, set 24px clear of the budget's line, so it never reads as one of the budget's buttons. */
 .treasury-check { display: flex; flex-direction: column; align-items: flex-start; flex: 0 0 100%; width: 100%; margin-top: var(--space-24); padding-top: 0; }
@@ -729,4 +763,10 @@
   .live-app table.help-ledger tfoot tr > :nth-child(2),
   .live-app table.help-ledger tfoot tr > [data-total] { flex: 1 0 100%; }
   .live-app table.help-ledger tfoot tr > [data-total] { text-align: right; }
+}
+/* The voucher's name offers the shelf's own names (a datalist). Chrome marks that with a solid black triangle; it
+   takes the same thin chevron, in the same ink, as the Day select beside it. */
+.live-dialog input[list="treasury-voucher-items"]::-webkit-calendar-picker-indicator {
+  width: 16px; height: 16px; margin-right: 2px; opacity: 0.6; color: transparent;
+  background: no-repeat center / 16px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23283c32' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }

@@ -1,6 +1,8 @@
 .tools-address { display: flex; gap: var(--space-8) 10px; align-items: center; max-width: 640px; margin-top: var(--space-24); }
 .tools-address input { font-feature-settings: "lnum" 1, "tnum" 1; text-overflow: ellipsis; }
 .tools-small { font-size: 15px; color: var(--live-muted); line-height: 1.55; max-width: 640px; margin: var(--space-16) 0 0; }
+/* A status line with nothing to say yet takes no room, so a list does not start after a blank band under its deck. */
+.tools-small[role="status"]:empty { margin-top: 0; }
 .tools-file { max-width: 560px; margin-top: var(--space-24); }
 .tools-file .tools-small { margin-top: var(--space-16); }
 .tools-file-name { font-size: 17px; color: var(--live-muted); overflow-wrap: anywhere; }
@@ -202,7 +204,7 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 .tools-agency span { color: var(--live-muted); font-size: 15px; }
 /* Edit / Remove are quiet text actions on the phone line, so a long list never grows a column of buttons. */
 .tools-agency-line { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-16); }
-.tools-agency-act { min-height: 44px; padding: 0; border: 0; background: none; font: inherit; font-size: 13px; color: var(--live-muted); text-decoration: none; text-underline-offset: 3px; cursor: pointer; }
+.tools-agency .tools-agency-act { min-height: 44px; padding: 0; border: 0; background: none; font: inherit; font-size: 13px; color: var(--live-muted); text-decoration: none; text-underline-offset: 3px; cursor: pointer; }
 .tools-agency-act:hover, .tools-agency-act:focus-visible { text-decoration: underline; text-decoration-thickness: 1px; }
 .tools-agency-act:disabled { cursor: default; }
 @media (pointer: fine) { .tools-agency-act { min-height: 28px; } }
@@ -221,3 +223,9 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 .live-app .tools-file .tools-file-open[data-slot="button"] { min-height: 32px; border: 0; background: none; box-shadow: none; color: var(--paper-ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 /* The small picture before a card's heading sits on its line, beside the words, never on top of them. */
 .live-app .tools-leaf > h2 > svg { display: inline-block; vertical-align: -2px; margin-right: 6px; color: var(--live-muted); }
+/* A council's row in Your files: the sentence on the left, its buttons on one right-hand edge, so every row's buttons line up. */
+.tools-leaf .council-list li { padding: var(--space-12, 12px) 0; }
+.tools-leaf .council-list li > span:first-child { margin-right: auto; }
+/* A heading with its icon turns its words beside the icon, never leaving one word on the icon's line. */
+.live-app .tools-leaf > h2:has(> svg) { display: flex; align-items: baseline; gap: 8px; text-wrap: balance; }
+.live-app .tools-leaf > h2:has(> svg) > svg { flex: none; margin-right: 0; translate: 0 2px; }

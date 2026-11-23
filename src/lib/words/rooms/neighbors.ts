@@ -169,7 +169,7 @@ export const en = (t: Terms, place: string) => ({
     openings: {
       title: "Who has opened this record",
       who: "Coordinators and owners only",
-      day: (count: number) => (count === 1 ? "on {day} at {time}" : `${enN(count)} times on {day}, last at {time}`),
+      day: (count: number) => (count === 1 ? "on {day} at\u00a0{time}" : `${enN(count)} times on {day}, last at\u00a0{time}`),
       all: (count: number) => `Show all ${enN(count)}`,
     },
     remove: { open: "Remove this record", who: "Owners only" },
@@ -400,7 +400,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     openings: {
       title: "Quién ha abierto este registro",
       who: "Solo coordinadores y responsables",
-      day: (count) => (count === 1 ? "el {day} a las {time}" : `${esN(count)} veces el {day}, la última a las {time}`),
+      day: (count) => (count === 1 ? "el {day} a\u00a0las\u00a0{time}" : `${esN(count)} veces el {day}, la última a\u00a0las\u00a0{time}`),
       all: (count) => `Ver los ${esN(count)}`,
     },
     remove: { open: "Borrar este registro", who: "Solo responsables" },

@@ -22,6 +22,9 @@ const figure = heldOutFigure(run3);
 type Figure = ReturnType<typeof heldOutFigure>;
 type Moved = { calls: number; requests: number; visits: number; ledger: number; notes: number };
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+/** What moved, said without the kinds that had none; when nothing at all moved, the line that says so. */
+const listMoved = (counts: [number, string, string][], none: string) =>
+  counts.filter(([n]) => n > 0).map(([n, one, many]) => plural(n, one, many)).join(", ") || none;
 
 /** Only this sheet's words, in both languages, so they load with it and with no other room. */
 const said = {
@@ -46,7 +49,7 @@ const said = {
     confirm: "Merge records",
     merged: (name: string) => `${name} is merged into this record.`,
     counting: "Counting what moves…",
-    moving: (m: Moved) => [plural(m.calls, "call", "calls"), plural(m.requests, "request", "requests"), plural(m.visits, "home visit", "home visits"), plural(m.ledger, "ledger line", "ledger lines"), plural(m.notes, "note", "notes")].join(", "),
+    moving: (m: Moved) => listMoved([[m.calls, "call", "calls"], [m.requests, "request", "requests"], [m.visits, "home visit", "home visits"], [m.ledger, "ledger line", "ledger lines"], [m.notes, "note", "notes"]], "No calls, requests, home visits, ledger lines or notes"),
     history: "Merged into this record",
     mergedBy: (name: string, who: string, when: string) => `${name}, merged by ${who} on ${when}.`,
   },
@@ -71,7 +74,7 @@ const said = {
     confirm: "Unir registros",
     merged: (name: string) => `El registro de ${name} se unió a este.`,
     counting: "Contando lo que pasa…",
-    moving: (m: Moved) => [plural(m.calls, "llamada", "llamadas"), plural(m.requests, "petición", "peticiones"), plural(m.visits, "visita", "visitas"), plural(m.ledger, "línea del libro", "líneas del libro"), plural(m.notes, "nota", "notas")].join(", "),
+    moving: (m: Moved) => listMoved([[m.calls, "llamada", "llamadas"], [m.requests, "petición", "peticiones"], [m.visits, "visita", "visitas"], [m.ledger, "línea del libro", "líneas del libro"], [m.notes, "nota", "notas"]], "Ni llamadas, peticiones, visitas, líneas del libro ni notas"),
     history: "Unidos a este registro",
     mergedBy: (name: string, who: string, when: string) => `Registro de ${name}, unido por ${who} el ${when}.`,
   },
@@ -160,8 +163,8 @@ function Candidates({ found, w, neighborId, onMerged }: { found: Candidate[]; w:
                   {sampleSaid(row.name)}
                 </Link>
               </h3>
-              <p>{[row.address && sampleSaid(row.address), w.people(row.adults, row.children)].filter(Boolean).join(" · ")}</p>
-              <p>{row.sameBy.map((by) => w.by[by]).join(" · ")}</p>
+              <p>{[row.address && sampleSaid(row.address), w.people(row.adults, row.children)].filter(Boolean).join("\u00a0· ")}</p>
+              <p>{row.sameBy.map((by) => w.by[by]).join("\u00a0· ")}</p>
               {row.notesAgree && <p className="help-why">{w.notes}</p>}
             </div>
             <div className="live-row-actions">
@@ -217,8 +220,9 @@ function MergeForm({ neighborId, other, w, onMerged }: { neighborId: Id<"neighbo
         <div>
           <dt>{w.moves}</dt>
           <dd>
-            <strong>{moving ? w.moving(moving) : w.counting}</strong>
-            {` ${w.movesDetail}`}
+            {/* The counts stand on their own line: run into the sentence after them, they read as one unpunctuated line. */}
+            <strong className="block">{moving ? w.moving(moving) : w.counting}</strong>
+            {w.movesDetail}
           </dd>
         </div>
         <div>

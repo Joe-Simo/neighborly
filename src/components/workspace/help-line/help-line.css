@@ -424,3 +424,37 @@
 .help-repeat { display: contents; }
 /* What the assistant read, beside its mark: a long word in it (a name, a link) turns at the sheet's edge. */
 .help-sheet .help-assistant > span { min-width: 0; overflow-wrap: anywhere; }
+
+/* "Same phone as …" sits among a waiting call's quiet acts at their size: the room's lead note would pull it up over them. */
+.help-row .help-row-more > .help-note { margin: 0; font-size: inherit; line-height: inherit; max-width: none; }
+
+/* The quiet acts are not a dotted list of facts: whoever is calling back keeps their initials whole, with no dot before them. */
+.help-row .help-row-more > .help-person { margin-left: 0; flex-wrap: nowrap; }
+.help-row .help-row-more > .help-person > .help-initials:first-child { padding-left: 0; }
+.help-row .help-row-more > .help-person > .help-initials::before { content: none; }
+
+/* The assistant's mark on "Speaks Spanish" stands at its first line, as it does on the outcome's suggestion, not midway down a wrapped note. */
+.help-row .help-assistant.help-spanish { align-items: flex-start; }
+.help-row .help-assistant.help-spanish > svg { margin-top: 0.3em; }
+
+/* On a phone the figure never hangs alone beside or under a heading that may wrap (Spanish "Llamadas por devolver"):
+   the heading takes the line, and the figure and how long the oldest has waited follow it as one line. */
+@media (max-width: 700px) {
+  .help-lists .live-section-head:has(> .room-tally) { flex-wrap: wrap; }
+  .help-lists .live-section-head > .room-tally { flex: 1 0 100%; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-4) 12px; }
+}
+
+/* A record's files read as its other sections do: the rows run the full measure under a rule, and the button to add
+   one sits on the same line as its hint, with room before the next heading. */
+.live-section:has(> .tools-file-pick) > .tools-files { max-width: none; border-top: 1px solid var(--live-line); }
+.live-section:has(> .tools-file-pick) > .tools-file-pick { margin: var(--space-24) 0 var(--space-24); }
+.live-section:has(> .tools-file-pick) > .tools-file-pick .tools-small { margin: 0; }
+/* Who opened the record: a turned line never leaves the time alone on the last line. */
+.help-opened li { text-wrap: pretty; }
+/* The decision sheet's place for the household's lines, while nothing has come: out of the form's flow, so it adds
+   no second gap between the amount and the note. It stays in the page, to say the lines when they arrive. */
+.help-form > div[aria-live="polite"]:not([class]):empty { position: absolute; }
+/* An empty state's text link starts on its text's edge: the outlined buttons' inset (treasury.css) is not its own. */
+.live-app .help-empty .help-text-action[data-slot="button"] { padding-inline: 0; }
+/* A record with no history yet: the empty state's rules run the full measure, as the heading above them does. */
+.help-history > .help-empty { max-width: none; }

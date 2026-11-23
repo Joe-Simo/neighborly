@@ -195,7 +195,8 @@ export function NeighborRecord({
       text.deck.since(format(record.since, { day: undefined, month: "long", year: "numeric" })),
     ]
       .filter(Boolean)
-      .join(" · ");
+      // The dot holds to the words before it, so a wrapped line never opens on one.
+      .join("\u00a0· ");
   // One request laid out to print, in place of the record; the way back returns to the record.
   const [printing, setPrinting] = useState<HelpRequest["id"] | null>(null);
   // The record's page head is the neighbor's name, with no painting: private and plain.
@@ -817,7 +818,7 @@ function NeighborRecordView({
       {alike}
 
       <section
-        className={first || alsoOpen.length ? "live-section" : undefined}
+        className={first || alsoOpen.length ? "live-section help-history" : "help-history"}
       >
         <div className="live-section-head">
           <h2>{text.history.title}</h2>
@@ -937,7 +938,7 @@ function Openings({ openings, text, format }: { openings: Record["openings"]; te
         {shown.map((opening) => (
           <li key={`${opening.who}-${opening.at}`}>
             <strong>{opening.who}</strong> ·{" "}
-            {fill(text.day(opening.count), { day: format(opening.at, { weekday: "short", month: "short", day: "numeric", year: "numeric" }), time: format(opening.at, { hour: "numeric", minute: "2-digit" }) })}
+            {fill(text.day(opening.count), { day: format(opening.at, { weekday: "short", month: "short", day: "numeric", year: "numeric" }), time: format(opening.at, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" }).replace(" ", "\u00a0") })}
           </li>
         ))}
       </ul>

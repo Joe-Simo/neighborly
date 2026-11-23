@@ -323,3 +323,31 @@
 :root[data-shell="ios"][data-text-large] .live-app .visits-written-found > span:last-child { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; }
 /* What the assistant read in a written-up visit's note: its words in plum, whole, never faded. */
 .visits-found { margin-top: var(--space-4); font-size: 15px; line-height: 1.45; color: var(--paper-plum); }
+
+/* My commitments: the visit stamp's weekday and date sit on one line where the stamp is wide, and on two whole lines where it is narrow (help.css narrows it to 66px at 850px). */
+.live-app .visits-mine-day > span { font: inherit; letter-spacing: inherit; white-space: nowrap; }
+.live-app .visits-mine-day > span:first-child::after { content: ", "; }
+@media (max-width: 850px) {
+  .live-app .visits-mine-day { display: flex; flex-direction: column; align-items: center; }
+  .live-app .visits-mine-day > span:first-child::after { content: none; }
+}
+/* On a phone the heading takes its own line and the count sits under it whole, as on the help line, instead of both wrapping side by side. */
+@media (max-width: 560px) {
+  .live-app .visits-mine > .live-section-head { flex-wrap: wrap; gap: var(--space-8) 16px; }
+  .live-app .visits-mine > .live-section-head h2 { flex-basis: 100%; margin-bottom: 0; }
+}
+/* Between the phone and the wide desk, help.css sets a two-button row's answer under its words. My visits list mixes
+   two-button rows with a status and one button, so every row here takes that shape and the list reads as one column. */
+@media (min-width: 851px) and (max-width: 1279px) {
+  .live-app .visits-mine .help-row { grid-template-columns: 96px minmax(0, 1fr); row-gap: var(--space-16); }
+  .live-app .visits-mine .help-row > :first-child { grid-row: 1 / span 2; }
+  .live-app .visits-mine .help-row > .live-row-actions { grid-column: 2; justify-content: flex-start; }
+}
+
+/* In the write-up's two columns an amount fills its column, so each pair of boxes ends on one edge with the select beside it. */
+.live-dialog .visits-write-up .live-form-grid .live-field input[inputmode="decimal"] { max-width: none; }
+/* On a phone Coming up keeps its tally beside the title, so the tally stays set to the right edge, as on a wide screen. */
+@media (max-width: 700px) {
+  .visits-room .live-section-head > .room-tally { justify-items: end; }
+  .visits-room .live-section-head > .room-tally .live-count { text-align: right; }
+}
