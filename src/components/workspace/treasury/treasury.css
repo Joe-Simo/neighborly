@@ -285,6 +285,10 @@
     padding-inline: 12px;
     font-size: 15px;
   }
+  /* A line still on its way says what it carried in up to three lines: it keeps the row's whole width, and its
+     press drops beneath it, so the words are never squeezed into a narrow column beside the button. */
+  .treasury-uncleared .help-row > div:nth-child(2) { grid-column: 1 / -1; }
+  .treasury-uncleared .help-row > :nth-child(3) { grid-column: 1; justify-self: start; margin-top: var(--space-12); }
   .treasury-uncleared .help-row h3,
   .treasury-lately .help-row h3 {
     font-size: 22px;
