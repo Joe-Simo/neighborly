@@ -2,7 +2,7 @@
    Plain paper at rest; a followed slip's corner is green (done). Nothing waits on these, so nothing is ochre. */
 .live-app .first-week { margin: 0 0 var(--space-32); }
 .live-app .first-week-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12) 12px; margin-bottom: var(--space-8); }
-.live-app .first-week-head h2 { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: var(--caps-track); text-transform: uppercase; color: var(--live-muted); }
+.live-app .first-week-head h2 { margin: 0; font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; font-size: 13px; font-weight: 650; line-height: 1.3; letter-spacing: var(--caps-track); text-transform: uppercase; color: var(--live-muted); }
 /* Its glyph lines up with the page's edge; beside a notch the button keeps inside the gutter so its ring stays clear. */
 .live-app .first-week-away { width: 44px; height: 44px; color: var(--live-muted); }
 .live-app .first-week-slips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-16) 16px; margin: 0; padding: 0; list-style: none; }
