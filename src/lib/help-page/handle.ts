@@ -3,6 +3,7 @@ import { api } from "../../../convex/_generated/api";
 import { PAGE_KINDS, readKey, readSubmission, soundsUnsafe, type Problem } from "../intake-rules";
 import { helpPage, type HelpErrors, type HelpValues, type HelpView } from "../intake/help-pages";
 import type { IntakeLanguage, NeedKind } from "../intake/intake-words";
+import { formatDate } from "../words/dates";
 import { checkBotId } from "botid/server";
 
 /**
@@ -85,7 +86,7 @@ const PHONE_SHAPE = /^\(\d{3}\) \d{3}-\d{4}$/;
 const phoneFrom = (answer: Record<string, unknown> | null) => (typeof answer?.phone === "string" && PHONE_SHAPE.test(answer.phone) ? answer.phone : undefined);
 
 const day = (language: IntakeLanguage, at: number, timeZone: string) =>
-  new Intl.DateTimeFormat(language === "es" ? "es-US" : "en-US", { weekday: "long", month: "long", day: "numeric", timeZone }).format(at);
+  formatDate(language, at, { weekday: "long", month: "long", day: "numeric", timeZone });
 
 /** The settings the pages need and do not have, by name only (never a value), for the server log. */
 function missingSettings() {

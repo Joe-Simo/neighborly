@@ -142,7 +142,7 @@ export function ThreadCard() {
           pose = down > 0 ? between(above, over, down) : { ...last, y: last.y - Math.min(to.w * .5, zone * .03) * swift(up), o: 1 - up };
           pose.o = down > 0 ? clamp(down * 3) : before ? 1 - up : 0;
           // Lifted off the sheet, it shows again only once it is clear of the sheet's foot: it never lies over the sheet's words.
-          if (overSheet && sheet && down > 0) pose.o *= clamp((pose.y - pose.w * pose.k / 3 - sheet.bottom) / 24); lift = down > 0 ? 1 - down : up; landed = null;
+          if (overSheet && sheet && down > 0) pose.o *= clamp((pose.y - Math.hypot(pose.w / 2, pose.w * pose.k / 3) - sheet.bottom) / 24); lift = down > 0 ? 1 - down : up; landed = null;
         }
         else if (arrive < 1) { pose = between(last, over, arrive); const air = Math.sin(arrive * Math.PI);
           // In the air it is a little larger than where it lies, rides a low arc and turns a few degrees; it closes on its shadow as it lands.
