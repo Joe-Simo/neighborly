@@ -29,6 +29,11 @@ main.painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fa
 .neighborly-together .neighborly-close-art::before,.neighborly-together .neighborly-close-art::after{content:"";position:absolute;z-index:1;left:0;right:0;height:44px;pointer-events:none}
 .neighborly-together .neighborly-close-art::before{top:0;background:var(--shade-close-top) 0 0/100% 100% no-repeat}
 .neighborly-together .neighborly-close-art::after{bottom:0;background:var(--shade-close-bottom) 0 0/100% 100% no-repeat}
+/* Where the picture with headroom stands in the flow, its top cut falls just over the heads (70 of its 1094 rows are plaster above them), dipping no more than 4px into the original painting, so the eyes stay whole and none of the added band shows below the cut. */
+@media (min-width:701px) and (max-width:1279px),(min-width:1280px) and (max-height:444px),(min-width:481px) and (max-width:700px) and (orientation:landscape){
+  .neighborly-together .neighborly-close-art{--lift:max(0px,calc(100cqw * 70 / 1440 - 25px));-webkit-mask:var(--cut-close-top) 0 var(--lift)/100% 44px no-repeat,linear-gradient(#000,#000) 0 calc(var(--lift) + 43px)/100% calc(100% - 86px - var(--lift)) no-repeat,var(--cut-close-bottom) 0 100%/100% 44px no-repeat;mask:var(--cut-close-top) 0 var(--lift)/100% 44px no-repeat,linear-gradient(#000,#000) 0 calc(var(--lift) + 43px)/100% calc(100% - 86px - var(--lift)) no-repeat,var(--cut-close-bottom) 0 100%/100% 44px no-repeat}
+  .neighborly-together .neighborly-close-art::before{top:var(--lift)}
+}
 /* The cloth under the ending begins at a cut, not a haze. */
 /* The cloth under the ending begins at a cut, not a haze. The cloth itself is a plain picture, unmasked: a mask on a layer
    this tall (2,192pt on a phone, 6,576 pixels at 3x) has the browser paint it twice on every scroll. The cut is drawn the

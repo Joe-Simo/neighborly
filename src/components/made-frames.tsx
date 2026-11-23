@@ -27,7 +27,9 @@ export function MadeFrames({ said, language }: { said: Said; language: Language 
   return <figure className="public-made-frames">
     <figcaption className="public-made-frames-title">{said.caption}</figcaption>
     {madeFrames.widths.map(({ width, all, frames, over, worst }, row) => {
-      const summary = fill(said.summary[over ? 1 : 0], { n: whole.format(frames), over: whole.format(over), worst: whole.format(worst) });
+      const summary = fill(said.summary[over ? 1 : 0], { n: whole.format(frames), over: whole.format(over), worst: whole.format(worst) })
+        // A time never breaks from its unit: "33" and "ms" stay on one line.
+        .replace(/(\d) ms\b/g, "$1 ms");
       return <div key={width} className="public-made-frames-row">
         <p><strong>{said.widths[width]}</strong> {summary}</p>
         <div className="public-made-frames-plot" style={{ "--line": `${((ceiling - lateMs) / ceiling) * 100}%` } as CSSProperties}>
