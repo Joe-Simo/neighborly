@@ -17,3 +17,5 @@
    Change reply), so it does not read as a plain word at the end of the row. */
 .meeting-decide { color: var(--live-ink, #283c32); text-decoration: underline; text-decoration-color: rgb(40 60 50 / 0.35); text-underline-offset: 4px; }
 .meeting-decide:hover { text-decoration-color: currentColor; }
+/* Who came is one of the sheet's sections: its name reads as the others do, not as a small-caps field label. */
+.meeting-sheet .help-lines legend { margin-bottom: var(--space-8); font-size: 17px; font-weight: 650; text-transform: none; letter-spacing: 0; color: inherit; }
