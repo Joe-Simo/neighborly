@@ -343,3 +343,6 @@
   .live-app .visits-mine .help-row > :first-child { grid-row: 1 / span 2; }
   .live-app .visits-mine .help-row > .live-row-actions { grid-column: 2; justify-content: flex-start; }
 }
+
+/* In the write-up's two columns an amount fills its column, so each pair of boxes ends on one edge with the select beside it. */
+.live-dialog .visits-write-up .live-form-grid .live-field input[inputmode="decimal"] { max-width: none; }
