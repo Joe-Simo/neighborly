@@ -13,10 +13,10 @@
 /* Held by a hand: the sheets follow the pointer, so the page does not scroll under a touch that drags them. */
 .made-courtyard[data-live=true] .made-courtyard-stack{cursor:grab;touch-action:pan-x;user-select:none;-webkit-user-select:none;outline:none}
 /* Keyboard focus on the held courtyard: one ink ring drawn on the figure, a margin of paper off it and inside the page's gutter at every width.
-   While it shows, the sheets are cut at its outer edge and lie beneath it, so no sheet ever crosses it. */
-.made-courtyard-stack{--ring:-12px max(-24px,calc((100% - 100vw) / 2 + 15px))}
+   It stands far enough off the figure that the torn pillars stay whole inside it; nothing is cut to fit the ring. */
+.made-courtyard-stack{--ring:-34px max(-24px,calc((100% - 100vw) / 2 + 15px)) -12px}
 .made-courtyard-stack::after{content:"";position:absolute;z-index:1;inset:var(--ring);border:2px solid #283c32;border-radius:4px;pointer-events:none;visibility:hidden}
-.made-courtyard[data-live=true] .made-courtyard-stack:focus-visible{outline:none;clip-path:inset(var(--ring))}
+.made-courtyard[data-live=true] .made-courtyard-stack:focus-visible{outline:none}
 .made-courtyard-stack:focus-visible::after{visibility:visible}
 /* The sheet above lays its cut foot over the courtyard's top; while the ring shows, the courtyard is laid over that foot so the ring is drawn whole. */
 .made-courtyard:has(.made-courtyard-stack:focus-visible){z-index:15}

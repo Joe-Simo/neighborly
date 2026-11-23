@@ -72,6 +72,13 @@
   .slip-folds-body span{font-size:calc(18px * var(--k))}
   .slip-folds-corner{width:calc(30px * var(--k));height:calc(30px * var(--k))}
 }
-@media print{.slip-folds{height:auto}.slip-folds-stage{position:static;height:auto}}
+/* Below 1024 the slip is held at the top of the window, just under the words it follows, rather than at the middle of an empty screen:
+   the stage is as tall as the slip, and the band runs on past it by the same four tenths of a window of scroll. */
+@media(max-width:1023px) and (prefers-reduced-motion:no-preference){
+  .slip-folds{height:auto}
+  .slip-folds::after{content:"";display:block;height:40svh}
+  .slip-folds-stage{height:auto;place-items:start center;padding:40px 20px 56px}
+}
+@media print{.slip-folds{height:auto}.slip-folds::after{display:none}.slip-folds-stage{position:static;height:auto}}
 /* The way into the sample is the one thing to do here: it is set in the serif, a step above the sentence it ends, never below it. */
 .slip-folds-figure .slip-folds-link{display:flex;justify-content:center;margin-top:4px;white-space:nowrap;font-family:'Newsreader','Newsreader Fallback',Georgia,serif;font-size:1.1em;letter-spacing:-.01em}

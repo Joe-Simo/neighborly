@@ -164,9 +164,11 @@ export function placeSlips(through: number, out: Float32Array = new Float32Array
   if (through <= FLIGHT) return flightPoses(through, out);
   const s = Math.min(1, (through - FLIGHT) / (1 - FLIGHT));
   out.set(flown);
+  const camera = cameraZ(through);
   for (let index = 0; index < SLIPS; index++) {
     const k = ease((s - .05 - .46 * index / SLIPS) / .06);
-    if (k <= 0) continue;
+    // The flight's rule holds through the carry: a slip still at the eye stays undrawn until it has moved away.
+    if (k <= 0) { if (nearEye(out, index * 16, camera)) out.fill(0, index * 16, index * 16 + 16); continue; }
     if (k >= 1 && landed === index) landed = index + 1;
     const at = index * 16, to = piled[index], from = out[at + 13];
     for (let i = 0; i < 16; i++) out[at + i] += (to[i] - out[at + i]) * k;
@@ -181,6 +183,7 @@ export function placeSlips(through: number, out: Float32Array = new Float32Array
     // Height comes down first, over the arc's first seven tenths: the slip then slides in at its own place in the pile, never hovering over it.
     const down = Math.min(1, k / .7);
     out[at + 13] = from + (to[13] - from) * ease(down) + Math.sin(Math.PI * down) * .9;
+    if (nearEye(out, at, camera)) out.fill(0, at, at + 16);
   }
   return out;
 }
