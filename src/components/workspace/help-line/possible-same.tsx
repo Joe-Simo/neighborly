@@ -167,7 +167,7 @@ function Candidates({ found, w, neighborId, onMerged }: { found: Candidate[]; w:
               <p>{row.sameBy.map((by) => w.by[by]).join("\u00a0· ")}</p>
               {row.notesAgree && <p className="help-why">{w.notes}</p>}
             </div>
-            <div className="live-row-actions">
+            <div className="live-row-actions help-same-actions">
               <Button variant="outline" aria-label={w.mergeThis(sampleSaid(row.name))} onClick={() => setMerging(row)}>
                 {w.merge}
               </Button>

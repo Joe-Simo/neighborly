@@ -509,3 +509,5 @@
 @media (max-width: 850px) {
   .live-main:has(.help-record-head) .help-figures > div:not(:first-child) { display: grid; grid-row: span 2; grid-template-rows: subgrid; }
 }
+/* "Not the same" stands beside "Merge into this record" at the button's size, so the pair reads as one choice. */
+.live-app .help-row .help-same-actions .help-text-action[data-slot="button"] { font-size: 15px; }
