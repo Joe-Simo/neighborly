@@ -5,7 +5,7 @@ type MadeBlock = string | { lead: string; rest: string; tone?: "waiting" | "wron
 
 /** A section of the page; one may carry a picture from the painting's own working files, with what it shows. */
 type MadeSection = { title: string; blocks: MadeBlock[]; figure?: { src: string; alt: string; caption: string };
-  /** Four stills of the courtyard's sheets, from whole to drawn apart, in order (/assets/made/courtyard-apart-{1..4}-{640,1200}.webp). */
+  /** Four stills of the courtyard's sheets, from whole to drawn apart, in order (/assets/made/courtyard-framed-{1..4}-{640,1200}.webp: rendered from the live sheets at the courtyard's own lean, with even paper on every side). */
   stills?: { label: string; items: [string, string][] }; table?: "eval" | "frames" | "anatomy" | "process" | "trace" };
 
 /** Every word of the page on how Kind Helps was made. English is the source; Spanish says the same, section for section. */

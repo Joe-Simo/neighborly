@@ -17,6 +17,9 @@ import { CutHead } from "@/components/cut-heads";
 
 export type { CardWords } from "./public-ending-words";
 
+/** The widths where the close stands in the flow (the same as the stylesheet's rule that sets the picture under the words). */
+const flowMedia = "(min-width:701px) and (max-width:1279px), (min-width:1280px) and (max-height:444px), (min-width:481px) and (max-width:700px) and (orientation:landscape)";
+
 /** The picture every public page closes on: the same two people, the open hand holding the card out as the way in. */
 export function ClosingBand({ language = "en" }: { language?: Language }) {
   const said = endingWords[language];
@@ -26,6 +29,9 @@ export function ClosingBand({ language = "en" }: { language?: Language }) {
   return <div className="neighborly-close" ref={band}>
     <picture className="neighborly-close-art">
       <source media="(max-width:700px) and (orientation:portrait), (max-width:480px)" srcSet="/assets/living-relief-mobile-accepted.webp" width={780} height={1688} />
+      {/* Where the picture stands in the flow under the words, a copy with a band of plaster above the heads, so the torn edge passes over the wall and never over her eyes. */}
+      <source media={flowMedia} type="image/avif" srcSet="/assets/living-relief-accepted-headroom-1440.avif 1440w, /assets/living-relief-accepted-headroom-2880.avif 2880w" sizes="100vw" width={1440} height={1094} />
+      <source media={flowMedia} srcSet="/assets/living-relief-accepted-headroom.webp" width={1440} height={1094} />
       <source type="image/avif" srcSet="/assets/living-relief-accepted-1440.avif 1440w, /assets/living-relief-accepted-2880.avif 2880w" sizes="100vw" width={1440} height={1024} />
       <img src="/assets/living-relief-accepted.webp" width={1440} height={1024} alt="" loading="lazy" decoding="async" />
     </picture>
