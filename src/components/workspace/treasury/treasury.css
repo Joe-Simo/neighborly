@@ -25,6 +25,9 @@
   text-align: center;
   color: var(--help-ochre-ink);
 }
+/* In the ledger's table a neighbor's name turns between its words, never inside one: breaking anywhere let the
+   table squeeze the For column to a letter's width on a tablet. */
+.live-app .help-ledger td[data-for] .live-name { overflow-wrap: break-word; }
 .help-ledger tr[data-reversed] .help-what,
 .help-ledger tr[data-reversed] :is(td, th[scope="row"]).help-money:not([data-balance]) {
   color: var(--live-muted);
