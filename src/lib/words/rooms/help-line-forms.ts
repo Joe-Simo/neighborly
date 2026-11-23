@@ -156,7 +156,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     callBack: "Devolverle la llamada",
     nothing: "No hay nada más que hacer",
     save: "Guardar llamada",
-    saveAndDraft: "Guardar y preparar un borrador",
+    saveAndDraft: "Guardar y preparar borrador",
     outcome: "En qué quedó",
     outcomeHelp: `Por ejemplo: ${t.visit} planeada para el jueves, o se le refirió al 211.`,
     markReturned: "Marcar como devuelta",
