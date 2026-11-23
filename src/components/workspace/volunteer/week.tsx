@@ -94,7 +94,7 @@ export function WeekSection() {
         </LiveEmpty>
       ) : (
       /* From 1100px what is coming up and what the group has said sit side by side, so neither waits under the other. */
-      <div className="week-columns" data-far={far ? "" : undefined}>
+      <div className="week-columns" data-far-screen={far ? "" : undefined}>
       <section className="live-section" id={COMING_UP}>
         <div className="live-section-head">
           <h2>{words.week.comingUp}</h2>
