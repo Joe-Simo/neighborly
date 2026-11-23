@@ -9,13 +9,13 @@
 /* Live, the canvas is the whole stage, under the figure: the window lets it through, and the caption stands on its own sheet above the slips. */
 .year-paper-figure{position:relative;z-index:1}
 .year-paper[data-live=true] .year-paper-window{background:none}
-.year-paper figcaption{position:relative;background:#eee7d7;box-shadow:var(--relief-sheet);border-radius:2px;padding:12px 16px;margin:0 -16px;box-sizing:content-box}
+.year-paper figcaption{position:relative;background:#eee7d7;box-shadow:var(--relief-sheet);border-radius:2px;padding:clamp(12px,1.2vw,20px) clamp(16px,1.6vw,26px);margin:0 calc(-1 * clamp(16px,1.6vw,26px));box-sizing:content-box}
 /* A cut, never a fade: once the canvas has drawn the poster's frame, the poster is put away. */
 .year-paper[data-live=true] .year-paper-window picture{visibility:hidden}
 .year-paper figcaption{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:4px 24px;width:100%}
-.year-paper-title{grid-column:1;margin:0;font:400 clamp(28px,2.6vw,44px)/1.1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.02em}
-.year-paper figcaption p{grid-column:1;max-width:60ch;margin:0;font-size:17px;line-height:1.4;color:#3d4f43}
-.year-paper figcaption .year-paper-month{grid-column:2;grid-row:1 / span 2;align-self:end;font:400 clamp(20px,1.6vw,28px)/1.2 'Newsreader','Newsreader Fallback',Georgia,serif;font-feature-settings:"lnum","tnum";color:#293f32;white-space:nowrap}
+.year-paper-title{grid-column:1;margin:0;font:400 clamp(28px,2.9vw,52px)/1.1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.02em}
+.year-paper figcaption p{grid-column:1;max-width:60ch;text-wrap:balance;margin:0;font-size:clamp(17px,1.25vw,22px);line-height:1.4;color:#3d4f43}
+.year-paper figcaption .year-paper-month{grid-column:2;grid-row:1 / span 2;align-self:end;font:400 clamp(20px,1.9vw,34px)/1.2 'Newsreader','Newsreader Fallback',Georgia,serif;font-feature-settings:"lnum","tnum";color:#293f32;white-space:nowrap}
 @media(max-width:767px){
   .year-paper{--yp-w:min(100vw - 64px,(100svh - 260px) * .75)}
   .year-paper-window{aspect-ratio:3/4}

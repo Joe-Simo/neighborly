@@ -267,3 +267,5 @@
   .public-words-relief{width:calc(420px * var(--big))}
   .public-page-header>a:last-child,.public-page-language{font-size:calc(15px * var(--big))}
 }
+/* Legal pages (privacy, accessibility): on wide screens the two columns share the whole sheet, so its right half is never left bare. */
+@media(min-width:1600px){.public-words.public-legal section{grid-template-columns:minmax(0,36rem) minmax(0,36em);column-gap:clamp(110px,8vw,180px)}.public-words.public-legal section>div{max-width:36em}.public-words.public-legal h2{font-size:clamp(44px,2.9vw,60px);max-width:17ch}}

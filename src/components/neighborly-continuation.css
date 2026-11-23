@@ -13,7 +13,9 @@
 .neighborly-together h2 em{font-weight:400}
 .neighborly-together-bottom{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:start;gap:28px clamp(48px,6vw,110px)}
 /* Before the closing: whose it is, at body size, on a band of its own paper, edge to edge. */
-.neighborly-trust{margin-inline:-8.14%;padding:64px 8.14%;background:var(--relief-paper);box-shadow:0 1px 0 var(--relief-edge),0 -1px 0 var(--relief-edge)}
+/* The trust note is a sheet laid on the page, its top and foot cut by hand like the close below it, never a ruled band. */
+.neighborly-trust{position:relative;isolation:isolate;margin-inline:-8.14%;padding:76px 8.14%;filter:drop-shadow(0 1px .5px #3b2a1230) drop-shadow(0 5px 7px #3b2a1218)}
+.neighborly-trust::before{content:"";position:absolute;z-index:-1;inset:0;background:var(--relief-paper);-webkit-mask:var(--cut-close-top) 0 0/100% 44px no-repeat,linear-gradient(#000,#000) 0 43px/100% calc(100% - 86px) no-repeat,var(--cut-close-bottom) 0 100%/100% 44px no-repeat;mask:var(--cut-close-top) 0 0/100% 44px no-repeat,linear-gradient(#000,#000) 0 43px/100% calc(100% - 86px) no-repeat,var(--cut-close-bottom) 0 100%/100% 44px no-repeat}
 .neighborly-trust>*{max-width:64ch}
 .neighborly-together .neighborly-trust h2{margin:0 0 12px;font:400 26px/1.25 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:var(--track-4);word-spacing:.04em}
 .neighborly-trust p{margin:0;font-size:17px;line-height:1.6;text-wrap:pretty}
@@ -29,7 +31,7 @@
 .neighborly-final-links a:is(:hover,:focus-visible){background-size:100% 1px}
 .neighborly-final-actions small{font-size:14px;line-height:1.5;color:#3d4f43}
 .neighborly-colophon{container-type:inline-size;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:24px;padding:12px 0 calc(82px + env(safe-area-inset-bottom));font-size:15px}
-.neighborly-colophon>a{flex-basis:100%;display:inline-flex;align-items:center;margin:20px 0 -.08em;font:400 calc(100cqi / 4.1)/.8 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;color:#293f32;text-decoration:none;text-shadow:.008em .016em .012em #3b2a1240,.03em .07em .08em #3b2a1224}
+.neighborly-colophon>a{flex-basis:100%;display:inline-flex;align-items:center;margin:20px 0 -.08em;font:400 min(calc(100cqi / 4.1),112px)/.8 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;color:#293f32;text-decoration:none;text-shadow:.008em .016em .012em #3b2a1240,.03em .07em .08em #3b2a1224}
 /* The name is cut from the green sheet and laid on the page: its two steps of shadow on the paper beneath. Drawn once; nothing moves. */
 @media(forced-colors:active){.neighborly-colophon>a{text-shadow:none}}
 /* The name is set to the measure: its ink runs from the column's left edge to its right, the last line of the page squared to every line above it. */
@@ -45,7 +47,7 @@
 @media (max-width:560px){.neighborly-colophon nav{display:grid;grid-template-columns:repeat(2,max-content)}}
 @media(max-width:900px){
   .neighborly-together{padding-left:max(20px,var(--safe-l));padding-right:max(20px,var(--safe-r))}
-  .neighborly-trust{margin-left:calc(-1 * max(20px,var(--safe-l)));margin-right:calc(-1 * max(20px,var(--safe-r)));padding:64px max(20px,var(--safe-r)) 64px max(20px,var(--safe-l))}
+  .neighborly-trust{margin-left:calc(-1 * max(20px,var(--safe-l)));margin-right:calc(-1 * max(20px,var(--safe-r)));padding:76px max(20px,var(--safe-r)) 76px max(20px,var(--safe-l))}
   .neighborly-together h2 em{margin-left:0}
   .neighborly-together-bottom{grid-template-columns:minmax(0,1fr);grid-template-rows:none}
   .neighborly-together-statement{grid-column:auto;grid-row:auto;max-width:22ch;font-size:clamp(24px,6.6vw,34px)}
@@ -133,7 +135,14 @@
 }
 /* On a phone the painting stands taller than the screen, so the last screen leads with the card in the hands: the foot sits
    right under the torn edge, with room kept below the name so the close's words leave the frame whole, never cut. */
-@media(max-width:600px){.neighborly-continuation .neighborly-colophon{padding-bottom:calc(82px + 22vw + env(safe-area-inset-bottom))}}
+/* Between the tablet and the wide screen the five ways do not fit beside the promise and the name: the promise sits over them, one row, never two ragged ones. */
+@media(min-width:901px) and (max-width:1679.98px){
+  .neighborly-continuation .neighborly-colophon{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"free name" "ways name";align-content:center;gap:2px clamp(24px,3vw,48px);padding-block:14px}
+  .neighborly-continuation .neighborly-colophon>span{grid-area:free}
+  .neighborly-continuation .neighborly-colophon nav{grid-area:ways;flex-wrap:nowrap;justify-content:flex-start;gap:0 clamp(16px,1.8vw,24px)}
+  .neighborly-continuation .neighborly-colophon>a{grid-area:name;align-self:center}
+}
+@media(max-width:600px){.neighborly-continuation .neighborly-colophon{padding-bottom:calc(48px + 8vw + env(safe-area-inset-bottom))}}
 /* "Free." leans in the display face's own italic, which every public page already has. The text face is served upright only, so an em in it would be a slanted copy. */
 .neighborly-colophon>span>em{font-family:'Newsreader','Newsreader Fallback',Georgia,serif;font-style:italic;font-weight:400}
 /* Between phone and desk the picture stands in the flow. The words come first, then the picture with the card in its hand, so the eye meets them in the order the keyboard does. */
@@ -143,3 +152,6 @@
   .neighborly-close :is(.neighborly-close-hand,.neighborly-close-offer){top:auto;bottom:0}
   .neighborly-close-words{padding-bottom:var(--space-32)}
 }
+/* The foot's first line keeps a breath under the picture's torn edge: on a phone or tablet the cut paper starts 24px above it, between the tablet and the wide window the words stand right on the cut. */
+@media(max-width:900px){.neighborly-continuation .neighborly-colophon{padding-top:28px}}
+@media(min-width:901px) and (max-width:1279px){.neighborly-continuation .neighborly-colophon{padding-top:30px}}

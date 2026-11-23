@@ -26,7 +26,7 @@
 /* The lost slip (not-found.tsx): a call slip of the pile's own paper that found no one, lying alone a little turned, flat and still. */
 .lost-door[data-piece=slip]{gap:0}
 .lost-door[data-piece=slip] .lost-door-words{gap:round(nearest,clamp(28px,4.5svh,48px),8px)}
-.lost-slip{position:relative;display:grid;gap:12px;width:min(calc(100vw - 40px),560px);padding:round(nearest,clamp(28px,4svh,40px),4px) round(nearest,clamp(24px,4vw,40px),4px) round(nearest,clamp(32px,4.5svh,44px),4px);text-align:left;background:#f7f2e6;border-radius:1px;border-top:1px dashed #b0a08480;box-shadow:0 0 0 1px #b0a08466,1px 1px 0 #b0a084,6px 10px 14px -6px rgb(40 60 50 / 0.22)}
+.lost-slip{position:relative;display:grid;gap:12px;width:min(calc(100vw - 32px),640px);padding:round(nearest,clamp(28px,4svh,40px),4px) round(nearest,clamp(24px,4vw,40px),4px) round(nearest,clamp(32px,4.5svh,44px),4px);text-align:left;background:#f7f2e6;border-radius:1px;border-top:1px dashed #b0a08480;box-shadow:0 0 0 1px #b0a08466,1px 1px 0 #b0a084,6px 10px 14px -6px rgb(40 60 50 / 0.22)}
 .lost-slip h1{margin:0;font:400 clamp(32px,3.6vw,56px)/1.05 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.04em;text-wrap:balance}
 .lost-slip p{margin:0;max-width:34em;font-size:clamp(16px,1.2vw,19px);line-height:1.45;color:#3d4f43;text-wrap:pretty}
 .lost-slip-corner{position:absolute;right:-1px;bottom:-1px;width:30px;height:30px;background:linear-gradient(315deg,#e6decb 50%,#c8962e calc(50% + 1px),#d6ad57 100%);border-top-left-radius:3px;box-shadow:3px -3px 6px -4px rgb(40 60 50 / 0.4)}
@@ -36,6 +36,7 @@
 .lost-door{position:relative}
 .lost-door-brand{position:absolute;top:max(14px,calc(env(safe-area-inset-top) + 6px));left:max(20px,4%,calc(env(safe-area-inset-left) + 6px));display:inline-flex;align-items:center;min-height:44px;font:400 30px/1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.065em;word-spacing:.07em;color:inherit;text-decoration:none;background:none!important}
 .lost-door-words>p{margin:0;max-width:34ch;font-size:17px;line-height:1.5;text-align:center;text-wrap:pretty;color:#3d4f43}
+@media(min-width:768px){.lost-door-words>p{max-width:42ch}}
 /* Try again is a press, so it looks like one: the paper button of the rooms. */
 .lost-door-words button{min-height:44px;padding:0 20px;border:1px solid #7d8874;border-radius:4px;background:#fffdf7;box-shadow:0 1px 0 rgb(40 60 50 / .18);text-decoration:none}
 .lost-door-words button:hover{background:#efede2}
