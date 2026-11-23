@@ -642,8 +642,10 @@
 .help-ledger.treasury-shelf :is(td, th[scope="row"]) {
   font-feature-settings: "lnum" 1, "tnum" 1;
 }
+/* Only an amount stands right (the statements matched); the shelf's movement is a sentence and reads from the left,
+   next to its date, instead of floating mid-row away from it. */
 @media (min-width: 851px) {
-  .treasury-lines li > :nth-child(2) {
+  .treasury-moves:not(.treasury-lately) .treasury-lines li > :nth-child(2) {
     text-align: right;
   }
 }
