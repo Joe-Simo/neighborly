@@ -513,6 +513,10 @@
 .treasury-statement label {
   font-size: 15px;
 }
+/* Same weight as the date's label beside it. */
+.treasury-statement-label {
+  font-weight: 600;
+}
 /* From 600px up a button is a button: its own width, at the row's right. */
 @media (min-width: 600px) and (max-width: 850px) {
   .treasury-waiting:not(.treasury-uncleared) .help-row {

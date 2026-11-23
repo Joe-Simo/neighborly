@@ -204,7 +204,7 @@ function BankView({
               />
             </LiveField>
             <label>
-              {w.statement.balance}
+              <span className="treasury-statement-label">{w.statement.balance}</span>
               <Input
                 name="statement"
                 inputMode="decimal"
