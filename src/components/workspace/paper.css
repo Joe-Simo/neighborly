@@ -1361,11 +1361,11 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   }
 }
 /* The head's cut edge: one rule and one contact shade, the slip's, from the relief scale. */
-.live-app .live-page-head { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 2px 5px -3px rgb(40 60 50 / 0.3); }
+.live-app .live-page-head { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 3px 3px -3px rgb(40 60 50 / 0.34); }
 /* From 1728px a room with no second column ends its rule at the room's measure, so its light and shade end there too. */
 @media (min-width: 1728px) {
   .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head { box-shadow: none; }
-  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head::after { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 2px 5px -3px rgb(40 60 50 / 0.3); }
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head::after { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 3px 3px -3px rgb(40 60 50 / 0.34); }
 }
 @media (forced-colors: active) {
   .live-app .live-page-head { box-shadow: none; }
