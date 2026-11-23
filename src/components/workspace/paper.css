@@ -881,6 +881,9 @@
 /* The sentence for a missing day sits under the pair, never between the day and its time. */
 .live-when > .live-date-missing { grid-column: 1 / -1; order: 1; }
 .live-app .live-time select, .live-dialog .live-time select { height: 46px; border: 1px solid #c9cfbd; border-radius: 6px; background: #fbfaf5; color: #283c32; font-size: 16px; padding-left: 12px; }
+/* Its words end clear of the chevron, and "Choose a time" is as quiet as "Choose a day" beside it. */
+.live-app .live-time select, .live-dialog .live-time select { padding-right: 38px; }
+.live-app .live-time select:has(> option[value=""]:checked), .live-dialog .live-time select:has(> option[value=""]:checked) { color: #66705f; }
 @media (hover: hover) { .live-time select:hover { border-color: #365c46; } }
 /* Two moments never share a row: each keeps room to say its day in words. */
 :is(.live-app, .live-dialog) .live-form-grid:has(> .live-field > .live-when) { grid-template-columns: minmax(0, 1fr); }
