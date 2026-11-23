@@ -399,6 +399,8 @@
   font-size: 17px;
   color: var(--live-muted);
 }
+/* A label that wraps hangs under its own words, not under the swatch and the count. */
+.report-legend li { padding-left: 20px; text-indent: -20px; }
 .report-legend li::before {
   content: "";
   display: inline-block;
@@ -831,6 +833,7 @@
      the sheet's figures, and without teams it would otherwise print alone on a page of its own. */
   .report .help-bars, .report .report-time, .report .report-lines:not([data-open]),
   .report .report-outcomes, .report .report-legend li::before { display: none !important; }
+  .report .report-legend li { padding-left: 0; text-indent: 0; }
   .report .report-lines[data-open] { break-before: page; margin-top: 0; }
   .report .report-lines > .live-section-head { border-top: 1.5pt solid #000; padding-top: 6pt; }
 
