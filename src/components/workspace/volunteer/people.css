@@ -176,6 +176,9 @@
 /* Adding someone: a face, a name, one button a finger can find. */
 .team-candidates .live-row { min-height: 80px; padding-block: var(--space-16); }
 .team-candidates h3 { font-size: 19px; }
+/* A long team or member name wraps inside the sheet instead of widening it past its edge. */
+.team-add-sheet > *, .team-candidates .live-person { min-width: 0; }
+.team-add-sheet :is(h2, p, h3) { overflow-wrap: anywhere; }
 .team-candidates p { margin: 2px 0 0; font-size: 16px; }
 .team-roster { margin-top: var(--space-16); }
 .team-roster .live-row { min-height: 80px; padding-block: var(--space-12); }
