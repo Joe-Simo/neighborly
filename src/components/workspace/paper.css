@@ -1096,22 +1096,22 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 /* ── Visits and commitments mark their state as the neighbor record does ──────────────────
    Settled is the small circled green tick every done moment uses, waiting the small ochre ring with its words in ink, and what will not happen
    stays a quiet grey word. One mark for each meaning, the same in every room. */
-.live-app :is(.visits-room, .live-commitment-row) .live-status { gap: var(--space-8) 8px; color: var(--live-ink); }
-.live-app :is(.visits-room, .live-commitment-row) .live-status:not([data-state])::before,
+.live-app :is(.visits-room, .visits-mine, .live-commitment-row) .live-status { gap: var(--space-8) 8px; color: var(--live-ink); }
+.live-app :is(.visits-room, .visits-mine, .live-commitment-row) .live-status:not([data-state])::before,
 .live-app .live-status.help-returned::before,
-.live-app :is(.visits-room, .live-commitment-row) .live-status[data-state="accepted"]::before {
+.live-app :is(.visits-room, .visits-mine, .live-commitment-row) .live-status[data-state="accepted"]::before {
   width: 16px; height: 16px; border-radius: 0; background: var(--paper-green);
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m8.5 12 2.5 2.5 4.5-5'/%3E%3C/svg%3E") center / contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m8.5 12 2.5 2.5 4.5-5'/%3E%3C/svg%3E") center / contain no-repeat;
 }
-.live-app :is(.visits-room, .live-commitment-row) .live-status:is([data-state="waiting"], [data-state="pending"], [data-state="open"])::before {
+.live-app :is(.visits-room, .visits-mine, .live-commitment-row) .live-status:is([data-state="waiting"], [data-state="pending"], [data-state="open"])::before {
   width: 9px; height: 9px; background: none; box-shadow: inset 0 0 0 2px #a8791f;
 }
-.live-app :is(.visits-room, .live-commitment-row) .live-status:is([data-state="declined"], [data-state="released"]) { color: var(--live-muted); }
+.live-app :is(.visits-room, .visits-mine, .live-commitment-row) .live-status:is([data-state="declined"], [data-state="released"]) { color: var(--live-muted); }
 /* A returned call is done: the same green tick as a visit the pair said yes to, in ink. */
 .live-app .live-status.help-returned { gap: var(--space-8) 8px; color: var(--live-ink); }
 @media (max-width: 429px) {
-  .live-app :is(.visits-room, .live-commitment-row) .live-status:is(:not([data-state]), [data-state="accepted"])::before { width: 12px; height: 12px; }
+  .live-app :is(.visits-room, .visits-mine, .live-commitment-row) .live-status:is(:not([data-state]), [data-state="accepted"])::before { width: 12px; height: 12px; }
 }
 
 /* A commitment row opens as the neighbor record's rows do: anywhere on it opens its details, through its one button. */
@@ -1679,7 +1679,7 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
   /* Every tick rule is more specific than this one, so the text colour is set as the one important here. */
   .live-app .live-status:not(:is([data-state="waiting"], [data-state="pending"], [data-state="open"]))::before { forced-color-adjust: none; background: CanvasText !important; }
   nav.week-figures a > small::before,
-  .live-app :is(.visits-room, .live-commitment-row) .live-status:is([data-state="waiting"], [data-state="pending"], [data-state="open"])::before,
+  .live-app :is(.visits-room, .visits-mine, .live-commitment-row) .live-status:is([data-state="waiting"], [data-state="pending"], [data-state="open"])::before,
   .live-app .help-sheet-label[data-waiting]::before { forced-color-adjust: none; box-shadow: none; background: none; border: 2px solid CanvasText; border-radius: 50%; box-sizing: border-box; }
 }
 /* On the widest screens the room's chrome (bar, rail, side sheet, kickers, buttons) goes up one step on its own scale, 13 to 14, 15 to 16, 16 to 17,
