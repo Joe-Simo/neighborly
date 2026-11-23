@@ -14,7 +14,8 @@
 .home-year dd{position:relative;width:fit-content}
 /* The tab hugs its figure: 4px each side, as the slips above stand out from it, and 2px above and below the type. */
 .home-year dd{--tab-x:4px;--tab-y:2px}
-.home-year-tab{position:relative;z-index:1;display:inline-block;margin:calc(-1 * var(--tab-y)) calc(-1 * var(--tab-x) - .045em) calc(-1 * var(--tab-y)) calc(-1 * var(--tab-x));padding:var(--tab-y) calc(var(--tab-x) + .045em) var(--tab-y) var(--tab-x);background:#eee7d7;transform-origin:50% 100%}
+/* Above the type the tab clears the dollar sign's stem, which stands taller than the figures, so its lit top edge never crosses a glyph. */
+.home-year-tab{position:relative;z-index:1;display:inline-block;margin:calc(-1 * var(--tab-y) - .1em) calc(-1 * var(--tab-x) - .045em) calc(-1 * var(--tab-y)) calc(-1 * var(--tab-x));padding:calc(var(--tab-y) + .1em) calc(var(--tab-x) + .045em) var(--tab-y) var(--tab-x);background:#eee7d7;transform-origin:50% 100%}
 /* Lifted, a tab reads as a fold: only its lit top edge and the shade at its hinge, no box drawn round it. */
 .home-year[data-folding=true] .home-year-tab{box-shadow:0 -1px 0 #d3c7ad}
 .home-year[data-folding=true]{perspective:900px}
