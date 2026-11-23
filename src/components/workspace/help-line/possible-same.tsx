@@ -124,7 +124,7 @@ function Merged({ neighborId, w }: { neighborId: Id<"neighbors">; w: Words }) {
         {merges.map((merge) => (
           <div className="help-row" data-plain key={merge.at}>
             <div>
-              <p>{w.mergedBy(sampleSaid(merge.name), merge.who, format(merge.at, { weekday: undefined, year: "numeric" }))}</p>
+              <p>{w.mergedBy(sampleSaid(merge.name), merge.who, format(merge.at, { weekday: undefined, year: "numeric" }).replace(/ /g, "\u00a0"))}</p>
               <p>{w.moving(merge.moved)}</p>
             </div>
           </div>
