@@ -11,7 +11,9 @@
 .web-row .web-choice { display: flex; gap: 8px; align-items: center; min-height: 44px; }
 .web-requests .web-notify { display: flex; gap: 8px; align-items: center; min-height: 44px; margin-top: 12px; }
 .web-requests .web-traces h3 { font-size: 13px; margin: 16px 0 4px; }
-.web-requests .web-traces ul { margin: 0; padding-left: 18px; font-size: 15px; overflow-wrap: anywhere; }
+/* Each pass is a plain line under its heading, flush with it: no marker, so no stray indent. */
+.web-requests .web-traces ul { margin: 0; padding: 0; list-style: none; font-size: 15px; overflow-wrap: anywhere; }
+.web-requests .web-traces li { padding: 2px 0; }
 .service-area-figure { margin: 8px 0 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
 .service-area-figure figcaption { font-size: 15px; }
 .web-requests .web-partners { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--rule, #ddd6c6); }
