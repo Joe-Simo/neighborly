@@ -523,6 +523,8 @@
 
 /* No neighbors yet: the block closes with a rule as wide as the page head's above it, not one cut short at 760px. */
 .live-app .help-empty.help-neighbors-none { max-width: none; }
+/* Its one way in from ServWare or paper wraps to two even lines, never leaving its last words alone. */
+.live-app .help-neighbors-none .help-text-action { text-wrap: balance; }
 /* The figures' labels share one row, so when one label takes two lines ("Visitas domiciliarias" on a tablet or a
    phone) every figure beside it still starts on one line. */
 .live-main:has(.help-record-head) .help-figures > div { display: grid; grid-row: span 2; grid-template-rows: subgrid; }
