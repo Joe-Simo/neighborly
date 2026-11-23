@@ -238,11 +238,12 @@ export function DateField({
       {open && (
         <div ref={grid} id={monthId} role="group" aria-label={label || words.dateField.choose} className="live-date-sheet live-date-inline"
 >
-          {/* The field above already names the day; the bar holds only the way to put the month away. */}
+          {month}
+          {/* The field above already names the day; the bar under the month holds only the way to put it away,
+              so the month's own title leads it, with no empty band above. */}
           <div className="live-date-bar">
             <button type="button" className="live-date-done" onClick={close}>{words.dateField.done}</button>
           </div>
-          {month}
         </div>
       )}
     </>
