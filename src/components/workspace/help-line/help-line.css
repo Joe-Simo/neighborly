@@ -80,6 +80,12 @@
 /* An adult's work sits under the line on its own, with its labels always shown. */
 .help-line-row .help-work { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-8) 12px; align-items: end; }
 .help-lines[data-shape] .help-line-row .help-work .live-field > span { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
+/* On a phone the work and the workplace each take the line, so "Trabaja tiempo completo" is read whole and never
+   runs under the select's chevron; the select keeps its right padding clear of the chevron. */
+@media (max-width: 560px) {
+  .help-line-row .help-work { grid-template-columns: minmax(0, 1fr); }
+  .help-lines[data-shape="three"] .live-field select { padding-inline-end: 32px; }
+}
 .help-line-row > [data-slot="button"] { position: absolute; right: 0; bottom: 17px; width: 44px; height: 44px; min-height: 44px; padding: 0; color: var(--live-muted); }
 @media (max-width: 700px) {
   /* An account on a phone: each field takes the full width, and the way to remove it sits on the account's first line. */
