@@ -1197,10 +1197,10 @@ nav:is(.week-figures, .glance-tiles) a:focus-visible { box-shadow: 0 0 0 1px var
 @media (prefers-reduced-motion: reduce) { [data-slot="button"] { transition: none; } }
 /* A Help line or commitment row that opens something lifts from flat to a slip, painted on the row itself as People
    rows are (people.css): its paper and shadow are drawn in the same pass as its words, under them, with no layer or
-   pseudo-element of its own. A slip on a layer of its own (a fading ::before under an isolated row) was moved by
+   pseudo-element of its own, and no stacking context (isolation), as People rows have none. A slip on a layer of its own (a fading ::before under an isolated row) was moved by
    Safari's scrolling apart from the words it lay under, and a row's slip was seen over the next row's name. */
 .help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens) {
-  position: relative; isolation: isolate; border-radius: 3px;
+  position: relative; border-radius: 3px;
   transition: background-color 120ms var(--paper-ease, var(--ease-paper)), box-shadow 120ms var(--paper-ease, var(--ease-paper));
 }
 @media (hover: hover) {
