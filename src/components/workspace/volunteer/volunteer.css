@@ -258,8 +258,16 @@
 /* My commitments: from 1700px with no side column the head's picture stops at the room's column edge (paper.css), and
    this room's painting (the hand, the plum ground) runs off its right side, so it ended on a hard vertical cut. It
    fades out into the paper on that side too, as Visits and Your files do. */
+/* From 1700px the head's picture stops at the room's column edge (paper.css), the same edge as the month beside the
+   rows. Time off's painting (the hill, the blanket) runs off its right side, so it ended there on a hard vertical
+   cut; it fades out into the paper on that side instead. */
 @media (min-width: 1700px) {
-  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art[data-area="mine"] {
+  .live-app .live-main > .live-page-head .live-head-art[data-area="time-off"] {
+    -webkit-mask-image: linear-gradient(90deg, #000 80%, transparent);
+    mask-image: linear-gradient(90deg, #000 80%, transparent);
+  }
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art[data-area="mine"],
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art[data-area="time-off"] {
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
     mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
   }
