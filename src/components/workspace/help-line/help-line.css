@@ -539,3 +539,5 @@
   .help-returned-body { display: flex; flex-direction: column; }
   .help-returned-body > .help-returned { order: 9; margin-top: var(--space-16); }
 }
+/* Accounts sheet: "Show numbers" runs on from the covered-numbers note, in the note's own size, its tap area kept. */
+.live-dialog .help-form-note-act .help-text-action[data-slot="button"] { min-height: 24px; font-size: inherit; color: var(--live-ink); vertical-align: baseline; }
