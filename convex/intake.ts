@@ -239,7 +239,7 @@ export async function createWebCall(ctx: MutationCtx, request: Doc<"webRequests"
 /** The call row a confirmed web request becomes, without writing it: createWebCall writes it, and the sample lays it the same way. */
 export function webCallDoc(request: Pick<Doc<"webRequests">, "churchId" | "kind" | "kinds" | "need" | "phone" | "email" | "zip" | "language" | "referredBy" | "unverified" | "safe" | "callAt" | "meet" | "checkArea" | "urgent">, now: number, ownerId: Id<"memberships"> | undefined) {
   const kinds = (request.kinds ?? [request.kind]).map((kind) => KIND_NOTE[kind]).join(", ");
-  const contact = [request.phone && `Phone: ${request.phone}`, request.email && `Email: ${request.email}`].filter(Boolean).join(" · ");
+  const contact = [request.phone && `Phone: ${phoneLine(request.phone)}`, request.email && `Email: ${request.email}`].filter(Boolean).join(" · ");
   const flags = [
     request.unverified && "Unverified: not confirmed by a code.",
     request.safe === false && `Do not text, email or leave a message. Call only${request.callAt ? `: ${request.callAt}` : ""}.`,

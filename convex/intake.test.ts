@@ -5,7 +5,7 @@ import schema from "./schema";
 import { signedIn } from "./clerk.testing";
 import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
-import { LIMITS, businessDaysBetween, nextBusinessDay, statusKeyHash } from "./intake";
+import { LIMITS, businessDaysBetween, nextBusinessDay, statusKeyHash, webCallDoc } from "./intake";
 import { firstMatch } from "./geocode";
 import { circlePolygon, covering, covers, distanceMiles, nearestCovering, reachOf, validArea } from "./area";
 import { hasLink, readCode, readSubmission } from "../src/lib/intake-rules";
@@ -532,3 +532,11 @@ describe("a confirmed request from a household on file", () => {
   });
 });
 
+
+describe("the call a web request becomes", () => {
+  test("names its phone as the app shows a phone", () => {
+    const doc = webCallDoc({ churchId: "c" as Id<"churches">, kind: "rent", need: "Rent", phone: "1015550131", email: "a@example.org", zip: "48201", language: "en" } as Parameters<typeof webCallDoc>[0], Date.now(), undefined);
+    expect(doc.note).toContain("Phone: (101) 555-0131 · Email: a@example.org");
+    expect(doc.note).not.toContain("1015550131");
+  });
+});
