@@ -128,6 +128,8 @@
 /* Wide pairs (WO, MW) stay whole: the next face overlaps only the circle's empty edge. */
 .team-faces .live-avatar + .live-avatar { margin-left: -5px; }
 .team-faces .live-meta { margin: 0 0 0 12px; white-space: nowrap; }
+/* A team whose members are not among the people loaded shows no faces: its count starts the line, not 12px in. */
+.team-faces .live-meta:first-child { margin-left: 0; }
 .live-app .team-card .live-team-line { gap: var(--space-8) 20px; min-height: 44px; }
 /* Teams side by side share their rows: name, description, a word on joining, members. Whichever card's name or note
    runs longer, the members' line of every card in that row stands at one height, with no room held for a line not written. */
