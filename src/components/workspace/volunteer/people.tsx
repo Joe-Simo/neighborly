@@ -88,6 +88,9 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
   );
 }
 
+// A name is never split: its hyphens are the kind no line breaks at, so a title wraps between words instead.
+const wholeName = (name: string) => name.replace(/-/g, "\u2011");
+
 export function PeopleSection() {
   const { data, pending, isOwner, confirm: setConfirmation, words, sampleSaid, now, openAction } = useWorkspace();
   const roles: Record<string, string> = words.people.roles;
@@ -169,8 +172,8 @@ export function PeopleSection() {
                     setManagingId(null);
                     setConfirmation({
                       title: managing.approved
-                        ? text.manage.markNotReadyTitle(managing.name)
-                        : text.manage.markReadyTitle(managing.name),
+                        ? text.manage.markNotReadyTitle(wholeName(managing.name))
+                        : text.manage.markReadyTitle(wholeName(managing.name)),
                       body: managing.approved
                         ? text.manage.markNotReadyBody
                         : text.manage.markReadyBody,
