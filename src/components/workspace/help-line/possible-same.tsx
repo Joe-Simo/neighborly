@@ -217,8 +217,9 @@ function MergeForm({ neighborId, other, w, onMerged }: { neighborId: Id<"neighbo
         <div>
           <dt>{w.moves}</dt>
           <dd>
-            <strong>{moving ? w.moving(moving) : w.counting}</strong>
-            {` ${w.movesDetail}`}
+            {/* The counts stand on their own line: run into the sentence after them, they read as one unpunctuated line. */}
+            <strong className="block">{moving ? w.moving(moving) : w.counting}</strong>
+            {w.movesDetail}
           </dd>
         </div>
         <div>
