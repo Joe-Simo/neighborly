@@ -32,6 +32,7 @@ export function CommitmentRows({
   empty,
   fresh,
   weeks,
+  own,
 }: {
   items: LiveWorkspaceData["commitments"];
   empty?: { title: string; detail: string; go?: LiveArea };
@@ -39,6 +40,8 @@ export function CommitmentRows({
   fresh?: string;
   /** Words said before a row: where its week begins, in a long list. */
   weeks?: Partial<Record<string, string>>;
+  /** Every row is the reader's own (My commitments): their own name is not said on each row. */
+  own?: boolean;
 }) {
   const { data, format, when, personName, teamName, showCommitment, words, sampleSaid, keepNames } =
     useWorkspace();
@@ -71,10 +74,8 @@ export function CommitmentRows({
                 <span className="live-commitment-time">{when(item.start, item.end)}</span>
               </div>
               <h3>{keepNames(sampleSaid(item.title))}</h3>
-              <p>
-                {/* Named only when this reader may see the person; never a bare role in their place. */}
-                {[item.assigneeId ? (data.people.some((person) => person.id === item.assigneeId) ? personName(item.assigneeId) : "") : item.status === "cancelled" ? "" : words.commitments.placeOpen, item.location ? sampleSaid(item.location) : ""].filter(Boolean).join(" · ")}
-              </p>
+              {/* Named only when this reader may see the person; never a bare role in their place. A row with nothing to say here keeps no empty line. */}
+              {((line) => line && <p>{line}</p>)([own ? "" : item.assigneeId ? (data.people.some((person) => person.id === item.assigneeId) ? personName(item.assigneeId) : "") : item.status === "cancelled" ? "" : words.commitments.placeOpen, item.location ? sampleSaid(item.location) : ""].filter(Boolean).join(" · "))}
             </div>
             <div className="live-row-actions">
               {/* An open place is said once, in the row's line; the status names anything else. */}
