@@ -432,3 +432,7 @@
 .help-row .help-row-more > .help-person { margin-left: 0; flex-wrap: nowrap; }
 .help-row .help-row-more > .help-person > .help-initials:first-child { padding-left: 0; }
 .help-row .help-row-more > .help-person > .help-initials::before { content: none; }
+
+/* The assistant's mark on "Speaks Spanish" stands at its first line, as it does on the outcome's suggestion, not midway down a wrapped note. */
+.help-row .help-assistant.help-spanish { align-items: flex-start; }
+.help-row .help-assistant.help-spanish > svg { margin-top: 0.3em; }
