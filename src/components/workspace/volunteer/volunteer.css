@@ -198,3 +198,6 @@
 @media (min-width: 700px) and (max-width: 1200px) {
   .live-app .live-main:has(.mine-accepted) .live-page-head .live-deck { text-wrap: wrap; }
 }
+
+/* A canceled commitment's note stands where Edit and Cancel stand on a live one, at the same distances from the team above and the details below. */
+.live-dialog.live-detail-dialog .live-kicker + .live-note { margin-block: 0; }
