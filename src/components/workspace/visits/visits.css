@@ -348,6 +348,7 @@
 .live-dialog .visits-write-up .live-form-grid .live-field input[inputmode="decimal"] { max-width: none; }
 /* On a phone Coming up keeps its tally beside the title, so the tally stays set to the right edge, as on a wide screen. */
 @media (max-width: 700px) {
-  .visits-room .live-section-head > .room-tally { justify-items: end; }
+  .visits-room .live-section-head > .room-tally { justify-items: end; margin-left: auto; }
+  /* A long title (Spanish) pushes the tally onto its own line: it keeps to the right edge there too, not adrift mid-column. */
   .visits-room .live-section-head > .room-tally .live-count { text-align: right; }
 }
