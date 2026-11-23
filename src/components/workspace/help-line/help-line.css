@@ -427,3 +427,8 @@
 
 /* "Same phone as …" sits among a waiting call's quiet acts at their size: the room's lead note would pull it up over them. */
 .help-row .help-row-more > .help-note { margin: 0; font-size: inherit; line-height: inherit; max-width: none; }
+
+/* The quiet acts are not a dotted list of facts: whoever is calling back keeps their initials whole, with no dot before them. */
+.help-row .help-row-more > .help-person { margin-left: 0; flex-wrap: nowrap; }
+.help-row .help-row-more > .help-person > .help-initials:first-child { padding-left: 0; }
+.help-row .help-row-more > .help-person > .help-initials::before { content: none; }
