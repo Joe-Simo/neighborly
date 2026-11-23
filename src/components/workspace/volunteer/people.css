@@ -139,7 +139,7 @@
 .team-roster .live-row { min-height: 80px; padding-block: var(--space-12); }
 .team-roster h3 { font-size: 19px; }
 /* A line that must wrap on a phone breaks into two even parts, never one word left alone. */
-.team-roster p { margin: 2px 0 0; font-size: 16px; text-wrap: balance; }
+.team-roster p { margin: 2px 0 0; font-size: 16px; }
 .team-roster p[data-waits] { color: var(--live-ink); }
 .team-more { margin-top: var(--space-16); }
 /* The last choice ends a place on the team, so a hairline sets it apart from the two above. */
@@ -167,3 +167,9 @@
 /* With no invitations open, their heading is for screen readers only: the empty note sits straight under the
    people list's closing rule, so it draws no second, shorter rule of its own. */
 .live-app h2.sr-only + .live-empty { border-top: 0; padding-top: var(--space-8); }
+
+/* An expired invitation's two acts stand as one stack of equal width in their column, never wider than it. */
+@media (min-width: 701px) {
+  .live-app .people-invitations .live-row-actions:has(> :nth-child(2)) { flex-direction: column; align-items: stretch; gap: var(--space-8); }
+  .live-app .people-invitations .live-row-actions:has(> :nth-child(2)) [data-slot="button"] { padding-inline: 12px; }
+}
