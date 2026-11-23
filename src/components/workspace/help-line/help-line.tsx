@@ -62,6 +62,19 @@ import {
 } from "@/components/workspace/help-line/room";
 import { helpLineWords } from "@/lib/words/rooms/help-line";
 
+/** A caller known only by an email address may break before its "@", never inside the domain ("kindhelps.\nexample"). */
+function breakAtSign(name: string) {
+  const at = name.indexOf("@");
+  if (at <= 0 || /\s/.test(name) || name.length - at > 24) return name;
+  return (
+    <>
+      {name.slice(0, at)}
+      <wbr />
+      <span className="help-name-whole">{name.slice(at)}</span>
+    </>
+  );
+}
+
 type Draft = FunctionReturnType<typeof api.drafts.draftRequest>;
 type Drafted = { call: Call; draft: Draft };
 /** The line that says what changed, and where it leads: a neighbor's record, or a draft of the call just saved. */
@@ -896,10 +909,10 @@ function HelpLineView({
                     {call.neighborId ? (
                       // The whole row opens the record, through its one link, the name.
                       <Link className="help-row-open" href={recordHref(call.neighborId)}>
-                        {caller(call, words)}
+                        {breakAtSign(caller(call, words))}
                       </Link>
                     ) : (
-                      <span className="live-name">{caller(call, words)}</span>
+                      <span className="live-name">{breakAtSign(caller(call, words))}</span>
                     )}
                     {call.phone && (
                       // The number calls: on a phone a tap rings it, and the row's menu offers it first as Call.
