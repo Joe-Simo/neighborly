@@ -74,6 +74,12 @@
     /* A person row holds at most a short wait and the arrow, so those columns give the name and address their width. */
     .live-app .people-row { grid-template-columns: minmax(0, 1fr) 110px 150px 132px; }
     @media (min-width: 900px) { .live-app .people-row:not(.people-invited) { grid-template-columns: minmax(0, 1fr) 110px 120px 24px; } }
+    /* Just under a desk's width the name has room to spare, so the wait column holds "Not yet ready to serve" /
+       "Esperando a que se una" on one line. Narrower (an iPad held upright) the address keeps that room. */
+    @container people-list (min-width: 820px) {
+      .live-app .people-row:not(.people-invited) { grid-template-columns: minmax(0, 1fr) 110px 196px 24px; }
+      .live-app .people-invited { grid-template-columns: minmax(0, 1fr) 110px 196px 150px; }
+    }
     /* An address is longer than a name, so the invited role sits under it and the address takes both columns. */
     .people-invited .live-person { grid-column: span 2; }
     .people-invited .people-role { display: block; font: 400 15px/1.4 "Source Sans 3", "Source Sans 3 Fallback", sans-serif; letter-spacing: 0; color: var(--live-muted); }
