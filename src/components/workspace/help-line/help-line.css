@@ -550,3 +550,13 @@
 @media (min-width: 851px) and (pointer: fine) {
   .live-app .help-row[data-call] h3:has(> a.help-phone) { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.4em; row-gap: var(--space-4, 4px); }
 }
+
+/* From 1700px with no side column (no calls yet) the head's picture stops at the room's column edge (paper.css), and
+   this painting runs off its right side (the sleeve, the purple ground), so it ended on a hard vertical cut. It fades
+   out into the paper on that side too, as it already does on the left where the words end. */
+@media (min-width: 1700px) {
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art[data-area="help-line"] {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
+  }
+}
