@@ -53,6 +53,9 @@
 
 /* The public foot under the page, one per language, the reader's shown. */
 .lost-door-foot{padding:0 max(20px,4%,calc(env(safe-area-inset-right) + 6px)) 0 max(20px,4%,calc(env(safe-area-inset-left) + 6px))}
+/* The foot's paper meets the bare paper above on a hand-cut edge, as on every public page, never a ruled line. */
+.lost-door-foot{position:relative}
+.lost-door-foot::before{content:"";position:absolute;left:0;right:0;top:-40px;height:56px;background-color:inherit;pointer-events:none;filter:drop-shadow(0 -1px .5px #3b2a1224);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 60' preserveAspectRatio='none'%3E%3Cpath d='M0 30C180 40 330 18 520 28S820 40 1000 24L1000 60L0 60Z' fill='%23fff'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 60' preserveAspectRatio='none'%3E%3Cpath d='M0 30C180 40 330 18 520 28S820 40 1000 24L1000 60L0 60Z' fill='%23fff'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat}
 @media(max-width:900px){.lost-door-foot.neighborly-continuation{padding-left:max(20px,var(--safe-l));padding-right:max(20px,var(--safe-r));background:#f5f3ec}}
 :root:lang(es) .lost-door-foot[lang="en"],:root:not(:lang(es)) .lost-door-foot[lang="es"]{display:none}
 
