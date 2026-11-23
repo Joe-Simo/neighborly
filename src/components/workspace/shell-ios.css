@@ -436,8 +436,7 @@
    slip a desk shows), with no change of colour; a button keeps still under the pointer and shows the 2px ink ring
    only when reached by keys (paper.css); a room in the side menu takes the chosen room's green at half strength. ── */
 @media (any-hover: hover) and (any-pointer: fine) {
-  :root[data-shell="ios"] :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):hover { background: none; box-shadow: none; }
-  :root[data-shell="ios"] :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):hover::before { opacity: 1; }
+  :root[data-shell="ios"] :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):hover { background-color: var(--relief-paper); box-shadow: var(--relief-slip); }
   :root[data-shell="ios"] .people-row[data-opens]:hover { background-color: var(--relief-paper); box-shadow: var(--relief-slip); }
   :root[data-shell="ios"] .live-app .live-nav a:not([aria-current="page"]):hover { background: var(--live-nav-hover); color: var(--live-muted); }
   :root[data-shell="ios"] :is(.live-app, .live-dialog) [data-slot="button"]:hover { transform: none; translate: none; }

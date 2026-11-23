@@ -1785,7 +1785,7 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
    and a row that opens something shows its slip while it is pressed, as it does under a resting pointer. */
 :is(.live-app, .live-dialog, .live-mobile-menu) :is(a, button, [role="button"], summary, label, select) { touch-action: manipulation; }
 @media (hover: none) {
-  :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):active::before { opacity: 1; transition: none; }
+  :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):active { background-color: var(--relief-paper); box-shadow: var(--relief-slip); transition: none; }
   .people-row[data-opens]:active { background-color: var(--relief-paper); transition: none; }
 }
 
