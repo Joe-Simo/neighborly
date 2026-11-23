@@ -102,7 +102,7 @@ export function es(set: WordSet): Words {
       neighbors: { title: "Vecinos, por su nombre.", deck: "Cada hogar y la ayuda que ha recibido, en privado." },
       treasury: { title: "Cada donativo, bien cuidado.", deck: "Lo que entró, lo que salió y lo que se pagó con ello." },
       reports: { title: "El año, en cifras.", deck: "Las cuentas del informe anual al consejo, listas para imprimir." },
-      visits: { title: "De dos en dos.", deck: "Las visitas domiciliarias, la pareja que va y lo que encontró." },
+      visits: { title: "De dos en dos.", deck: "Las visitas domiciliarias, la\u00a0pareja que va y lo que encontró." },
       tools: { title: "Trae tus registros. Llévatelos.", deck: "De ServWare o una hoja de cálculo, y de vuelta cuando quieras." },
       team: {
         title: "Un lugar en el equipo.",
