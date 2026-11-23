@@ -653,7 +653,8 @@
 .live-team-line .live-meta { margin-right: auto; }
 .live-app .live-team p { margin-bottom: var(--space-16); }
 @media (min-width: 1500px) {
-  .live-main > .live-room:has(> .live-teams) { max-width: var(--room-wide, 1400px); }
+  /* The teams' room is wider than the reading column: set as the room's width, so its head and rule keep to it too. */
+  .live-main:has(> .live-room > .live-teams) { --room-wide: min(100%, 1400px); }
   .live-teams { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 /* People: name, role, approval and the one button each start at the same place on every row. */
@@ -1220,12 +1221,20 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
    right edge, the same edge the body and side column stop at, never the paper past it. */
 @media (min-width: 1700px) {
   .live-app .live-main .live-page-head .live-head-art { right: 0; width: calc(var(--head-wide) * 0.46 - var(--live-pad)); }
-  /* With no side column the room's column is 1040px and stops short of the paper's edge (an empty room, or one with
-     nothing to set beside it): the picture ends on that column's edge too, and takes only what the words' 660px
-     measure leaves beside them, so it never reaches past the rule nor over a word. */
-  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art { right: calc(100% - 1040px); width: calc(1040px - 660px - var(--space-32)); }
-  /* Narrower than the head is tall, the whole picture is shown at that width, standing on the rule. */
-  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art > .relief { inset: auto 0 0 auto; width: 100%; height: auto; }
+  /* With no side column the room ends at its own width (1040px, or the teams' wider room), short of the paper's
+     edge, and the head keeps to it. The words take a little under half of it; the picture takes the rest, ending on
+     the edge the rows below stop at. It stands the head's full height at its true size, as beside a side column, and
+     where it is wider than its place, its left side fades into the paper where the words end instead of covering them. */
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head {
+    --head-words: min(660px, calc(var(--room-wide, 1040px) * 0.46));
+  }
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head :is(.live-head-words, .live-head-actions) { max-width: var(--head-words); }
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art {
+    right: calc(100% - var(--room-wide, 1040px));
+    width: calc(var(--room-wide, 1040px) - var(--head-words));
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%);
+    mask-image: linear-gradient(90deg, transparent, #000 22%);
+  }
 }
 /* From 1280 the rule under the head is the room's column: it runs exactly as far as the rows below it (the same
    measure .live-main gives them, beside the side column where there is one), passing under the picture's foot,
