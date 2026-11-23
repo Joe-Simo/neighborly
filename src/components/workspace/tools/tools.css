@@ -23,6 +23,8 @@
   .tools-address { flex-direction: column; align-items: stretch; }
 }
 .tools-rota { margin-top: var(--space-32); }
+/* In the print sheet the deck sits under the title as every sheet's does, not a paragraph further down. */
+.tools-rota-dialog .live-deck:first-child { margin-top: 0; }
 .tools-rota header p { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: var(--caps-track); color: var(--live-muted); }
 .tools-rota header h3 { margin: var(--space-4) 0 var(--space-16); font: 400 26px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; color: var(--live-ink); }
 .tools-rota td { vertical-align: top; }
