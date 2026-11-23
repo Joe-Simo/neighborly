@@ -187,5 +187,5 @@
 /* An expired invitation's two acts stand as one stack of equal width in their column, never wider than it. */
 @media (min-width: 701px) {
   .live-app .people-invitations .live-row-actions:has(> :nth-child(2)) { flex-direction: column; align-items: stretch; gap: var(--space-8); width: max-content; justify-self: end; }
-  .live-app .people-invitations .live-row-actions [data-slot="button"] { padding-inline: 10px; }
+  .live-app .people-invitations .live-row-actions [data-slot="button"] { padding-inline: 14px; }
 }
