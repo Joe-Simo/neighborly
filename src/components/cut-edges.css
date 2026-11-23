@@ -81,6 +81,8 @@ main.painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fa
   .neighborly-together .neighborly-close-art{z-index:1}
   .neighborly-together :is(.neighborly-close-words,.neighborly-colophon){position:relative;left:auto;top:auto;isolation:isolate}
   .neighborly-together :is(.neighborly-close-words,.neighborly-colophon)::before{content:"";position:absolute;z-index:-1;left:0;right:0;top:-46px;bottom:calc(-1px - clamp(28px,3.4vw,52px));background:#eee7d7}
+  /* The words' paper meets the painted paper above it on a hand-cut edge, never a ruled line. */
+  .neighborly-together .neighborly-close-words::before{-webkit-mask:var(--cut-paper-top) 0 0/100% 56px no-repeat,linear-gradient(#000,#000) 0 55px/100% calc(100% - 55px) no-repeat;mask:var(--cut-paper-top) 0 0/100% 56px no-repeat,linear-gradient(#000,#000) 0 55px/100% calc(100% - 55px) no-repeat}
   /* It reaches up under the picture's cut edge, so no strip of the lighter painted paper shows between the picture's foot and the band. */
   .neighborly-together .neighborly-colophon::before{left:calc(-1 * max(20px,4vw));right:calc(-1 * max(20px,4vw));top:calc(-46px - clamp(28px,3.4vw,52px));bottom:0}
 }
