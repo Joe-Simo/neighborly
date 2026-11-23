@@ -502,3 +502,8 @@
 
 /* No neighbors yet: the block closes with a rule as wide as the page head's above it, not one cut short at 760px. */
 .live-app .help-empty.help-neighbors-none { max-width: none; }
+/* On a phone the two smaller figures stand side by side: their labels share one row, so when one label takes two
+   lines ("Visitas domiciliarias") both figures still start on one line. */
+@media (max-width: 850px) {
+  .live-main:has(.help-record-head) .help-figures > div:not(:first-child) { display: grid; grid-row: span 2; grid-template-rows: subgrid; }
+}
