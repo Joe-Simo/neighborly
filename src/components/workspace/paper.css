@@ -1160,9 +1160,8 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
     .live-app .live-list > .live-commitment-row { grid-template-columns: subgrid; align-items: center; }
     .live-app .live-list > .live-commitment-row .live-row-actions { display: contents; }
     .live-app .live-list > .live-commitment-row .live-date-leaf { grid-row: auto; }
-    .live-app .live-list > .live-commitment-row .live-row-opens { justify-self: stretch; justify-content: space-between; }
-    /* A row with no state still puts its press in the presses' column, not under the others' states. */
-    .live-app .live-list > .live-commitment-row .live-row-actions > :last-child { grid-column: -2; margin-left: 0; }
+    /* The press keeps the presses' column in every row, so a row with no state never puts it under the others' states. */
+    .live-app .live-list > .live-commitment-row .live-row-opens { grid-column: -2; margin-left: 0; justify-self: stretch; justify-content: space-between; }
     /* Between the two, the team and the time each take a line in every row, so no one row breaks alone. */
     .live-app .live-list > .live-commitment-row .live-meta { display: grid; gap: 0; }
   }
