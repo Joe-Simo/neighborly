@@ -195,7 +195,8 @@ export function NeighborRecord({
       text.deck.since(format(record.since, { day: undefined, month: "long", year: "numeric" })),
     ]
       .filter(Boolean)
-      .join(" · ");
+      // The dot holds to the words before it, so a wrapped line never opens on one.
+      .join("\u00a0· ");
   // One request laid out to print, in place of the record; the way back returns to the record.
   const [printing, setPrinting] = useState<HelpRequest["id"] | null>(null);
   // The record's page head is the neighbor's name, with no painting: private and plain.
