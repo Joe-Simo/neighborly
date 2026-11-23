@@ -192,3 +192,7 @@
 @media (max-width: 560px) {
   .live-app .mine-accepted .live-commitment-row { grid-template-columns: 66px minmax(0, 1fr); column-gap: 16px; }
 }
+/* Where the deck keeps to 24ch, an even break put "yes" and "to," on two lines; this deck breaks greedily, and "and\u00a0how" (en) holds its second line together after the comma. */
+@media (min-width: 700px) and (max-width: 1200px) {
+  .live-app .live-main:has(.mine-accepted) .live-page-head .live-deck { text-wrap: wrap; }
+}

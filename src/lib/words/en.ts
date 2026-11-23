@@ -132,7 +132,7 @@ export function en(set: WordSet) {
       },
       mine: {
         title: "Your part in it.",
-        deck: "What you’ve said yes to, and how to prepare.",
+        deck: "What you’ve said yes to, and\u00a0how to prepare.",
       },
       "time-off": {
         title: "Room for life.",
