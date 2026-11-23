@@ -1259,6 +1259,11 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
    week) on a wide screen instead of stopping at the empty note's own measure. Its words keep their measure. */
 .live-app .week-columns > .live-section > .live-empty { max-width: none; }
 .live-app .week-columns > .live-section > .live-empty > :last-child { max-width: 568px; }
+/* What the conference has said stands in a narrow column (beside Coming up, or the side column on the largest
+   screens): an announcement's button goes under its words there, so the words keep the column's width instead of
+   wrapping every few words beside the button. */
+:is(.week-columns, .live-aside) .live-row:has(> .live-announcement) { flex-direction: column; align-items: flex-start; gap: var(--space-12); }
+:is(.week-columns, .live-aside) .live-row:has(> .live-announcement) > .live-row-actions { margin: 0; }
 /* The stitch only lies on the rule when the head's gap is the one the band lifts by: the shell gives the head 32 or
    40px at different sizes, so This week's head is given the band's own gap, and the two can never come apart. */
 .live-app .live-main:has(.week-quilt) { --head-gap: 36px; }
