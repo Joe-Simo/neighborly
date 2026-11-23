@@ -138,7 +138,7 @@ export function Glance({ quiet = false }: { quiet?: boolean }) {
   const next = week[0];
   const when = next ? formatDate(locale, next.start, { timeZone: data.church.timeZone, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
   const mine: Tile[] = [
-    { href: "/app/mine", label: w.visits, figure: `${week.length}`, line: [w.visitsLine(when), w.asks(own.visitAsks)].filter(Boolean).join(" · "), waits: own.visitAsks > 0 },
+    { href: "/app/mine", label: w.visits, figure: `${week.length}`, line: [w.visitsLine(when), w.asks(own.visitAsks)].filter(Boolean).join("\u00a0· "), waits: own.visitAsks > 0 },
     { href: "/app/tasks", label: w.tasks, figure: `${own.tasks}`, line: w.tasksLine(own.tasksLate), waits: own.tasksLate > 0 },
   ];
   // A leader with nothing of their own this fortnight sees the conference alone.
