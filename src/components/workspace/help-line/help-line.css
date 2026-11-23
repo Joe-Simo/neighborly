@@ -541,3 +541,7 @@
 }
 /* Accounts sheet: "Show numbers" runs on from the covered-numbers note, in the note's own size, its tap area kept. */
 .live-dialog .help-form-note-act .help-text-action[data-slot="button"] { min-height: 24px; font-size: inherit; color: var(--live-ink); vertical-align: baseline; }
+/* On a desk a long name (or a wider Spanish button beside it) can push the number to a second line: it keeps a little air under the name. */
+@media (min-width: 851px) and (pointer: fine) {
+  .live-app .help-row[data-call] h3:has(> a.help-phone) { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.4em; row-gap: var(--space-4, 4px); }
+}
