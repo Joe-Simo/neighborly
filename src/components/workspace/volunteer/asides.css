@@ -12,14 +12,18 @@
    16px above it, a double rule. */
 .live-aside-sheet table.volunteer-month:has(+ .volunteer-key) tbody tr:last-child td { border-bottom: 0; }
 .live-aside-sheet .volunteer-teams-week thead th[data-today] { font-weight: 600; color: var(--live-ink); }
-.live-aside-sheet .volunteer-month td { height: 36px; padding: 0; text-align: center; font-size: 15px; color: var(--live-ink); }
+/* A week is 40px, so a day's 30px disc (away, today) keeps 5px clear of the hairlines above and below it: at 36px
+   the discs sat a hair off the rules and read as touching them. */
+.live-aside-sheet .volunteer-month td { height: 40px; padding: 0; text-align: center; font-size: 15px; color: var(--live-ink); }
 .live-aside-sheet .volunteer-month tbody tr:first-child td { padding-top: var(--space-8); }
 .live-aside-sheet .volunteer-month td > span:first-child { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; border: 1px solid transparent; }
 .live-aside-sheet .volunteer-month td[data-mark="away"] > span:first-child { background: var(--live-ink); color: var(--live-paper, #f7f4ed); }
 /* Days offered read as one quiet band from first day to last, never a mark on every day. */
 .live-aside-sheet .volunteer-month td[data-mark="offered"] { position: relative; }
 .live-aside-sheet .volunteer-month td[data-mark="offered"] > span:first-child { position: relative; }
-.live-aside-sheet .volunteer-month td[data-mark="offered"]::before { content: ""; position: absolute; left: 0; right: 0; bottom: 3px; height: 30px; background: #e9eddf; }
+.live-aside-sheet .volunteer-month td[data-mark="offered"]::before { content: ""; position: absolute; left: 0; right: 0; top: calc(50% - 15px); height: 30px; background: #e9eddf; }
+/* The first week's 8px top padding moves its days down 4px from the cell's middle; the band follows them. */
+.live-aside-sheet .volunteer-month tbody tr:first-child td[data-mark="offered"]::before { top: calc(50% - 11px); }
 .live-aside-sheet .volunteer-month td[data-run~="first"]::before { left: calc(50% - 15px); border-radius: 15px 0 0 15px; }
 .live-aside-sheet .volunteer-month td[data-run~="last"]::before { right: calc(50% - 15px); border-top-right-radius: 15px; border-bottom-right-radius: 15px; }
 .live-aside-sheet .volunteer-month td[data-today] > span:first-child { font-weight: 700; border-color: var(--live-ink); }
@@ -53,7 +57,8 @@
   /* A day's ring is transparent until it is today; high contrast would draw it round every day. */
   .live-aside-sheet .volunteer-month td:not([data-today]) > span:first-child { border-style: none; }
   .live-aside-sheet .volunteer-month td[data-mark="away"] > span:first-child { forced-color-adjust: none; background: CanvasText; color: Canvas; }
-  .live-aside-sheet .volunteer-month td[data-mark="offered"]::before { top: auto; height: 0; border-bottom: 3px solid CanvasText; background: none; }
+  .live-aside-sheet .volunteer-month td[data-mark="offered"]::before { top: auto; bottom: 3px; height: 0; border-bottom: 3px solid CanvasText; background: none; }
+  .live-aside-sheet .volunteer-month tbody tr:first-child td[data-mark="offered"]::before { top: auto; }
   .live-aside-sheet i[data-mark] { forced-color-adjust: none; }
   .live-aside-sheet i[data-mark="away"], .live-aside-sheet i[data-mark="covered"] { background: CanvasText; }
   .live-aside-sheet i[data-mark="offered"] { height: 3px; border-radius: 0; background: CanvasText; box-shadow: none; }
