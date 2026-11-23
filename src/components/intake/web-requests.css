@@ -70,3 +70,5 @@
 /* When the notify line wraps (a tablet in Spanish), its box sits by the first line, not between the two. */
 .web-requests .web-notify { align-items: flex-start; padding-block: 10px; }
 .web-requests .web-notify > input { flex: none; margin: calc((1lh - 13px) / 2) 0 0; }
+/* The add-a-partner form closes the list with a hairline and a breath, so its first label is not crowded against the last partner. */
+.web-requests .web-partners > .live-form { margin-top: 0; padding-top: var(--space-16, 16px); border-top: 1px solid var(--live-line, #ddd6c6); }
