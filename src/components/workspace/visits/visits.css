@@ -331,3 +331,8 @@
   .live-app .visits-mine-day { display: flex; flex-direction: column; align-items: center; }
   .live-app .visits-mine-day > span:first-child::after { content: none; }
 }
+/* On a phone the heading takes its own line and the count sits under it whole, as on the help line, instead of both wrapping side by side. */
+@media (max-width: 560px) {
+  .live-app .visits-mine > .live-section-head { flex-wrap: wrap; gap: var(--space-8) 16px; }
+  .live-app .visits-mine > .live-section-head h2 { flex-basis: 100%; margin-bottom: 0; }
+}
