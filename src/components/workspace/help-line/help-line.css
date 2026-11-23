@@ -268,6 +268,8 @@
 @media (max-width: 700px) {
   .help-row-arrow { display: none; }
   .help-neighbor .live-row-actions:not(:has(.live-status)) { display: none; }
+  /* What a household waits on wraps as one short list: a request and its visit sit a line apart, not a paragraph. */
+  .live-app .help-neighbor .live-row-actions { row-gap: var(--space-4); }
 }
 /* The side column: who is on the line today and who is calling back. Names in ink, the rest quiet, hairlines between. */
 .help-aside-list { list-style: none; margin: 0; padding: 0; }
