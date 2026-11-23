@@ -37,8 +37,8 @@
   .relief-words .home-year{gap:22px 12px}
   .home-year dd{font-size:clamp(38px,11.3vw,48px)}
 }
-/* Between a phone and a desk the four figures stand together at the left, as one small table, not at the two edges of the paper. */
-@media(min-width:600px) and (max-width:820px){.relief-words .home-year{justify-content:start;column-gap:clamp(56px,11vw,96px)}}
+/* Between a phone and a desk the four figures stand in one row across the paper's measure, as one table, not two pairs crowded at the left. */
+@media(min-width:600px) and (max-width:820px){.relief-words .home-year{grid-template-columns:repeat(4,auto);justify-content:space-between;column-gap:24px}}
 @media(min-width:1600px){.home-year dt{font-size:16px}}
 /* The visitor's slip (home-year-slip.tsx): one request on a slip of the pile's own paper, picked up and laid on the visits pile.
    Once laid it is part of the top sheet (each sheet is ten; the top one is the part-full one), and the slip is gone. */

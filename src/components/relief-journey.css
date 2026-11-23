@@ -82,8 +82,10 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 .fresco-standing em{font-weight:400}
 .fresco-stage[data-within=true] .fresco-header{visibility:hidden}
 @media(max-width:899px) and (min-height:501px){
-  .fresco-header{top:0;left:0;right:0;height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 20px 0}
+  .fresco-header{top:0;left:0;right:0;height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) max(20px,4%) 0}
   .fresco-brand{font-size:30px}
+  /* Where the opening's header sets its name at 34px (painted-world.css), the chapters' header sets it the same, so the name never shrinks between them. */
+  @media(min-width:701px) and (max-aspect-ratio:9/10){.fresco-brand{font-size:34px}}
   .fresco-invitation{position:static;width:auto;translate:none}
   .fresco-invitation .fresco-kicker{position:absolute;z-index:0;left:max(20px,4%);top:calc(78px + env(safe-area-inset-top));margin:0}
   .fresco-invitation h2{position:absolute;z-index:0;left:max(20px,4%);top:calc(104px + env(safe-area-inset-top));margin:0;font-size:clamp(40px,12vw,64px)}
