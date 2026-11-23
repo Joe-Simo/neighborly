@@ -757,3 +757,9 @@
   .live-app table.help-ledger tfoot tr > [data-total] { flex: 1 0 100%; }
   .live-app table.help-ledger tfoot tr > [data-total] { text-align: right; }
 }
+/* The voucher's name offers the shelf's own names (a datalist). Chrome marks that with a solid black triangle; it
+   takes the same thin chevron, in the same ink, as the Day select beside it. */
+.live-dialog input[list="treasury-voucher-items"]::-webkit-calendar-picker-indicator {
+  width: 16px; height: 16px; margin-right: 2px; opacity: 0.6; color: transparent;
+  background: no-repeat center / 16px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23283c32' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
