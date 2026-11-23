@@ -91,6 +91,8 @@
   .people-role { display: block; font: 400 15px/1.4 "Source Sans 3", "Source Sans 3 Fallback", sans-serif; letter-spacing: 0; color: var(--live-muted); }
   .people-row .live-meta > .people-role-wide, .people-row .live-meta > span:empty { display: none; }
   .people-row .live-meta > span { padding-left: 59px; font-size: 15px; }
+  /* The role is the name's second line, so the address follows it at the same step as the wait under it. */
+  .people-row:not(.people-invited) h3 { margin-bottom: 0; }
   .live-app .people-row { grid-template-columns: minmax(0, 1fr) auto; }
   .people-invited h3 { display: grid; gap: 0; }
   .live-app .people-invited .live-row-actions { grid-column: 1 / -1; grid-row: auto; justify-content: flex-start; padding-left: 59px; margin-top: var(--space-8); }
