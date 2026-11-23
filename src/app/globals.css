@@ -1168,7 +1168,7 @@ summary:focus-visible,
 }
 /* Public prose is set as a page is: opening quotes and closing stops hang in the margin (where the browser can), no line ends on one short word, and every head breaks into even lines.
    Tables and figures keep the fonts' default lining, tabular figures. (Old-style figures need the onum feature, which the served subsets of Newsreader and Source Sans 3 do not carry.) */
-:where(.public-words p, .public-words li, .public-words figcaption, .relief-words p, .neighborly-together p, .neighborly-rooms p, .public-state p) {
+:where(.public-words p, .public-words li, .public-words figcaption, .public-words dd, .relief-words p, .neighborly-together p, .neighborly-rooms p, .public-state p) {
   hanging-punctuation: first allow-end last;
   text-wrap: pretty;
 }

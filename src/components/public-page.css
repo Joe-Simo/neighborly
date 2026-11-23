@@ -244,8 +244,11 @@
 .public-words .public-made-trace li::before{content:none}
 .public-made-trace figure{margin:0;display:grid;gap:var(--space-12)}
 .public-made-trace img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;border:0;border-radius:2px;background:var(--relief-paper);box-shadow:var(--relief-card)}
+/* The room's still is a little wider than 4:3, and its heading stands near its left edge: it is trimmed from the right (the picture's side), never through the words. */
+.public-made-trace img[src$="/room.webp"]{object-position:0 50%}
 .public-made-trace strong{font-weight:600}
-@media (max-width:899px){.public-made-trace ol{grid-template-columns:1fr}}
+/* Under 1024px the column is at most 476px: three captions across it would run two or three words to a line, so they stack. */
+@media (max-width:1023px){.public-made-trace ol{grid-template-columns:1fr}}
 .public-made-colophon{display:grid;gap:var(--space-12);max-width:40em;margin:0 0 var(--space-24);font-size:15px;color:#3d4f43}
 .public-made-colophon>div{display:grid;grid-template-columns:8.5em 1fr;gap:var(--space-16)}
 .public-made-colophon dt{font-weight:600;color:#253e31}
