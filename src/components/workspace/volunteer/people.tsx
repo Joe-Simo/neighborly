@@ -239,7 +239,7 @@ export function PeopleSection() {
         <section className="live-section">
           <h2 className={data.invitations.length ? undefined : "sr-only"}>{text.invitations.title}</h2>
           {/* With none open, the empty state below says what an invitation is: the deck would say it twice. */}
-          {/* Each sentence is its own piece, so on a desk each takes its own line instead of one breaking mid-thought. */}
+          {/* Each sentence is its own piece, so each takes its own line instead of one breaking mid-thought. */}
           {data.invitations.length > 0 && <p className="live-deck people-deck">
             {(text.invitations.deck.match(/[^.]+(?:\.|$)/g) ?? []).map((sentence) => sentence.trim()).map((sentence, index) => <span key={index}>{index > 0 && " "}{sentence}</span>)}
           </p>}
