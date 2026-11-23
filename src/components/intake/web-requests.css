@@ -56,3 +56,5 @@
 .service-area-form [data-slot="toggle-group"] { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
 .service-area-form [data-slot="toggle-group-item"] { min-height: 44px; padding-inline: 16px; font-size: 16px; border: 1px solid #7d8874; border-radius: 4px; background: #fbfaf6; flex: 0 0 auto; }
 .service-area-form [data-slot="toggle-group-item"][data-state="on"] { background: var(--help-sage-wash, #e7ecdf); border-color: #596e51; color: var(--live-ink); box-shadow: inset 0 0 0 1px #596e51; }
+/* The web form's sentences end on more than one word: no "No / genuina los mantiene." on a tablet. */
+.web-requests :is(p, .web-partner > span:first-child) { text-wrap: pretty; }
