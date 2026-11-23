@@ -245,3 +245,7 @@
 
 /* When the facts close the commitment's sheet, they end on the sheet's own padding: no extra margin leaves a hollow under the last line. */
 .live-dialog .live-detail.volunteer-commitment-facts:last-child { margin-bottom: 0; }
+
+/* A commitment's sheet: a long title, team or note wraps inside the sheet instead of widening it past its edge. */
+.live-dialog:has(.volunteer-commitment-facts) > * { min-width: 0; }
+.live-dialog:has(.volunteer-commitment-facts) :is(h2, .live-kicker, p) { overflow-wrap: anywhere; }
