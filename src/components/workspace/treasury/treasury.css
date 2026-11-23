@@ -100,6 +100,9 @@
   text-underline-offset: 5px;
   transition: text-decoration-color 200ms ease;
 }
+/* A button is always laid as one box, and a box's baseline is its last line: an entry whose title wraps would set the
+   row's date and amounts against its second line. As a block (only as wide as its words) it is read by its first. */
+.live-app .help-ledger .help-what [data-slot="button"] { display: block; width: fit-content; max-width: 100%; }
 /* The line reads as words, yet takes a tap or click of full height: padding that reaches past the line without moving it. */
 .live-app .help-what [data-slot="button"] { padding-block: var(--space-8); margin-block: -10px; }
 @media (pointer: coarse) { .live-app .help-what [data-slot="button"] { padding-block: var(--space-16); margin-block: -14px; } }
