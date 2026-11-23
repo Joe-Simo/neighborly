@@ -165,3 +165,30 @@
 .live-dialog .volunteer-review-when { color: var(--live-muted); font-feature-settings: "lnum" 1, "tnum" 1; white-space: nowrap; }
 .live-dialog .live-form.volunteer-review { gap: var(--space-16); }
 .live-dialog .volunteer-review-explain { margin: var(--space-8) 0 0; line-height: 1.5; }
+
+/* My commitments sets its accepted rows on the same columns as the home visits above them, so every stamp and every
+   title in the room starts on one line instead of two. */
+@media (min-width: 721px) {
+  /* The list's columns are the rows' subgrid: the stamp's column and its 22px gap end where a visit's title begins. */
+  .live-app .mine-accepted .live-list:has(> .live-commitment-row) { grid-template-columns: 104px minmax(0, 1fr) auto auto; }
+  .live-app .mine-accepted .live-list > .live-commitment-row:not(#x) { grid-template-columns: 104px minmax(0, 1fr); }
+  .live-app .mine-accepted .live-commitment-row > .live-date-leaf { justify-self: stretch; margin-right: 8px; }
+}
+@container (min-width: 680px) {
+  .live-app .mine-accepted .live-list > .live-commitment-row:not(#x) { grid-template-columns: subgrid; }
+}
+/* Where a visit's stamp stands at the top of its row, so does a commitment's. */
+@media (min-width: 851px) and (max-width: 1279px) {
+  .live-app .mine-accepted .live-commitment-row > .live-date-leaf { align-self: start; }
+}
+@media (min-width: 721px) and (max-width: 850px) {
+  .live-app .mine-accepted .live-list:has(> .live-commitment-row) { grid-template-columns: 62px minmax(0, 1fr) auto auto; }
+  .live-app .mine-accepted .live-list > .live-commitment-row:not(#x) { grid-template-columns: 62px minmax(0, 1fr); }
+  .live-app .mine-accepted .live-commitment-row > .live-date-leaf { margin-right: 0; }
+}
+@media (min-width: 561px) and (max-width: 720px) {
+  .live-app .mine-accepted .live-commitment-row { grid-template-columns: 66px minmax(0, 1fr) auto; column-gap: 18px; }
+}
+@media (max-width: 560px) {
+  .live-app .mine-accepted .live-commitment-row { grid-template-columns: 66px minmax(0, 1fr); column-gap: 16px; }
+}
