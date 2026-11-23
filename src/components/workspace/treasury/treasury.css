@@ -653,6 +653,8 @@
 /* A quiet month's rules run the room's full width, as the ledger's and the budget's below it do; its words keep
    their own measure. */
 .help-empty.treasury-quiet { max-width: none; }
+/* So does the first-day starter: its closing rule meets the budget row's full-width rule under it, not 760px of it. */
+.live-app:has(.treasury-budget) .help-empty[data-first] { max-width: none; }
 
 /* The money still on hand reads as a sentence, never a line of eighty letters on a wide screen. */
 .live-app .treasury-on-hand { max-width: 36em; }
