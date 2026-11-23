@@ -894,6 +894,11 @@
 .live-dialog { font-size: 16px; }
 .live-dialog .live-field small, .live-dialog .live-detail small { font-size: 15px; line-height: 1.45; }
 .live-dialog.live-detail-dialog p { font-size: 15px; line-height: 1.5; }
+/* What to bring and who to ask, under the facts: each label is set like theirs, and what follows stands a step under its words. */
+.live-dialog .live-detail ~ section { margin-top: 0; }
+.live-dialog .live-detail ~ section > p { margin: 0 0 var(--space-16); }
+.live-dialog .live-detail ~ section > h3 { margin: 0 0 var(--space-8); font: 400 13px / 1.4 "Source Sans 3", "Source Sans 3 Fallback", sans-serif; letter-spacing: var(--caps-track); text-transform: uppercase; color: var(--live-muted); }
+.live-dialog .live-detail + section > .live-prep { margin: 0 0 var(--space-16); font-size: 17px; line-height: 1.5; }
 .live-dialog .live-field > [data-slot="native-select-wrapper"] { width: 100%; }
 .live-dialog .live-manage [data-slot="button"] { height: auto; flex-direction: column; align-items: flex-start; gap: 2px; padding: var(--space-12) 16px; white-space: normal; text-align: left; }
 .live-dialog .live-manage [data-slot="button"] small { font-size: 15px; font-weight: 400; color: var(--live-muted); }
@@ -1156,6 +1161,8 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
     .live-app .live-list > .live-commitment-row .live-row-actions { display: contents; }
     .live-app .live-list > .live-commitment-row .live-date-leaf { grid-row: auto; }
     .live-app .live-list > .live-commitment-row .live-row-opens { justify-self: stretch; justify-content: space-between; }
+    /* A row with no state still puts its press in the presses' column, not under the others' states. */
+    .live-app .live-list > .live-commitment-row .live-row-actions > :last-child { grid-column: -2; margin-left: 0; }
     /* Between the two, the team and the time each take a line in every row, so no one row breaks alone. */
     .live-app .live-list > .live-commitment-row .live-meta { display: grid; gap: 0; }
   }
@@ -1177,14 +1184,14 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
    needs and sets its words on its foot, the quiet link's too. From 1728px the second is the room's side column (week.tsx), and what is
    coming up has the measure to itself. */
 @media (min-width: 1100px) {
-  .week-columns:not([data-far]) { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); grid-template-rows: auto auto; align-items: start; column-gap: 56px; }
+  .week-columns:not([data-far-screen]) { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); grid-template-rows: auto auto; align-items: start; column-gap: 56px; }
   /* The two heads share one row, so when either heading turns onto a second line both heads grow together and their
      rules stay level. */
-  .week-columns:not([data-far]) > .live-section { grid-row: span 2; display: grid; grid-template-rows: subgrid; }
-  .week-columns:not([data-far]) > .live-section > .live-section-head { min-height: 44px; align-items: flex-end; margin-bottom: var(--space-16); }
-  .week-columns:not([data-far]) > .live-section > .live-section-head > * { margin-block: 0; }
+  .week-columns:not([data-far-screen]) > .live-section { grid-row: span 2; display: grid; grid-template-rows: subgrid; }
+  .week-columns:not([data-far-screen]) > .live-section > .live-section-head { min-height: 44px; align-items: flex-end; margin-bottom: var(--space-16); }
+  .week-columns:not([data-far-screen]) > .live-section > .live-section-head > * { margin-block: 0; }
   /* The link keeps its 44px reach but sets its words at its foot, on the heading's line, not floating mid-height. */
-  .week-columns:not([data-far]) > .live-section > .live-section-head > [data-slot="button"].tools-quiet { align-items: flex-end; padding-bottom: 1px; }
+  .week-columns:not([data-far-screen]) > .live-section > .live-section-head > [data-slot="button"].tools-quiet { align-items: flex-end; padding-bottom: 1px; }
 }
 
 /* From 1728px a room with no second column of its own ends its head's rule with the room: the rule stops at the
@@ -1361,11 +1368,11 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   }
 }
 /* The head's cut edge: one rule and one contact shade, the slip's, from the relief scale. */
-.live-app .live-page-head { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 2px 5px -3px rgb(40 60 50 / 0.3); }
+.live-app .live-page-head { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 3px 3px -3px rgb(40 60 50 / 0.34); }
 /* From 1728px a room with no second column ends its rule at the room's measure, so its light and shade end there too. */
 @media (min-width: 1728px) {
   .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head { box-shadow: none; }
-  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head::after { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 2px 5px -3px rgb(40 60 50 / 0.3); }
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head::after { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 3px 3px -3px rgb(40 60 50 / 0.34); }
 }
 @media (forced-colors: active) {
   .live-app .live-page-head { box-shadow: none; }
@@ -1491,7 +1498,7 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
   .live-app .help-row { column-gap: 16px; row-gap: var(--space-16); }
   .live-app .help-row h3 { font-size: 24px; }
   .live-app .live-kicker { margin-bottom: var(--space-8); }
-  .live-app .week-columns:not([data-far]) > .live-section > .live-section-head { margin-bottom: var(--space-16); }
+  .live-app .week-columns:not([data-far-screen]) > .live-section > .live-section-head { margin-bottom: var(--space-16); }
 }
 
 /* No word left alone on a line: every room's headings share their lines evenly, and its paragraphs and short

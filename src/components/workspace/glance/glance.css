@@ -1,7 +1,7 @@
 /* The home's glance (glance.tsx): figures on the page's own paper, cut by hairlines like the week's figures, each opening its room. */
 .glance { display: grid; gap: var(--space-32); margin: 0 0 var(--space-40); }
 .glance-held { min-height: 420px; }
-.glance h2 { margin: 0 0 var(--space-8); font-size: 13px; font-weight: 600; letter-spacing: 0.02em; color: var(--live-muted); }
+.glance h2 { margin: 0 0 var(--space-8); font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; font-size: 13px; font-weight: 650; line-height: 1.3; letter-spacing: var(--caps-track); text-transform: uppercase; color: var(--live-muted); }
 .glance-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 2px solid #596e51; }
 .glance-tiles a { position: relative; display: grid; gap: 6px; align-content: start; min-height: 44px; padding: var(--space-16) 12px var(--space-16) 0; border-bottom: 1px solid var(--live-line); color: var(--live-ink); text-decoration: none; }
 .glance-tiles a:nth-child(2n) { padding-left: 12px; border-left: 1px solid var(--live-line); }
