@@ -163,8 +163,8 @@ function Candidates({ found, w, neighborId, onMerged }: { found: Candidate[]; w:
                   {sampleSaid(row.name)}
                 </Link>
               </h3>
-              <p>{[row.address && sampleSaid(row.address), w.people(row.adults, row.children)].filter(Boolean).join(" · ")}</p>
-              <p>{row.sameBy.map((by) => w.by[by]).join(" · ")}</p>
+              <p>{[row.address && sampleSaid(row.address), w.people(row.adults, row.children)].filter(Boolean).join("\u00a0· ")}</p>
+              <p>{row.sameBy.map((by) => w.by[by]).join("\u00a0· ")}</p>
               {row.notesAgree && <p className="help-why">{w.notes}</p>}
             </div>
             <div className="live-row-actions">
