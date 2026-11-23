@@ -125,7 +125,7 @@ export default function UploadedFiles(place: Place) {
       {rows === undefined ? (
         <LiveLoading label={text.loading} />
       ) : rows.length === 0 ? (
-        <EmptyLine line={text.empty} />
+        place.neighborId ? <EmptyLine line={text.empty} /> : <p className="tools-small">{text.empty}</p>
       ) : (
         <ul className="tools-files paper-rows">
           {rows.map((row) => (
