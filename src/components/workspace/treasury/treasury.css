@@ -668,7 +668,15 @@
 /* Beside the balance, the three stand on one line: each note keeps room for two lines, so a note that wraps never
    lifts its slip's figure and label above the other's. */
 @container (min-width: 941px) {
-  .treasury-paper small { min-height: 2.8em; }
+  /* The three share three rows (label, figure, note), so a note of three lines (the month's sources) never lifts its
+     slip's label and figure above the other slip's: every label, figure and note starts on one line. */
+  .treasury-paper { grid-template-rows: auto auto auto; row-gap: 0; }
+  .treasury-balance { grid-row: 1 / -1; align-self: end; }
+  .treasury-paper > div:not(.treasury-balance) { display: grid; grid-template-rows: subgrid; grid-row: span 3; align-self: stretch; }
+  .treasury-paper > div:not(.treasury-balance) > dt { grid-row: 1; align-self: end; }
+  .treasury-paper > div:not(.treasury-balance) > dd { grid-row: 2 / span 2; display: grid; grid-template-rows: subgrid; }
+  .treasury-paper > div:not(.treasury-balance) b { align-self: end; justify-self: start; }
+  .treasury-paper > div:not(.treasury-balance) small { align-self: start; }
 }
 .treasury-balance-stand { display: inline-grid; margin-top: var(--space-8); }
 .treasury-balance-figure {
