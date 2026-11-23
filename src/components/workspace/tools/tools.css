@@ -217,6 +217,8 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 .tools-files li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-8); padding: var(--space-12, 12px) 0; border-bottom: 1px solid var(--live-line, #dcd8cb); }
 .tools-file { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 17px; overflow-wrap: anywhere; }
 .tools-file span { color: var(--live-muted); font-size: 15px; }
+/* A row of the files list is not the import card's file block: no 24px drop above its name, so the name and date sit centred on the row's Remove press and the list starts under the deck like the other cards. */
+.tools-files .tools-file { max-width: none; margin-top: 0; }
 .tools-file-pick { margin-top: var(--space-16); }
 /* The note beside Add a file sits on the button's line, centred with it, not dropped by the paragraph margin it carries elsewhere. */
 .tools-file-pick > .tools-small { margin-top: 0; }
