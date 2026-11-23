@@ -235,3 +235,9 @@
     mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
   }
 }
+
+/* An odd last team runs across both columns on a narrow desk; its members' line keeps one column's measure, so
+   "View members" stays beside the add button instead of standing alone at the far edge. */
+@media (min-width: 901px) and (max-width: 1279px) {
+  .live-app .live-teams > .team-card:last-of-type:nth-of-type(odd) .live-team-line { max-width: calc((100% - 30px) / 2); }
+}
