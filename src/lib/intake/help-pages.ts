@@ -342,7 +342,7 @@ form:has(#safe-yes:checked) .when{display:none}
 .slip.kraft{background:var(--kraft);rotate:-.6deg}
 .slip ol{margin:0;padding-left:20px;display:grid;gap:8px}
 .slip p{margin:6px 0 0}
-p,li,.slip p a{text-wrap:pretty}
+p,li,.slip p a,legend,.label,.help,.problem{text-wrap:pretty}
 .ladder{list-style:none;margin:28px 0 0;padding:0;border-top:1px solid var(--rule)}
 .ladder li{display:grid;padding:14px 0 14px 28px;border-bottom:1px solid var(--rule);position:relative;color:var(--muted)}
 .ladder li::before{content:"";position:absolute;left:2px;top:21px;width:10px;height:10px;border-radius:50%;border:2px solid #9aa391}

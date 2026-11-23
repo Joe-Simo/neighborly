@@ -35,8 +35,9 @@ export function MadeFrames({ said, language }: { said: Said; language: Language 
         <div className="public-made-frames-plot" style={{ "--line": `${((ceiling - lateMs) / ceiling) * 100}%` } as CSSProperties}>
         <svg shapeRendering="crispEdges" viewBox={`0 0 ${span} ${ceiling}`} preserveAspectRatio="none" role="img" aria-label={`${said.widths[width]}. ${summary}`}>
           {/* One path for the frames in time and one for the late ones: the same marks as a rect each, in two elements instead of thousands. */}
-          {([false, true] as const).map((isLate) => <path key={String(isLate)} data-late={isLate || undefined} d={marks(all, isLate)} />)}
+          {/* The line is drawn first, so a frame that touches it (a 33 ms one) stays on top of the dashes and shows. */}
           <line x1={0} x2={span} y1={ceiling - lateMs} y2={ceiling - lateMs} />
+          {([false, true] as const).map((isLate) => <path key={String(isLate)} data-late={isLate || undefined} d={marks(all, isLate)} />)}
         </svg>
         {/* The 33 ms line is labelled once, on the first strip; the second shares its height. */}
         {row === 0 && <span aria-hidden="true">{said.line}</span>}
