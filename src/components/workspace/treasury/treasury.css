@@ -654,6 +654,8 @@
 
 /* The money still on hand reads as a sentence, never a line of eighty letters on a wide screen. */
 .live-app .treasury-on-hand { max-width: 36em; }
+/* Beside the other ways on, it runs at their measure: balanced, its two lines stood half as wide as its neighbours'. */
+.live-app .treasury-foot .treasury-on-hand { text-wrap: pretty; }
 
 /* The balance as cut paper (ledger-view.tsx): the figure in green, standing on three leaves of the passbook; the month's
    money in and out beside it, in ink on the page's own paper. The relief is on the paper only, never on a glyph, and nothing moves. */
