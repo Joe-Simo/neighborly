@@ -28,6 +28,13 @@
 /* In the ledger's table a neighbor's name turns between its words, never inside one: breaking anywhere let the
    table squeeze the For column to a letter's width on a tablet. */
 .live-app .help-ledger td[data-for] .live-name { overflow-wrap: break-word; }
+/* Beside the menu on a tablet (a room of about 700px) six columns do not fit: the For column steps aside, as it does
+   on a phone, and the neighbor is named in the entry's own sheet. The amounts keep their whole width. */
+@media screen and (min-width: 851px) and (max-width: 1100px) {
+  .help-ledger:not(.treasury-shelf) thead th:nth-child(3),
+  .help-ledger:not(.treasury-shelf) tfoot td:nth-child(3),
+  .help-ledger:not(.treasury-shelf) :is(td, th)[data-for] { display: none; }
+}
 .help-ledger tr[data-reversed] .help-what,
 .help-ledger tr[data-reversed] :is(td, th[scope="row"]).help-money:not([data-balance]) {
   color: var(--live-muted);
