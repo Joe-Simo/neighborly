@@ -1220,6 +1220,12 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
    right edge, the same edge the body and side column stop at, never the paper past it. */
 @media (min-width: 1700px) {
   .live-app .live-main .live-page-head .live-head-art { right: 0; width: calc(var(--head-wide) * 0.46 - var(--live-pad)); }
+  /* With no side column the room's column is 1040px and stops short of the paper's edge (an empty room, or one with
+     nothing to set beside it): the picture ends on that column's edge too, and takes only what the words' 660px
+     measure leaves beside them, so it never reaches past the rule nor over a word. */
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art { right: calc(100% - 1040px); width: calc(1040px - 660px - var(--space-32)); }
+  /* Narrower than the head is tall, the whole picture is shown at that width, standing on the rule. */
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art > .relief { inset: auto 0 0 auto; width: 100%; height: auto; }
 }
 /* From 1280 the rule under the head is the room's column: it runs exactly as far as the rows below it (the same
    measure .live-main gives them, beside the side column where there is one), passing under the picture's foot,
