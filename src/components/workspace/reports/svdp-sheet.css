@@ -21,3 +21,9 @@
   .live-dialog.svdp-dialog { max-width: 760px !important; width: 760px; }
   .svdp-form td:last-child { width: 240px; white-space: nowrap; }
 }
+/* On a phone the line's own words get the room: the code and the figure columns narrow, so "Church and poor box
+   collections" no longer stacks a word a line beside a wide column that mostly holds "$0". */
+@media (max-width: 599px) {
+  .svdp-form td:first-child { width: 2.5rem; }
+  .svdp-form td:last-child { width: 7.5rem; }
+}
