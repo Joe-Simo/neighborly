@@ -413,8 +413,9 @@
   padding: var(--space-32) 30px !important;
 }
 .live-dialog h2 {
+  /* Room between lines for a capital's accent (É, Á) on a title that wraps; "normal" in Newsreader is about 1. */
   font:
-    35px "Newsreader",
+    35px/1.2 "Newsreader",
     "Newsreader Fallback",
     Georgia,
     serif;

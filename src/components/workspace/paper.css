@@ -864,7 +864,7 @@
   /* With the keyboard up the home bar is under it, so the sheet's foot drops the home bar's height and the button sits on the keys. */
   [data-live-keyboard] .live-dialog.live-dialog-fixed:not(.tools-rota-dialog) { padding-bottom: var(--live-dialog-pad) !important; }
   [data-live-keyboard] .live-dialog.live-dialog-fixed .live-form-actions { box-shadow: 0 var(--live-dialog-pad) 0 #f5f3ec; }
-  .live-dialog.live-dialog-fixed h2 { font-size: var(--serif-sheet); line-height: 1.12; }
+  .live-dialog.live-dialog-fixed h2 { font-size: var(--serif-sheet); line-height: 1.2; }
   .live-dialog.live-dialog-fixed [data-slot="dialog-header"] { border-radius: 14px 14px 0 0; }
 }
 /* It closes the way it opened: it goes back down the way it rose (live-dialog.tsx keeps a copy that does this when
@@ -926,7 +926,7 @@
 }
 /* The smallest phones with the keyboard up: title and button are both still held, each drawn closer, so the
    box being filled in, its label and the way to save are all in view at once. */
-[data-live-tight] .live-dialog-fixed [data-slot="dialog-title"] { font-size: 22px; line-height: 1.15; }
+[data-live-tight] .live-dialog-fixed [data-slot="dialog-title"] { font-size: 22px; line-height: 1.2; }
 [data-live-tight] .live-dialog-fixed .live-form-actions { padding-top: var(--space-8); box-shadow: 0 8px 0 #f5f3ec; }
 [data-live-tight] .live-dialog.live-dialog-fixed { padding-bottom: var(--space-8) !important; }
 /* With the keyboard up under a dialog (LiveDialog marks it), the page behind steps back to plain paper, so a
