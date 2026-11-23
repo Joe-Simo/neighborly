@@ -1265,7 +1265,15 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
 .week-quilt-day {
   /* Never clipped: a hidden piece would hide a save. Each piece tucks an even 2px under the next, all on one line; a day
      with more than its width holds starts a second row, on the same edge. */
-  --shown: calc(var(--size) - 2px);
+  /* A full day (a Monday with the week's whole tally, say) tucks its pieces closer, so they still lie in one even
+     strip across the day's width (--n, its count, is set by week-quilt.tsx) instead of stacking into a ragged block.
+     Where even 4px each will not hold them (a phone), the day is cut into as few rows as it needs, each row the same
+     count (--each) spread over the whole width, so they stand as an even grid; only the last row may be shorter. */
+  --room: calc(var(--day) - var(--size) - 2px);
+  --fits: max(2, round(down, var(--room) / 4px, 1) + 1);
+  --rows: round(up, var(--n, 1) / var(--fits), 1);
+  --each: round(up, var(--n, 1) / var(--rows), 1);
+  --shown: clamp(4px, var(--room) / max(var(--each) - 1, 1), var(--size) - 2px);
   /* Every piece tucks under the one before it, a row's first too, and the day's own inset gives that first one its
      place back: a second row starts on the day's edge, as the first does, never out past the band and the page. */
   display: flex; flex-wrap: wrap; row-gap: 2px; padding-left: calc(var(--size) - var(--shown));

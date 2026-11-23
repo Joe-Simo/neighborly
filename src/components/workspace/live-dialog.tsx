@@ -181,11 +181,27 @@ export function LiveDialog({
           // No DialogTrigger here, so the way back is ours: to what was focused when the dialog
           // opened, unless the room has already moved focus somewhere of its own (a saved notice).
           event.preventDefault();
-          const from = opener.current;
-          const free = !document.activeElement || document.activeElement === document.body;
-          // The person is where they were when they opened it; coming back must not move the page.
-          if (free && from?.isConnected) from.focus({ preventScroll: true });
+          // The page first, then the way back, so the focus is given on the page as it stood.
           standBack();
+          const from = opener.current;
+          if (!from) return;
+          // Focus has drifted, not been placed, when it is nowhere (<body>), still in the leaving sheet, or on a
+          // region around the opener (WebKit gives it to the room's main region as the sheet's focus trap lets go).
+          // A notice the room focused on saving is none of these, and is left where it is.
+          const sheetNode = event.currentTarget instanceof Node ? event.currentTarget : null;
+          const drifted = () => {
+            const now = document.activeElement;
+            return !now || now === document.body || now === document.documentElement || !!sheetNode?.contains(now) || (now !== from && now.contains(from));
+          };
+          // The person is where they were when they opened it; coming back must not move the page.
+          const back = () => {
+            if (from.isConnected && document.activeElement !== from && drifted()) from.focus({ preventScroll: true });
+          };
+          back();
+          requestAnimationFrame(() => {
+            back();
+            requestAnimationFrame(back);
+          });
         }}
         onOpenAutoFocus={(event) => {
           const now = document.activeElement;

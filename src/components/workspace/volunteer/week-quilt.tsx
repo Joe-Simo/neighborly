@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { useHour, useQuery } from "@/components/workspace/query";
 import { api } from "../../../../convex/_generated/api";
 import { useWorkspace } from "@/components/workspace/context";
@@ -47,7 +47,7 @@ export function WeekQuilt() {
     <figure className="week-quilt">
       <div className="week-quilt-band" aria-hidden="true">
         {[0, 1, 2, 3, 4, 5, 6].map((day) => (
-          <span key={day} className="week-quilt-day">
+          <span key={day} className="week-quilt-day" style={{ "--n": acts.filter((act) => act.day === day).length } as CSSProperties}>
             {acts
               .filter((act) => act.day === day)
               .map((act) => (
