@@ -80,6 +80,7 @@
 /* An adult's work sits under the line on its own, with its labels always shown. */
 .help-line-row .help-work { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-8) 12px; align-items: end; }
 .help-lines[data-shape] .help-line-row .help-work .live-field > span { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
+}
 /* On a phone the work and the workplace each take the line, so "Trabaja tiempo completo" is read whole and never
    runs under the select's chevron; the select keeps its right padding clear of the chevron. */
 @media (max-width: 560px) {
@@ -506,11 +507,9 @@
 
 /* No neighbors yet: the block closes with a rule as wide as the page head's above it, not one cut short at 760px. */
 .live-app .help-empty.help-neighbors-none { max-width: none; }
-/* On a phone the two smaller figures stand side by side: their labels share one row, so when one label takes two
-   lines ("Visitas domiciliarias") both figures still start on one line. */
-@media (max-width: 850px) {
-  .live-main:has(.help-record-head) .help-figures > div:not(:first-child) { display: grid; grid-row: span 2; grid-template-rows: subgrid; }
-}
+/* The figures' labels share one row, so when one label takes two lines ("Visitas domiciliarias" on a tablet or a
+   phone) every figure beside it still starts on one line. */
+.live-main:has(.help-record-head) .help-figures > div { display: grid; grid-row: span 2; grid-template-rows: subgrid; }
 /* "Not the same" stands beside "Merge into this record" at the button's size, so the pair reads as one choice. */
 .live-app .help-row .help-same-actions .help-text-action[data-slot="button"] { font-size: 15px; }
 /* On a phone what was paid stands under the line it pays for, so the line keeps the column and does not wrap a word a line. */
