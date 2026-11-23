@@ -76,6 +76,11 @@
 @media (max-width: 560px) {
   .help-lines[data-shape="three"] .help-line-row { grid-template-columns: 1.2fr 1fr 0.8fr; gap: var(--space-8) 8px; padding-right: 50px; }
   .help-lines[data-shape="three"] .live-field input, .help-lines[data-shape="three"] .live-field select { padding-inline: 8px; }
+  /* Once a birth year is given, the year takes the room "adult or child" leaves, so the line reaches the remove
+     button instead of stopping short of it with an empty gap, and its right edge meets the line's select below. */
+  .help-lines[data-shape="three"] .help-line-row:has(> span:empty) > :nth-child(2) { grid-column: span 2; }
+  .help-lines[data-shape="three"] .help-line-row > span:empty { display: none; }
+  .help-lines[data-shape="three"] .help-line-row .live-field input[inputmode="numeric"] { max-width: none; }
 }
 /* An adult's work sits under the line on its own, with its labels always shown. */
 .help-line-row .help-work { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-8) 12px; align-items: end; }
