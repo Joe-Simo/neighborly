@@ -16,8 +16,12 @@
 .web-requests .web-partners { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--rule, #ddd6c6); }
 .web-requests .web-partners h3 { font-size: 13px; margin: 0 0 4px; }
 .web-requests .web-review { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--rule, #ddd6c6); }
-.web-requests .web-review h3 { font-size: 13px; margin: 0 0 4px; }
-.web-requests .web-review h4 { font-size: 13px; font-weight: 600; margin: 12px 0 2px; }
+/* The review's title is the room's small-caps kicker; each list under it is named one step down (its own words at
+   body weight), with room above it from the text before and a breath before its first hairline. */
+.web-requests .web-review { padding-top: var(--space-16, 16px); }
+.web-requests .web-review h3 { font-family: inherit; font-size: 13px; font-weight: 650; line-height: 1.4; text-transform: uppercase; letter-spacing: var(--caps-track); color: #52644f; margin: 0 0 var(--space-8, 8px); }
+.web-requests .web-review h4 { font-size: 15px; font-weight: 600; line-height: 1.4; margin: var(--space-24, 24px) 0 var(--space-8, 8px); }
+.web-requests .web-review h4 + p.live-muted { margin-top: calc(-1 * var(--space-4, 4px)); }
 /* A partner or a marked request is one line of a list: its words on the left, its buttons together after them
    (on the right on a desk, under the words on a phone), each line set off from the next by a hairline. */
 .web-requests .web-partner { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; min-height: 44px; padding: 10px 0; border-top: 1px solid var(--live-line, #ddd6c6); }
