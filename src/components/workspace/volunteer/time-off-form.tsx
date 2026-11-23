@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import "./volunteer.css";
+import { useEffect, useRef, useState } from "react";
 import { LiveFailure, SaveLabel } from "@/components/workspace/states";
 import { useMutation } from "convex/react";
 import { useQuery } from "@/components/workspace/query";
@@ -27,6 +28,18 @@ export function LiveTimeOffForm({
   const [draft, setDraft] = useState({ start: "", end: "", note: "" });
   const [review, setReview] = useState<typeof draft | null>(null);
   const [error, setError] = useState("");
+  // Back from the check returns to the button that asked for it, so the keys are where they were.
+  const returned = useRef(false);
+  const reviewButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!returned.current || review) return;
+    returned.current = false;
+    reviewButton.current?.focus({ preventScroll: true });
+  }, [review]);
+  const back = () => {
+    returned.current = true;
+    setReview(null);
+  };
   const affected = useQuery(
     api.workspace.previewTimeOff,
     review
@@ -39,7 +52,7 @@ export function LiveTimeOffForm({
       <div className="live-form">
         <LiveLoading label={words.timeOffForm.checking} />
         <div className="live-form-actions">
-          <Button variant="outline" onClick={() => setReview(null)}>
+          <Button variant="outline" onClick={back}>
             {words.timeOffForm.back}
           </Button>
         </div>
@@ -50,7 +63,7 @@ export function LiveTimeOffForm({
         data={data}
         review={review}
         initial={affected}
-        onBack={() => setReview(null)}
+        onBack={back}
         onSaved={onSaved}
       />
     );
@@ -84,7 +97,7 @@ export function LiveTimeOffForm({
       {error && <LiveFailure message={error} />}
       <div className="live-form-actions">
         <SheetCancel />
-        <Button type="submit">{words.timeOffForm.review}</Button>
+        <Button ref={reviewButton} type="submit">{words.timeOffForm.review}</Button>
       </div>
     </form>
   );
@@ -108,21 +121,30 @@ function TimeOffConfirmation({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const confirm = useMutation(api.workspace.confirmTimeOff);
+  // The check replaces the form under the keys: focus goes to the days being checked, the step's heading.
+  const heading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => heading.current?.focus({ preventScroll: true }), []);
   return (
-    <div className="live-form">
-      <p>
+    <div className="live-form volunteer-review">
+      <h3 ref={heading} tabIndex={-1} className="volunteer-review-days outline-none">
         {readDays(words, review.start, review.end)}
-      </p>
-      <h3>
-        {words.timeOffForm.affected(snapshot.length)}
       </h3>
-      {snapshot.map((item) => (
-        <div className="live-note" key={item.id}>
-          {keepNames(sampleSaid(item.title))} ·{" "}
-          {formatDate(words.locale, item.start, { timeZone: data.church.timeZone, dateStyle: "medium" })}
-        </div>
-      ))}
-      <p>
+      <h4 className="volunteer-review-count">
+        {words.timeOffForm.affected(snapshot.length)}
+      </h4>
+      {snapshot.length > 0 && (
+        <ul className="volunteer-review-list">
+          {snapshot.map((item) => (
+            <li key={item.id}>
+              <span>{keepNames(sampleSaid(item.title))}</span>
+              <span className="volunteer-review-when">
+                {formatDate(words.locale, item.start, { timeZone: data.church.timeZone, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="volunteer-review-explain">
         {words.timeOffForm.explain}
       </p>
       {error && <LiveFailure message={error} kept="" />}

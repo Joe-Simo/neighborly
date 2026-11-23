@@ -205,6 +205,9 @@
 }
 .live-app .live-sample-mark,
 .live-mobile-menu .live-sample-mark { font-size: 13px; letter-spacing: var(--caps-track); }
+/* Down the side the mark is two lines by design (shell.tsx NavSampleMark): the kind, then who is in it, no dot. */
+.live-nav .live-sample-mark[data-stacked] .live-sample-dot { display: none; }
+.live-nav .live-sample-mark[data-stacked] .live-sample-who { display: block; }
 
 /* ── The page head: words on the left, the room's picture on the right ── */
 .live-app .live-page-head {
@@ -864,7 +867,7 @@
   /* With the keyboard up the home bar is under it, so the sheet's foot drops the home bar's height and the button sits on the keys. */
   [data-live-keyboard] .live-dialog.live-dialog-fixed:not(.tools-rota-dialog) { padding-bottom: var(--live-dialog-pad) !important; }
   [data-live-keyboard] .live-dialog.live-dialog-fixed .live-form-actions { box-shadow: 0 var(--live-dialog-pad) 0 #f5f3ec; }
-  .live-dialog.live-dialog-fixed h2 { font-size: var(--serif-sheet); line-height: 1.12; }
+  .live-dialog.live-dialog-fixed h2 { font-size: var(--serif-sheet); line-height: 1.2; }
   .live-dialog.live-dialog-fixed [data-slot="dialog-header"] { border-radius: 14px 14px 0 0; }
 }
 /* It closes the way it opened: it goes back down the way it rose (live-dialog.tsx keeps a copy that does this when
@@ -921,12 +924,14 @@
   .live-dialog-fixed [data-slot="dialog-header"] {
     animation: sheet-title-rule steps(1, jump-end) both;
     animation-timeline: scroll(nearest block);
-    animation-range: 0px 1px;
+    /* From the second pixel, not the first: a sheet that could scroll and then grew short (a month put away, the
+       time-off check replacing its form) kept the rule drawn under its title with nothing scrolled. */
+    animation-range: 1px 2px;
   }
 }
 /* The smallest phones with the keyboard up: title and button are both still held, each drawn closer, so the
    box being filled in, its label and the way to save are all in view at once. */
-[data-live-tight] .live-dialog-fixed [data-slot="dialog-title"] { font-size: 22px; line-height: 1.15; }
+[data-live-tight] .live-dialog-fixed [data-slot="dialog-title"] { font-size: 22px; line-height: 1.2; }
 [data-live-tight] .live-dialog-fixed .live-form-actions { padding-top: var(--space-8); box-shadow: 0 8px 0 #f5f3ec; }
 [data-live-tight] .live-dialog.live-dialog-fixed { padding-bottom: var(--space-8) !important; }
 /* With the keyboard up under a dialog (LiveDialog marks it), the page behind steps back to plain paper, so a
@@ -944,18 +949,21 @@
   outline: none;
 }
 
-/* A dialog or sheet never changes the page's width: the scrollbar's place is kept only while the page is locked
-   behind it, so nothing shifts sideways when one opens or closes, and the lock's own compensation is not needed.
+/* A dialog or sheet never changes the page's width. The lock (react-remove-scroll-bar) measures the scrollbar the page
+   shows at that moment (the window's width less <html>'s) and gives <body> that much margin on the right while it hides
+   it, so the room keeps exactly the width it had: 15px where a classic scrollbar was shown, nothing where scrollbars
+   float over the page or the page does not scroll. A kept gutter (scrollbar-gutter: stable) is not used: it reserves
+   its 15px even where no scrollbar was shown at rest, and the room then narrowed by that much as a sheet opened.
    At rest no place is kept: a room's picture runs to the window's own edge, or to the scrollbar where one is shown. */
 /* A sheet's scroll lock (Radix, via react-remove-scroll-bar) sets this on :root as it opens. Inherited, it would make the
    browser work out every element's style again in the sheet's first frame; kept on :root alone, only :root is touched.
-   Nothing in the rooms reads it (the scrollbar's place is kept by scrollbar-gutter below). */
+   Nothing in the rooms reads it (the scrollbar's place is kept by the lock's margin on <body>, below). */
 @property --removed-body-scroll-bar-size { syntax: "<length>"; inherits: false; initial-value: 0px; }
 /* The same lock sets pointer-events: none on <body>, and every element below inherits it, so the whole room's style is
    worked out again in that frame. The room says its own value instead, so the change stops at <body>. The sheet's shade
    still lies over the whole room and takes every press outside the sheet. */
 .live-app { pointer-events: auto; }
-html:has(.live-app):has(> body[data-scroll-locked]) { overflow: hidden; scrollbar-gutter: stable; }
+html:has(.live-app):has(> body[data-scroll-locked]) { overflow: hidden; }
 /* The shade behind a sheet or the menu is cut, like everything of paper: whole in the sheet's first frame, gone
    after its last, never faded (the home page's own sheet keeps its own, .paper-overlay). While the sheet leaves,
    the shade is held for as long as the sheet takes. The scrollbar's room is no part of the window a fixed shade
@@ -974,7 +982,6 @@ html:has(.live-app):has(> body[data-scroll-locked]) { overflow: hidden; scrollba
 }
 @media (prefers-reduced-motion: reduce) { [data-slot="dialog-overlay"]:not(.paper-overlay)[data-state="closed"] { animation: none; } }
 html:has(.live-app):has([data-slot="dialog-overlay"]:not(.paper-overlay)) { background: rgb(212 214 206); }
-html:has(.live-app) > body[data-scroll-locked] { margin-right: 0 !important; padding-right: 0 !important; }
 
 /* The ring is for keys. Without keys in use (the shell marks the page while they are), a control that is not a box
    to type in draws no ring, however it came by its focus: a tap, or the app putting focus back where it was. A list to
@@ -1197,11 +1204,17 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   .week-columns:not([data-far-screen]) > .live-section > .live-section-head > [data-slot="button"].tools-quiet { align-items: flex-end; padding-bottom: 1px; }
 }
 
-/* From 1728px a room with no second column of its own ends its head's rule with the room: the rule stops at the
-   room's measure and the picture stands past it, so no line runs on over bare paper. */
-@media (min-width: 1728px) {
-  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head { border-bottom-color: transparent; }
-  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head::after { content: ""; position: absolute; left: 0; bottom: -1px; width: min(1040px, 100%); border-bottom: 1px solid var(--live-line); }
+/* A head with no painting (a neighbor's record: private and plain) is its words alone: it keeps no picture's height,
+   and its rule ends with the room's own column. */
+.live-app .live-main .live-page-head[data-plain] { min-height: 0; }
+/* In the framed room (from 1700px) the head keeps to the room's column: the picture's right edge is the column's
+   right edge, the same edge the body and side column stop at, never the paper past it. The rule runs from the words
+   to where the picture's sheet is laid and stops there, so no line runs under the torn edge or out past the picture. */
+@media (min-width: 1700px) {
+  .live-app .live-main .live-page-head .live-head-art { right: 0; width: calc(var(--head-wide) * 0.46 - var(--live-pad)); }
+  .live-app .live-main > .live-page-head { border-bottom-color: transparent; }
+  .live-app .live-main > .live-page-head::after { content: ""; position: absolute; left: 0; bottom: -1px; width: min(1040px, calc(100% - var(--head-wide) * 0.46 + var(--live-pad))); border-bottom: 1px solid var(--live-line); }
+  .live-app .live-main > .live-page-head[data-plain]::after { width: var(--room-wide, min(1040px, 100%)); }
 }
 
 /* On a phone too, the rows of one list keep one shape, so they differ only where one truly says more.
@@ -1370,19 +1383,21 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
     box-shadow: inset 3px 0 #55714c, inset 0 1px 0 rgb(255 255 255 / 0.7), 0 1px 1px rgb(40 60 50 / 0.14), 0 6px 10px -8px rgb(40 60 50 / 0.4);
   }
 }
-/* The head's cut edge: one rule and one contact shade, the slip's, from the relief scale. */
-.live-app .live-page-head { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 3px 3px -3px rgb(40 60 50 / 0.34); }
-/* From 1728px a room with no second column ends its rule at the room's measure, so its light and shade end there too. */
-@media (min-width: 1728px) {
-  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head { box-shadow: none; }
-  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head::after { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 3px 3px -3px rgb(40 60 50 / 0.34); }
+/* The head's cut edge: one rule and one contact shade, the slip's, from the relief scale. The shade is cast by a
+   1px strip along the rule, never by the head's own box, so it falls under the rule only and draws no faint line
+   down the head's sides (on a phone those would start right under the picture's torn foot). */
+.live-app .live-page-head { border-bottom-color: rgb(40 60 50 / 0.18); }
+.live-app .live-page-head::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; box-shadow: 0 3px 3px -3px rgb(40 60 50 / 0.34); pointer-events: none; }
+/* In the framed room the rule ends short of the picture, so its light and shade end there too. */
+@media (min-width: 1700px) {
+  .live-app .live-main > .live-page-head::after { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 3px 3px -3px rgb(40 60 50 / 0.34); }
 }
 @media (forced-colors: active) {
-  .live-app .live-page-head { box-shadow: none; }
+  .live-app .live-page-head::after { box-shadow: none; }
   .live-app .live-page-head::before { content: none; }
   .live-app .live-nav-marker { box-shadow: none; outline: 2px solid Highlight; }
 }
-@media print { .live-app .live-page-head, .live-app .live-page-head::after { box-shadow: none; } .live-app .live-page-head::before { content: none; } }
+@media print { .live-app .live-page-head::after { box-shadow: none; } .live-app .live-page-head::before { content: none; } }
 
 /* w91: the workspace's keys on one sheet. Each key a small slip of paper, its name beside it. */
 .live-keys dl { display: grid; gap: var(--space-8) 6px; margin: var(--space-4) 0 0; }
@@ -1691,6 +1706,9 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 /* The month in the form: laid under its field, full width of the form's column, set in place without a rise. */
 .live-date-sheet.live-date-inline { display: grid; justify-content: start; gap: var(--space-4) 4px; width: fit-content; max-width: 100%; margin-top: var(--space-8); box-shadow: none; animation: none; }
 .live-date-inline .live-date-bar { justify-content: flex-end; }
+/* A month (308px of days) is wider than a column of a two-up form in a sheet (240px): while one is open, its form
+   lays its fields one under another, so the month stays inside the sheet instead of pushing it sideways. */
+:is(.live-app, .live-dialog) .live-form-grid:has(> .live-field > .live-date[data-open]) { grid-template-columns: minmax(0, 1fr); }
 @media (max-width: 699px) { .live-date-sheet.live-date-inline { width: 100%; justify-content: center; padding-inline: 4px; } }
 /* Teams on a tablet: three across from 1280, and where two stand side by side an odd last team takes the full row,
    so no team is left alone beside an empty column. */

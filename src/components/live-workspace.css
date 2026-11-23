@@ -413,8 +413,9 @@
   padding: var(--space-32) 30px !important;
 }
 .live-dialog h2 {
+  /* Room between lines for a capital's accent (É, Á) on a title that wraps; "normal" in Newsreader is about 1. */
   font:
-    35px "Newsreader",
+    35px/1.2 "Newsreader",
     "Newsreader Fallback",
     Georgia,
     serif;
@@ -734,6 +735,26 @@
 /* Only a pointer that can rest hovers: on a phone or iPad the face that answered a finger never stays after it lifts. */
 @media (hover: hover) { :is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"][data-variant="outline"]:hover:not(:disabled) { background: #efede2; } }
 :is(.live-app, .live-dialog, .live-mobile-menu) [data-slot="button"][data-variant="ghost"]:active:not(:disabled) { background: #e4e2d6; }
+/* A framed on/off (the Monday email, who came to a meeting) is cut from the same paper as a framed button: its face,
+   corner, edge, type and rest relief. On, it is pressed into the page and takes the green of a thing done; only the
+   face and edge change, so the words never move. */
+:where(.live-app, .live-dialog, .live-mobile-menu) [data-slot="toggle"][data-variant="outline"] {
+  gap: 8px;
+  padding-inline: 16px;
+  border-color: #d4dacb;
+  border-radius: 4px;
+  background: #fffdf7;
+  color: var(--paper-ink, #283c32);
+  font-size: 16px;
+  font-weight: 400;
+  box-shadow: var(--press-rest);
+  transition-property: box-shadow, background-color, border-color, color;
+  transition-duration: 120ms;
+  transition-timing-function: var(--paper-ease, var(--ease-paper));
+}
+@media (hover: hover) { :where(.live-app, .live-dialog, .live-mobile-menu) [data-slot="toggle"][data-variant="outline"][data-state="off"]:hover:not(:disabled) { background: #efede2; } }
+:where(.live-app, .live-dialog, .live-mobile-menu) [data-slot="toggle"][data-variant="outline"][data-state="off"]:active:not(:disabled) { background: #efede2; box-shadow: var(--relief-press); transition-duration: 0s; }
+:where(.live-app, .live-dialog, .live-mobile-menu) [data-slot="toggle"][data-variant="outline"][data-state="on"] { border-color: #55714c; background: #dde5d3; box-shadow: var(--relief-press); }
 .live-field input, .live-field textarea, .live-field select {
   border-radius: 4px;
   box-shadow: 0 1px 0 #fff inset;

@@ -28,3 +28,10 @@ export function sayZoneLater(timeZone: string, language: "en" | "es" = "en") {
 export function ZoneSaid({ timeZone, language, say }: { timeZone: string; language: "en" | "es"; say: (zone: string) => string }) {
   return say(zoneName(timeZone, language));
 }
+
+/** The conference's own day at a moment, as "2026-11-22": what its rooms call today, whatever zone the browser is in. */
+export function conferenceDay(time: number, timeZone: string) {
+  const parts = dateFormatter("en-US", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(time);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((each) => each.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")}`;
+}

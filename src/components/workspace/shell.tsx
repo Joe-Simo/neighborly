@@ -386,7 +386,13 @@ export function LiveWorkspace({
   }, []);
   const leaveLabel = sampleVisitor ? words.shell.leaveSample : words.shell.signOut;
   const heading = headingOverride
-    ? { ...headings[area], ...translatedHeadings[area], title: headingOverride.title, deck: headingOverride.deck }
+    ? {
+        ...headings[area],
+        ...translatedHeadings[area],
+        title: headingOverride.title,
+        deck: headingOverride.deck,
+        art: headingOverride.plain ? undefined : headings[area].art,
+      }
     : area === "week" && nothingMadeYet(data)
       ? { ...headings[area], ...translatedHeadings[area], title: words.rooms.firstDays.week.head }
       : { ...headings[area], ...translatedHeadings[area] };
@@ -698,7 +704,7 @@ export function LiveWorkspace({
         <nav className="live-nav" aria-label={words.shell.workspace} ref={navRef}>
           <span className="live-nav-marker" aria-hidden="true" />
           <p className="live-church-name" data-sample={data.church.sample ? "" : undefined}>{churchName}</p>
-          {data.church.sample && <p className="live-sample-mark">{words.shell.sampleMark}</p>}
+          {data.church.sample && <NavSampleMark text={words.shell.sampleMark} />}
           {menuItems.map(({ id, label, icon: Icon }) => (
             <Link
               key={id}
@@ -737,7 +743,7 @@ export function LiveWorkspace({
               <span className="text-balance">{words.states.opening}</span>
             </p>
           )}
-          <div className="live-page-head" data-rested={rested ? "" : undefined}>
+          <div className="live-page-head" data-rested={rested ? "" : undefined} data-plain={heading.art ? undefined : ""}>
             {heading.art && (
               <div className="live-head-art" data-area={area} data-ready={pictured === area ? "" : undefined}>
                 <ArrivingRelief key={heading.art.picture} name={heading.art.picture} focus={heading.art.focus} band={heading.art.band} onReady={picturedNow} />
@@ -1150,6 +1156,22 @@ const roomsOpened = new Set<LiveArea>();
 const KEPT_ROOMS = 4;
 /** A room was chosen from the menu or the tabs: it opens at its top (a way back keeps where the person was). */
 let toTop = false;
+
+/**
+ * The sample's mark down the side, laid as two lines by design: "Sample" over who is in it. The side menu is only as
+ * wide as its longest room, which in either language is narrower than the mark on one line, and left to wrap it broke
+ * after the dot. The dot stays for the header and the menu sheet, where the mark keeps one line.
+ */
+function NavSampleMark({ text }: { text: string }) {
+  const [kind, ...rest] = text.split(" · ");
+  if (!rest.length) return <p className="live-sample-mark">{text}</p>;
+  return (
+    <p className="live-sample-mark" data-stacked="">
+      {kind}
+      <span className="live-sample-dot"> ·</span> <span className="live-sample-who">{rest.join(" · ")}</span>
+    </p>
+  );
+}
 
 const RoomBody = memo(function RoomBody({ Section, waiting, label, pagination }: { Section: ComponentType; waiting: boolean; label: string; pagination: ReactNode }) {
   return (

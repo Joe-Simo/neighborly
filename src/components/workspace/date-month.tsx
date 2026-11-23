@@ -44,8 +44,10 @@ const Day = memo(function Day({ date, label, chosen, today, allowed, stop, onPic
   );
 });
 
-export function DateMonth({ language, selected, defaultMonth, min, max, labelDay, onSelect }: {
+export function DateMonth({ language, today: givenToday, selected, defaultMonth, min, max, labelDay, onSelect }: {
   language: Language;
+  /** Today in the conference's zone (date-field.tsx), so the month marks the day the room's calendar marks. */
+  today?: Date;
   selected?: Date;
   defaultMonth?: Date;
   min?: Date;
@@ -54,7 +56,8 @@ export function DateMonth({ language, selected, defaultMonth, min, max, labelDay
   onSelect: (day: Date) => void;
 }) {
   const words = said[language];
-  const today = useMemo(() => dayOf(new Date()), []);
+  const todayTime = givenToday ? dayOf(givenToday).getTime() : undefined;
+  const today = useMemo(() => dayOf(todayTime === undefined ? new Date() : new Date(todayTime)), [todayTime]);
   const allowed = (date: Date) => (!min || date >= dayOf(min)) && (!max || date <= dayOf(max));
   const first = () => {
     for (const date of [selected && dayOf(selected), today, min && dayOf(min)]) if (date && allowed(date)) return date;
