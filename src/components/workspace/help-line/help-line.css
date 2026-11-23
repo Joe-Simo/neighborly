@@ -80,7 +80,7 @@
 /* An adult's work sits under the line on its own, with its labels always shown. */
 .help-line-row .help-work { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-8) 12px; align-items: end; }
 .help-lines[data-shape] .help-line-row .help-work .live-field > span { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
-.help-line-row > [data-slot="button"] { position: absolute; right: 0; bottom: 14px; width: 44px; height: 44px; min-height: 44px; padding: 0; color: var(--live-muted); }
+.help-line-row > [data-slot="button"] { position: absolute; right: 0; bottom: 17px; width: 44px; height: 44px; min-height: 44px; padding: 0; color: var(--live-muted); }
 @media (max-width: 700px) {
   /* An account on a phone: each field takes the full width, and the way to remove it sits on the account's first line. */
   .help-lines[data-shape="four"] .help-line-row { grid-template-columns: minmax(0, 1fr); padding-right: 0; }
