@@ -965,6 +965,10 @@
    still lies over the whole room and takes every press outside the sheet. */
 .live-app { pointer-events: auto; }
 html:has(.live-app):has(> body[data-scroll-locked]) { overflow: hidden; }
+/* With <html> hidden, the lock's own overflow: hidden on <body> no longer passes to the window: it would make <body> a
+   scroller of its own, at its top, and the sticky menu and header would fall back to the top of the page, out of sight
+   behind the sheet of a room read far down. Clipped, <body> is no scroller, so they stay where the reader left them. */
+html:has(.live-app) > body[data-scroll-locked] { overflow: clip !important; }
 /* The shade behind a sheet or the menu is cut, like everything of paper: whole in the sheet's first frame, gone
    after its last, never faded (the home page's own sheet keeps its own, .paper-overlay). While the sheet leaves,
    the shade is held for as long as the sheet takes. The scrollbar's room is no part of the window a fixed shade
