@@ -4,6 +4,8 @@
 /* ── People ───────────────────────────────────────────────────────────── */
 .live-app .people-row { min-height: 80px; padding-block: var(--space-16); }
 .people-row h3 { font-size: 19px; }
+/* A name with no address under it (the owner's own row) sits on the row's centre line, level with its role. */
+.people-row .live-person h3:only-child { margin-bottom: 0; }
 .people-row .live-person p { margin: 2px 0 0; font-size: 16px; overflow-wrap: normal; }
 .people-row .live-person, .people-row .live-person > div { min-width: 0; }
 /* A row the owner can open is one target: the name is the control, its reach is the whole row, and a
