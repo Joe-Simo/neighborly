@@ -80,6 +80,17 @@
 /* An adult's work sits under the line on its own, with its labels always shown. */
 .help-line-row .help-work { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-8) 12px; align-items: end; }
 .help-lines[data-shape] .help-line-row .help-work .live-field > span { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
+/* In the household's line on a wider screen the boxes keep to four even columns: who and the work take the left
+   half, the birth year (with "adult or child" beside it while no year is given) and the workplace the right half,
+   so every edge lines up from row to row. */
+@media (min-width: 561px) {
+  .help-lines[data-shape="three"] .help-line-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .help-lines[data-shape="three"] .help-line-row > :first-child { grid-column: span 2; }
+  .help-lines[data-shape="three"] .help-line-row:has(> span:empty) > :nth-child(2) { grid-column: span 2; }
+  .help-lines[data-shape="three"] .help-line-row > span:empty { display: none; }
+  .help-lines[data-shape="three"] .help-line-row .live-field input[inputmode="numeric"] { max-width: none; }
+  .help-lines[data-shape="three"] .help-line-row .help-work { grid-template-columns: subgrid; }
+  .help-lines[data-shape="three"] .help-line-row .help-work > * { grid-column: span 2; }
 }
 /* On a phone the work and the workplace each take the line, so "Trabaja tiempo completo" is read whole and never
    runs under the select's chevron; the select keeps its right padding clear of the chevron. */
