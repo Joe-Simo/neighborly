@@ -245,7 +245,8 @@
   .live-app .treasury-statement input[name="statement"] {
     width: 100%;
   }
-  .treasury-foot [data-slot="button"],
+  /* The ways on from the ledger keep their presses at the size of their words, as the budget's and the waiting
+     requests' are just above and below them: no full-width bar among them. */
   .treasury-budget > [data-slot="button"],
   .treasury-starter > [data-slot="button"] {
     width: 100%;
