@@ -138,7 +138,7 @@ function LiveAvailability({
             form.reset();
         }}
       >
-        <div className="live-form-grid">
+        <div className="live-form-grid volunteer-days-grid">
           <LiveField label={words.timeOff.firstAvailable}>
             <DateField name="start" required />
           </LiveField>

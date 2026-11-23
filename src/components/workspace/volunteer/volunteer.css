@@ -147,3 +147,6 @@
 .live-app .live-list > .live-week-label:first-child { padding-top: var(--space-8); }
 /* Awaiting a reply: the sentence and its withdraw stand apart, the press at the note's far edge, centred on the words. */
 .live-note.volunteer-waiting-note { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-8) 16px; }
+
+/* Two day fields side by side are narrower than a month: while one is open the pair stacks, so the month never slides under its neighbour. */
+:is(.live-app, .live-dialog) .live-form-grid.volunteer-days-grid:has(.live-date[data-open]) { grid-template-columns: minmax(0, 1fr); }
