@@ -72,8 +72,10 @@ export type LiveHeading = {
   room?: "help";
   art: { picture: ReliefName; focus?: string; band?: number };
 };
-/** What a section may put in the page head in place of its area's heading. The room's picture stays. */
+/** What a section may put in the page head in place of its area's heading. The room's picture stays unless plain. */
 export type LiveHeadingOverride = Pick<LiveHeading, "title" | "deck"> & {
+  /** A private record's head (one neighbor by name) is words only: no painting. */
+  plain?: boolean;
   /** The way back from an inner view, drawn as a quiet link above the eyebrow, such as "Ledger". */
   back?: { label: string; run: () => void };
 };

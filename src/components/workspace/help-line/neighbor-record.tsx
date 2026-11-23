@@ -202,7 +202,7 @@ export function NeighborRecord({
   // The record's page head is the neighbor's name, with no painting: private and plain.
   useLayoutEffect(() => {
     if (!title || !deck) return;
-    setHeading(printing ? { title, deck, back: { label: title, run: () => setPrinting(null) } } : { title, deck });
+    setHeading(printing ? { title, deck, plain: true, back: { label: title, run: () => setPrinting(null) } } : { title, deck, plain: true });
     return () => setHeading(null);
   }, [setHeading, title, deck, printing]);
   const [step, setStep] = useState<Step | null>(null);
