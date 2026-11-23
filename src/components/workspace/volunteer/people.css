@@ -38,7 +38,7 @@
 .people-address-full { display: block; overflow-wrap: anywhere; }
 .people-address > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .people-row .live-avatar { width: 44px; height: 44px; letter-spacing: 0.02em; }
-.people-row .live-meta > span { font-size: 16px; }
+.people-row .live-meta > span { font-size: 16px; text-wrap: balance; }
 .people-row .live-meta > span[data-waits] { color: var(--live-ink); }
 .people-row[data-away] .live-person,
 .people-row[data-away] .live-meta > span { opacity: 0.62; }
