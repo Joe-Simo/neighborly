@@ -205,6 +205,9 @@
 }
 .live-app .live-sample-mark,
 .live-mobile-menu .live-sample-mark { font-size: 13px; letter-spacing: var(--caps-track); }
+/* Down the side the mark is two lines by design (shell.tsx NavSampleMark): the kind, then who is in it, no dot. */
+.live-nav .live-sample-mark[data-stacked] .live-sample-dot { display: none; }
+.live-nav .live-sample-mark[data-stacked] .live-sample-who { display: block; }
 
 /* ── The page head: words on the left, the room's picture on the right ── */
 .live-app .live-page-head {
