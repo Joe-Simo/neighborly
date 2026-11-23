@@ -436,3 +436,10 @@
 /* The assistant's mark on "Speaks Spanish" stands at its first line, as it does on the outcome's suggestion, not midway down a wrapped note. */
 .help-row .help-assistant.help-spanish { align-items: flex-start; }
 .help-row .help-assistant.help-spanish > svg { margin-top: 0.3em; }
+
+/* On a phone the figure never hangs alone beside or under a heading that may wrap (Spanish "Llamadas por devolver"):
+   the heading takes the line, and the figure and how long the oldest has waited follow it as one line. */
+@media (max-width: 700px) {
+  .help-lists .live-section-head:has(> .room-tally) { flex-wrap: wrap; }
+  .help-lists .live-section-head > .room-tally { flex: 1 0 100%; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-4) 12px; }
+}
