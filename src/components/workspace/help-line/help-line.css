@@ -424,3 +424,6 @@
 .help-repeat { display: contents; }
 /* What the assistant read, beside its mark: a long word in it (a name, a link) turns at the sheet's edge. */
 .help-sheet .help-assistant > span { min-width: 0; overflow-wrap: anywhere; }
+
+/* "Same phone as …" sits among a waiting call's quiet acts at their size: the room's lead note would pull it up over them. */
+.help-row .help-row-more > .help-note { margin: 0; font-size: inherit; line-height: inherit; max-width: none; }
