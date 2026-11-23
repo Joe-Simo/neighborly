@@ -109,12 +109,12 @@
   .volunteer-choice-row, .volunteer-meeting .help-sheet-body { grid-template-columns: minmax(0, 1fr); }
   .volunteer-meetings .help-sheet { padding: var(--space-24) 20px; }
   :is(.volunteer-choice, .volunteer-meeting) h3 { font-size: 24px; padding-right: 26px; }
-  /* The title has the row to itself; the button sits on the line of who and when, at the right. */
+  /* The title has the row to itself, then who and when, then the button at the right: every row the same shape. */
   .live-row.volunteer-task { align-items: center; flex-wrap: wrap; gap: var(--space-8) 12px; }
   .volunteer-task > div { display: contents; }
   .volunteer-task h3 { flex: 1 1 100%; margin: 0; }
-  /* The line keeps its natural width, so a button that does not fit beside it drops under it; a name never breaks. */
-  .volunteer-task p { flex: 0 1 auto; min-width: 0; }
+  /* The line of who and when takes its own row, so the button never sits beside one row's line and under the next. */
+  .volunteer-task p { flex: 1 1 100%; min-width: 0; }
   .volunteer-task > [data-slot="button"] { min-height: 44px; margin-left: auto; }
   .volunteer-task > .volunteer-task-act { display: flex; margin-left: auto; }
   .volunteer-task-act [data-slot="button"] { min-height: 44px; }
