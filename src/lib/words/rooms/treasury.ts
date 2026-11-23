@@ -420,7 +420,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     toConference: "A qué conferencia",
     paidTo: "Pagado a",
     from: "De parte de",
-    fromExample: "La parroquia, la Caminata, un donativo anónimo",
+    fromExample: "La parroquia, la Caminata, un anónimo",
     check: "Número de cheque (opcional)",
     note: "Nota (opcional)",
     submit: { gift: "Anotar el donativo", out: "Anotar dinero que sale", in: "Anotar dinero que entra" },
