@@ -124,8 +124,9 @@
 .team-card h2 { margin-bottom: 0; overflow-wrap: anywhere; }
 .live-app .team-card > p { font-size: 17px; overflow-wrap: anywhere; }
 .team-faces { display: flex; align-items: center; margin-right: auto; }
-.team-faces .live-avatar { width: 36px; height: 36px; font-size: 13px; box-shadow: 0 0 0 2px var(--paper, #f7f4ed); }
-.team-faces .live-avatar + .live-avatar { margin-left: -8px; }
+.team-faces .live-avatar { width: 36px; height: 36px; font-size: 12px; letter-spacing: -0.02em; box-shadow: 0 0 0 2px var(--paper, #f7f4ed); }
+/* Wide pairs (WO, MW) stay whole: the next face overlaps only the circle's empty edge. */
+.team-faces .live-avatar + .live-avatar { margin-left: -5px; }
 .team-faces .live-meta { margin: 0 0 0 12px; white-space: nowrap; }
 .live-app .team-card .live-team-line { gap: var(--space-8) 20px; min-height: 44px; }
 /* Teams side by side share their rows: name, description, a word on joining, members. Whichever card's name or note
