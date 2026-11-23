@@ -91,7 +91,7 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 .live-dialog .tools-rota td { padding: var(--space-20) 10px; border-bottom: 1px solid var(--live-line); }
 .live-dialog .tools-rota th:first-child, .live-dialog .tools-rota td:first-child { padding-left: 0; }
 @media print {
-  .live-dialog:has(.tools-rota) { position: static !important; inset: auto !important; translate: 0 0 !important; transition: none !important; animation: none !important; display: block !important; max-width: none !important; max-height: none !important; width: auto !important; overflow: visible !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; background: #fff !important; }
+  .live-dialog:has(.tools-rota) { position: static !important; inset: auto !important; translate: 0 0 !important; transition: none !important; animation: none !important; display: block !important; max-width: none !important; max-height: none !important; width: auto !important; overflow: visible !important; --live-dialog-top: 0px; padding: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; background: #fff !important; }
   .live-dialog .tools-rota table { font-size: 11pt; }
   .live-dialog .tools-rota th, .live-dialog .tools-rota td { padding-top: 5pt; padding-bottom: 5pt; }
   .live-dialog .tools-rota .tools-rota-day th { padding-top: 11pt; }

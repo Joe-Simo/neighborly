@@ -21,11 +21,11 @@
 @media (max-width: 699px) {
   :root[data-shell="ios"] .live-dialog.live-dialog-fixed:not(.tools-rota-dialog) { overscroll-behavior: contain; }
   /* The grabber is drawn on the held title, so it stays at the top of the sheet however far the form scrolls. */
-  :root[data-shell="ios"] .live-dialog.live-dialog-fixed [data-slot="dialog-header"] { padding-top: var(--space-16); }
+  :root[data-shell="ios"] .live-dialog.live-dialog-fixed [data-slot="dialog-header"] { padding-top: calc(var(--live-dialog-top) + var(--space-16)); }
   :root[data-shell="ios"] .live-dialog.live-dialog-fixed [data-slot="dialog-header"]::before {
     content: "";
     position: absolute;
-    top: 6px;
+    top: calc(var(--live-dialog-top) + 6px);
     left: 50%;
     translate: -50% 0;
     width: 36px;

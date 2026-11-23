@@ -895,7 +895,7 @@
    560px wide (640 for a commitment's details), 32px of paper around, words at 16px,
    help lines at 14px, and every field the full width except a day and time pair. */
 @media (min-width: 700px) {
-  .live-dialog.live-dialog-fixed { --live-dialog-pad: 32px; padding: var(--space-32) 32px !important; }
+  .live-dialog.live-dialog-fixed { --live-dialog-pad: 32px; --live-dialog-top: var(--space-32); padding: var(--live-dialog-top) 32px !important; }
   .live-dialog.live-detail-dialog { max-width: 640px !important; }
 }
 .live-dialog { font-size: 16px; }
@@ -919,7 +919,7 @@
 [data-live-short] .live-dialog-fixed [data-slot="dialog-header"] { position: static; }
 /* Once a long sheet has scrolled, a hairline in the relief edge parts its held title from the fields passing under
    it. Driven by the sheet's own scroll, switched by a cut (one step), drawn as a shadow so nothing moves. */
-@keyframes sheet-title-rule { to { box-shadow: 0 -30px 0 #f5f3ec, 0 1px 0 var(--relief-edge); } }
+@keyframes sheet-title-rule { to { box-shadow: 0 1px 0 var(--relief-edge); } }
 @supports (animation-timeline: scroll()) {
   .live-dialog-fixed [data-slot="dialog-header"] {
     animation: sheet-title-rule steps(1, jump-end) both;
