@@ -226,3 +226,6 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 /* A council's row in Your files: the sentence on the left, its buttons on one right-hand edge, so every row's buttons line up. */
 .tools-leaf .council-list li { padding: var(--space-12, 12px) 0; }
 .tools-leaf .council-list li > span:first-child { margin-right: auto; }
+/* A heading with its icon turns its words beside the icon, never leaving one word on the icon's line. */
+.live-app .tools-leaf > h2:has(> svg) { display: flex; align-items: baseline; gap: 8px; text-wrap: balance; }
+.live-app .tools-leaf > h2:has(> svg) > svg { flex: none; margin-right: 0; translate: 0 2px; }
