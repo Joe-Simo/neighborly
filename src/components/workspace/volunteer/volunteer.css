@@ -247,5 +247,5 @@
 .live-dialog .live-detail.volunteer-commitment-facts:last-child { margin-bottom: 0; }
 
 /* A commitment's sheet: a long title, team or note wraps inside the sheet instead of widening it past its edge. */
-.live-dialog:has(.volunteer-commitment-facts) > * { min-width: 0; }
-.live-dialog:has(.volunteer-commitment-facts) :is(h2, .live-kicker, p) { overflow-wrap: anywhere; }
+.live-dialog:has(.volunteer-commitment-facts) > *, .volunteer-commitment-facts > * { min-width: 0; }
+.live-dialog:has(.volunteer-commitment-facts) :is(h2, .live-kicker, p, dd) { overflow-wrap: anywhere; }
