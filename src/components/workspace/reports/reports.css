@@ -995,6 +995,12 @@
 }
 .report-hours-lines h3 { margin: 0; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 22px; line-height: 1.15; overflow-wrap: anywhere; }
 .report-hours-lines p { margin: var(--space-4) 0 0; font-size: 13px; color: var(--live-muted); }
+/* Above a phone the hours' lines set their names and counts at the sizes of the kinds of help above them (help.css),
+   so the two lists of the same report read as one type. A phone keeps 22px and 13px, as the kinds do there. */
+@media screen and (min-width: 601px) {
+  .report-hours-lines h3 { font-size: 24px; line-height: 1.2; letter-spacing: -0.015em; }
+  .report-hours-lines p { font-size: 15px; }
+}
 /* Each kind's share laid as a strip of its own paper on the cream, with a cut end. */
 .report-hours-strip { display: block; height: 14px; }
 .report-hours-strip i {
