@@ -291,7 +291,7 @@
 .closing-first p { margin: 0; font-size: 17px; color: var(--live-ink); }
 /* On a phone, a sheet for an act that cannot be undone gives its actions the full width. */
 @media (max-width: 699px) {
-  .live-dialog .help-for-good .live-form-actions [data-slot="button"] { width: 100%; min-height: 44px; }
+  .live-dialog .help-for-good .live-form-actions :is([data-slot="button"], [data-slot="dialog-close"]) { width: 100%; min-height: 44px; }
 }
 /* A name said back under the box is not broken across lines while it is short enough to fit a phone. */
 .help-name-whole { white-space: nowrap; }
