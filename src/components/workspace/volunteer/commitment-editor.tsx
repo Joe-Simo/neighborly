@@ -7,6 +7,7 @@ import { WhenField } from "@/components/workspace/date-field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { LiveField } from "@/components/workspace/primitives";
+import { SheetCancel } from "@/components/workspace/live-dialog";
 import { LiveWaiting, LiveFailure, SaveLabel } from "@/components/workspace/states";
 import type { LiveCommand, LiveCommitment } from "@/components/workspace/types";
 import { useWorkspace } from "@/components/workspace/context";
@@ -145,7 +146,11 @@ export function LiveCommitmentEditor({
           rows={4}
         />
       </LiveField>
-      <Button type="submit">{text.review}</Button>
+      {/* The sheet's own footer, as every other sheet in the room ends: a way out, then the one step forward. */}
+      <div className="live-form-actions">
+        <SheetCancel disabled={pending} />
+        <Button type="submit" disabled={pending}>{text.review}</Button>
+      </div>
     </form>
   );
 }
