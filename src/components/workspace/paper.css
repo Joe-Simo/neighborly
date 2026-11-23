@@ -1703,6 +1703,9 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 /* The month in the form: laid under its field, full width of the form's column, set in place without a rise. */
 .live-date-sheet.live-date-inline { display: grid; justify-content: start; gap: var(--space-4) 4px; width: fit-content; max-width: 100%; margin-top: var(--space-8); box-shadow: none; animation: none; }
 .live-date-inline .live-date-bar { justify-content: flex-end; }
+/* A month (308px of days) is wider than a column of a two-up form in a sheet (240px): while one is open, its form
+   lays its fields one under another, so the month stays inside the sheet instead of pushing it sideways. */
+:is(.live-app, .live-dialog) .live-form-grid:has(> .live-field > .live-date[data-open]) { grid-template-columns: minmax(0, 1fr); }
 @media (max-width: 699px) { .live-date-sheet.live-date-inline { width: 100%; justify-content: center; padding-inline: 4px; } }
 /* Teams on a tablet: three across from 1280, and where two stand side by side an odd last team takes the full row,
    so no team is left alone beside an empty column. */
