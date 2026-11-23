@@ -232,3 +232,6 @@
 /* The empty meetings place's one act reads as every other outlined button in the room, in ink, not in the muted
    grey of the sentence above it. */
 .live-app .volunteer-meetings-list > .live-empty [data-slot="button"] { color: var(--live-ink); }
+
+/* Repeats and how many times share a row: the count fills its half, so both boxes end on the sheet's edge like every field above them. */
+:is(.live-app, .live-dialog) .live-form-grid.volunteer-repeat-grid .live-field input[type="number"] { max-width: none; }
