@@ -1255,6 +1255,10 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
    id), a grain of light across it and a tight contact shade. Under the band, one caption. */
 /* Its stitch lies on the head's own rule; what follows keeps the gap it had under the head. */
 .week-quilt { --size: 21px; margin: calc(-1 * var(--head-gap, 36px) - 5px - var(--size) / 2) 0 calc(var(--head-gap, 36px) + 8px); }
+/* An empty Coming up hangs its rule from the section's head, so the rule runs the head's full width (to Print the
+   week) on a wide screen instead of stopping at the empty note's own measure. Its words keep their measure. */
+.live-app .week-columns > .live-section > .live-empty { max-width: none; }
+.live-app .week-columns > .live-section > .live-empty > :last-child { max-width: 568px; }
 /* The stitch only lies on the rule when the head's gap is the one the band lifts by: the shell gives the head 32 or
    40px at different sizes, so This week's head is given the band's own gap, and the two can never come apart. */
 .live-app .live-main:has(.week-quilt) { --head-gap: 36px; }
