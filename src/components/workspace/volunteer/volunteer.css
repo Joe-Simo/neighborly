@@ -103,6 +103,8 @@
 }
 .volunteer-replies { flex: 1 1 100%; }
 .volunteer-replies .live-row { min-height: 56px; padding: var(--space-12) 0; font-size: 17px; }
+/* The list ends with the card: its last reply draws no rule of its own a little above the card's edge. */
+.volunteer-replies .live-list > .live-row:last-child { border-bottom: 0; }
 
 @media (max-width: 699px) {
   .volunteer-choice-row, .volunteer-meeting .help-sheet-body { grid-template-columns: minmax(0, 1fr); }
