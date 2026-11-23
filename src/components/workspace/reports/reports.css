@@ -576,7 +576,7 @@
   .report-months p:not(.help-amount) { font-size: 15px; }
   .report-months:not([data-months="3"]) p:not(.help-amount) { font-size: 13px; white-space: nowrap; }
   .report-months[data-months="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .live-app .report-every-line { width: 100%; }
+  /* The press keeps the size of its words on a phone, as the landlord and council presses below it do. */
   .report-legend { display: grid; gap: var(--space-8) 10px; }
   .report-form { columns: 1; }
 }
