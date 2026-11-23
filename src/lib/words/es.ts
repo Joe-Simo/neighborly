@@ -180,6 +180,7 @@ export function es(set: WordSet): Words {
       accepted: "Compromisos aceptados",
       addToCalendar: "Agrégalos al calendario",
       emptyTitle: "Hay lugar para tu primer sí.",
+      emptyTitleBeside: "También hay lugar para un compromiso.",
       emptyDetail:
         "Cuando das tu sí a un compromiso, se guarda aquí con lo que hay que preparar.",
     },
