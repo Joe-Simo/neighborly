@@ -18,8 +18,12 @@
 .web-requests .web-review { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--rule, #ddd6c6); }
 .web-requests .web-review h3 { font-size: 13px; margin: 0 0 4px; }
 .web-requests .web-review h4 { font-size: 13px; font-weight: 600; margin: 12px 0 2px; }
-.web-requests .web-partner { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-height: 44px; }
-.web-requests .web-partner > span { min-width: 0; overflow-wrap: anywhere; }
+/* A partner or a marked request is one line of a list: its words on the left, its buttons together after them
+   (on the right on a desk, under the words on a phone), each line set off from the next by a hairline. */
+.web-requests .web-partner { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; min-height: 44px; padding: 10px 0; border-top: 1px solid var(--live-line, #ddd6c6); }
+.web-requests .web-partner > span:first-child { flex: 1 1 260px; min-width: 0; overflow-wrap: anywhere; }
+.web-requests .web-partner > .live-row-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+.web-requests :is(.web-review, .web-partners) > p.live-muted { margin: 0 0 8px; }
 .web-requests .web-link code { word-break: break-all; }
 .web-requests .web-days { list-style: none; padding: 0; margin: 8px 0; }
 /* A web request is a stack of lines, not a call row: it has no date leaf, so it leaves the help row's
@@ -36,7 +40,6 @@
 .web-requests .web-language .web-choice { display: flex; gap: 8px; align-items: center; min-height: 44px; }
 .web-requests .web-partners .live-form input:not([type="radio"]) { max-width: 420px; }
 .web-requests .web-partners .live-form > [data-slot="button"] { justify-self: start; align-self: flex-start; width: auto; }
-.web-requests .web-partner + .web-partner { margin-top: 4px; }
 /* The list after the web requests (To call back, or its empty line) starts a section of its own: it keeps a
    section's space above it, so its title and rule never sit on the last request's Close. */
 .live-app .web-requests + * { margin-top: var(--space-40); }
