@@ -109,7 +109,8 @@ export function AtHome({
               <small data-short={left < 0 ? "" : undefined}>
                 {fill(left < 0 ? at.shortAsOf : at.leftAsOf, {
                   amount: shortMoney(Math.abs(left)),
-                  date: format(money.updatedAt, { weekday: undefined, year: "numeric" }),
+                  // "Nov 16, 2026" never breaks between its month and day.
+                  date: format(money.updatedAt, { weekday: undefined, year: "numeric" }).replace(/ /g, "\u00a0"),
                 })}
               </small>
             </dd>
