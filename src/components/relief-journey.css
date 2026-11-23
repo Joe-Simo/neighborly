@@ -85,8 +85,8 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .fresco-header{top:0;left:0;right:0;height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 20px 0}
   .fresco-brand{font-size:30px}
   .fresco-invitation{position:static;width:auto;translate:none}
-  .fresco-invitation .fresco-kicker{position:absolute;z-index:0;left:max(20px,4%);top:calc(68px + env(safe-area-inset-top));margin:0}
-  .fresco-invitation h2{position:absolute;z-index:0;left:max(20px,4%);top:calc(96px + env(safe-area-inset-top));margin:0;font-size:clamp(40px,12vw,64px)}
+  .fresco-invitation .fresco-kicker{position:absolute;z-index:0;left:max(20px,4%);top:calc(78px + env(safe-area-inset-top));margin:0}
+  .fresco-invitation h2{position:absolute;z-index:0;left:max(20px,4%);top:calc(104px + env(safe-area-inset-top));margin:0;font-size:clamp(40px,12vw,64px)}
   .fresco-invitation p{display:none}
   /* The button stands on paper under the doors, clear of them. */
   .fresco-open[data-slot=button]{position:absolute;z-index:0;left:50%;top:calc(79svh + 34px);translate:-50% 0;min-height:50px}
@@ -210,7 +210,8 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 @media(max-width:700px) and (orientation:portrait),(max-width:480px){
   .relief-hold,.relief-panel[data-side=left] .relief-hold{gap:var(--space-12);padding:20px 0 36px}
   .relief-panel[data-chapter=visit] .relief-words{text-align:right}
-  .relief-panel[data-chapter=visit] .relief-words p{margin-left:auto;text-align:left;width:20em;max-width:100%}
+  /* Its sentence is set to the same right edge as its head, in two even lines, not a full-width left-set block under a right-set head. */
+  .relief-panel[data-chapter=visit] .relief-words p{margin-left:auto;text-align:right;text-wrap:balance;width:20em;max-width:100%}
   .relief-panel[data-chapter=call] .relief-picture{aspect-ratio:4/3}
   .relief-panel[data-chapter=call] .relief-layers{width:128%;height:124%;margin:-19% 0 0 -18%}
   .relief-panel[data-chapter=visit] .relief-picture{aspect-ratio:5/6}
@@ -274,7 +275,8 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
    and each chapter's sentence is held to one editorial measure, about 60 characters of the text face, given in em so the fallback face wraps alike. */
 @media(min-width:1440px){
   .relief-panel[data-chapter=visit] .relief-words h2{font-size:clamp(64px,9.45vw,150px)}
-  .relief-words p,.relief-panel[data-chapter=help] .relief-words p{max-width:30em}
+  /* Held to two even lines, so no line ends on one or two words alone ("calls back.", "the utility."). */
+  .relief-words p,.relief-panel[data-chapter=help] .relief-words p{max-width:30em;text-wrap:balance}
 }
 @media(min-width:1600px) and (min-height:760px){
   .relief-panel[data-chapter=visit] .relief-words h2{font-size:min(9.45vw,17svh)}
@@ -282,7 +284,9 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 /* One book (paper-turn.ts): a chapter's leaf hinges from its top edge as it arrives, and the leaf above it shows a deeper crease while it turns. */
 .relief-panel .relief-hold{transform-origin:50% 0}
 .relief-panel[data-leaf-turning] .relief-hold{will-change:transform}
-.relief-panel[data-leaf-turning]::before{content:"";position:absolute;z-index:2;left:0;right:0;top:-14px;height:14px;pointer-events:none;background:linear-gradient(#3b2a1200,#3b2a121f)}
+.relief-panel[data-leaf-turning]::before{content:"";position:absolute;z-index:2;left:0;right:0;top:-30px;height:30px;pointer-events:none;background:linear-gradient(#3b2a1200 25%,#3b2a1226);-webkit-mask:var(--cut-paper-above) 0 0/100% 100% no-repeat;mask:var(--cut-paper-above) 0 0/100% 100% no-repeat}
+/* The visit's plate carries the groove of a curved sheet that runs out of its top: the groove tapers into the page there instead of stopping on the plate's straight edge. Cream on the same cream, so nothing visible fades but the line. */
+.relief-panel[data-chapter=visit] .relief-layers>picture:first-child img{-webkit-mask:linear-gradient(#0000 2%,#000 10%);mask:linear-gradient(#0000 2%,#000 10%)}
 /* One green for the public page's framed way in: the doors' button is the hero's, at rest and under the pointer. */
 .fresco-open[data-slot=button]{background:#304e3c}
 .fresco-open[data-slot=button]:hover{background:#223e2d}

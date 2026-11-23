@@ -20,7 +20,7 @@ let watch: IntersectionObserver | null = null;
 // Read in the shared frame's first half, before any part of the page has written (scroll-frame.ts).
 let h = 0;
 const feet = new Map<HTMLElement, number>();
-const read = () => { h = innerHeight; feet.clear(); seen.forEach(head => feet.set(head, head.getBoundingClientRect().bottom)); };
+const read = () => { h = innerHeight; feet.clear(); seen.forEach(head => feet.set(head, head.getBoundingClientRect().top)); };
 
 /** How long a head takes to stand once it has begun: its CSS transition (cut-heads.css) and a little more. */
 const standFor = 700;
@@ -29,8 +29,9 @@ const place = () => {
     const foot = feet.get(head);
     if (foot === undefined || set.has(head)) return;
     // As soon as its foot has come into the window it stands, whole, in one short eased move (the transition on --stand),
-    // and stays stood for the visit. It is never left part-way by where the scroll stopped.
-    if (foot > h * .98) return;
+    // and stays stood for the visit. It is never left part-way by where the scroll stopped: any of it in sight (its lying-back top
+    // above the window's foot) is enough, so a page stopped with a head at its very bottom edge never shows it squashed.
+    if (foot > h - 2) return;
     set.set(head, "1");
     seen.delete(head); watch?.unobserve(head);
     head.style.setProperty("--stand", "1");

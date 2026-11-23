@@ -33,9 +33,12 @@ export function ChapterSheet({ to }: { to: keyof typeof sheets }) {
     // The story's sheet carries the courtyard's caption, printed where the caption stands, so as the sheet comes over the words they are still there to read.
     const caption = to === "story" ? document.querySelector<HTMLElement>(".fresco-caption") : null, words = sheet.querySelector<HTMLElement>(".chapter-sheet-words");
     let place = caption?.getBoundingClientRect(), placed = "", sheetWidth = sheet.offsetWidth;
+    // The close's sheet never comes down over the year: its foot stays above the year's stage, which leaves the window whole, slips and caption together, with its band.
+    const yearCaption = to === "close" ? document.querySelector<HTMLElement>(".year-paper-stage") : null;
+    let yearTop = Infinity;
     const fit = () => { if (!caption || !words) return; sheetWidth = sheet.offsetWidth; const look = getComputedStyle(caption); words.style.font = look.font; words.style.letterSpacing = look.letterSpacing; words.style.color = look.color; };
     fit();
-    const read = () => { box = next.getBoundingClientRect(); height = innerHeight; if (to === "close") own = sheet.offsetHeight; if (caption) place = caption.getBoundingClientRect(); };
+    const read = () => { box = next.getBoundingClientRect(); height = innerHeight; if (to === "close") own = sheet.offsetHeight; if (caption) place = caption.getBoundingClientRect(); yearTop = yearCaption?.getBoundingClientRect().top ?? Infinity; };
     const update = () => {
       const top = box.top;
       // The next chapter's paper comes over as that chapter's first edge rises from the foot of the window to its top.
@@ -43,7 +46,8 @@ export function ChapterSheet({ to }: { to: keyof typeof sheets }) {
       if (to === "close") {
         // The close's sheet is part of the page above the rooms, so it is not moved: only its foot is, counted from the sheet's own top, which stands one window above the rooms' edge.
         const edge = Math.max(36, Math.min(64, viewport.width * .044));
-        const shown = top <= 0 || crossed <= 0 ? -200 : (still.matches ? Number(crossed >= .5) : crossed) * (height + edge) - edge - (top + sheets.close.under - own);
+        const sheetTop = top + sheets.close.under - own, reach = Math.min((still.matches ? Number(crossed >= .5) : crossed) * (height + edge) - edge, yearTop - edge - 20);
+        const shown = top <= 0 || crossed <= 0 ? -200 : reach - sheetTop;
         const nowLie = `${shown.toFixed(1)}px`, nowTall = `${box.height.toFixed(0)}px`;
         if (nowLie !== lie) { lie = nowLie; sheet.style.setProperty("--lie", lie); sheet.toggleAttribute("data-away", shown === -200); sheet.parentElement?.toggleAttribute("data-close-over", shown !== -200); }
         if (nowTall !== tall) { tall = nowTall; sheet.style.setProperty("--paper-h", tall); }

@@ -53,7 +53,7 @@ const rotZ = (a: number): Mat => { const c = Math.cos(a), s = Math.sin(a); retur
 const settle = (through: number) => ease((through - FLIGHT) / (1 - FLIGHT));
 
 /** How far a month's leaf has turned away (0 lying in its fan, 1 turned up past the camera). */
-const turned = (month: number, camera: number) => month === MONTHS - 1 ? 0 : ease((monthZ(month) + 2.6 - camera) / 2.2);
+const turned = (month: number, camera: number) => month === MONTHS - 1 ? 0 : ease((monthZ(month) + 1 - camera) / .4);
 
 /** The view and projection for a stage of `aspect`, with the camera at `camera`. */
 /** A camera at `eye` looking at `at`, the world's up kept up. */
@@ -68,7 +68,7 @@ const lookAt = (eye: readonly number[], at: readonly number[]): Mat => {
 const BOOK_AT = [.35, 0, monthZ(MONTHS - 1) - 4.2] as const, PAGE = { w: 1.5, d: 2 } as const;
 /** Where the camera ends: risen above the book and a little before it, looking down on the pile on its right-hand page. */
 const YEAR_ASIDE = .44, YEAR_FIT = .26;
-const END_EYE = [BOOK_AT[0] + .9, 2.9, BOOK_AT[2] + 2.7] as const, END_AT = [BOOK_AT[0] + .25, .2, BOOK_AT[2] - .15] as const;
+const END_EYE = [BOOK_AT[0] + .9, 2.9, BOOK_AT[2] + 2.7] as const, END_AT = [BOOK_AT[0] + .25, -.55, BOOK_AT[2] - .15] as const;
 
 /**
  * The view and projection for a window of `aspect`, `through` the band. With `frame`, the window's place inside a larger canvas (x, y from its
@@ -77,7 +77,9 @@ const END_EYE = [BOOK_AT[0] + .9, 2.9, BOOK_AT[2] + 2.7] as const, END_AT = [BOO
 export function viewProjection(aspect: number, through: number, frame?: { x: number; y: number; w: number; h: number }): Mat {
   // A tall stage keeps the wide one's sideways view, so the fan is never cut at its sides on a phone.
   // The band opens close on October's fan, so the slips fill the window; the lens widens to the flight's own in its first tenth.
-  const fov = FOV * (.46 + .54 * ease(through / .1));
+  // On a tall stage it opens a little wider, so October's fan lies whole inside the screen's sides.
+  const narrow = Math.max(0, Math.min(1, (ASPECT.wide - aspect) / (ASPECT.wide - ASPECT.tall))), open = .64 + .16 * narrow;
+  const fov = FOV * (open + (1 - open) * ease(through / .1));
   // On a tall stage the book is drawn a little smaller and further left of the camera at the end, so its board lies whole inside the window's margins.
   const tall = Math.max(0, Math.min(1, (ASPECT.wide - aspect) / (ASPECT.wide - ASPECT.tall))) * ease(Math.min(1, settle(through) / .3));
   const f = Math.min(1, aspect / ASPECT.wide * 1.6) / Math.tan(fov / 2) * (1 - YEAR_FIT * tall), near = .1, far = 120;
@@ -121,23 +123,34 @@ const PILE_STEP = .0005;
 const piled = slips.map((_, index) => flat(BOOK_AT[0] + PAGE.w / 2 + (hash(index, 61) - .5) * .025, .014 + index * PILE_STEP, BOOK_AT[2] + SLIP.h / 2 + (hash(index, 62) - .5) * .02, SLIP.w, SLIP.h, (hash(index, 63) - .5) * .07));
 
 /** The flight's own poses: each month in its fan, its leaf turned up and away once the camera has reached it. */
-function flightPoses(through: number, out: Float32Array) {
+/** A slip whose nearest corner comes within this of the eye is not drawn: so close it would fill the window, it is already past the reader. */
+const NEAREST = 3.4;
+const corner = new Float32Array(3);
+const nearEye = (m: Float32Array, at: number, camera: number) => {
+  for (const [u, v] of [[-.5, -.31], [.5, -.31], [.5, .31], [-.5, .31]]) {
+    corner[0] = m[at] * u + m[at + 4] * v + m[at + 12] + .18; corner[1] = m[at + 1] * u + m[at + 5] * v + m[at + 13] - .95; corner[2] = m[at + 2] * u + m[at + 6] * v + m[at + 14] - camera;
+    if (corner[2] > -.3 || Math.hypot(corner[0], corner[1], corner[2]) < NEAREST) return true;
+  }
+  return false;
+};
+function flightPoses(through: number, out: Float32Array, keepNear = false) {
   const camera = cameraZ(through);
   let month = -1, leaf = 0;
   slips.forEach((slip, index) => {
     if (slip.month !== month) {
       month = slip.month; leaf = turned(month, camera);
-      if (leaf > 0) mul(mul(translate(0, HINGE, monthZ(month)), rotX(-leaf * 1.9)), translate(0, -HINGE, 0), leafTurn);
+      if (leaf > 0) mul(mul(translate(0, HINGE, monthZ(month)), rotX(-leaf * 2.4)), translate(0, -HINGE, 0), leafTurn);
     }
     const at = index * 16;
     if (leaf > 0) out.set(mul(leafTurn, poses[index], turnedPose), at);
     else { out.set(poses[index], at); out[at + 14] += monthZ(month); }
+    if (!keepNear && nearEye(out, at, camera)) out.fill(0, at, at + 16);
   });
   book.forEach((page, index) => out.set(page, (SLIPS + index) * 16));
   return out;
 }
 /** Where every slip is as the flight ends: the start of each one's way to the pile. */
-const flown = flightPoses(FLIGHT, new Float32Array(INSTANCES * 16));
+const flown = flightPoses(FLIGHT, new Float32Array(INSTANCES * 16), true);
 
 /**
  * Every instance's model matrix at `through`, written into `out` (16 floats each). Through the flight, the fans and their turning leaves; after it,

@@ -234,10 +234,14 @@
 @media(max-width:400px){.painted-world-scroll-cue .painted-world-cue-more{display:none}}
 /* Upright tablets: the whole painting across the top, the words on the paper beneath it. */
 @media(min-width:701px) and (max-aspect-ratio:10/11){
-  .painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fallback){top:calc(64px + env(safe-area-inset-top));bottom:auto;width:100%;height:calc(100vw / 1.40625);-webkit-mask-image:linear-gradient(#000 86%,transparent);mask-image:linear-gradient(#000 86%,transparent)}
+  /* The painting gives up a little height on a shorter upright window, so the headline, its words and both actions stand on the first screen above the cue. */
+  .painted-world[data-hero-only=true]{--tablet-art:max(48vw,min(100vw / 1.40625,100svh - 64px - env(safe-area-inset-top) - 404px))}
+  /* Here the second action stands on plain paper, so it needs no paper of its own. */
+  .painted-world[data-hero-only=true] .painted-world-opening-actions a:not(.painted-world-primary-invitation){background:transparent;padding:0 2px}
+  .painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fallback){top:calc(64px + env(safe-area-inset-top));bottom:auto;width:100%;height:var(--tablet-art);-webkit-mask-image:linear-gradient(#000 86%,transparent);mask-image:linear-gradient(#000 86%,transparent)}
   .painted-world[data-hero-only=true] .painted-world-header{top:0;left:0;right:0;height:calc(64px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 4% 0;background:#eee6d5}
   .painted-world[data-hero-only=true] .painted-world-header:before{display:none}
-  .painted-world[data-scene=opening][data-hero-only=true] .painted-world-caption{top:calc(64px + env(safe-area-inset-top) + 100vw / 1.40625 + 8px);left:7%;width:86%;max-width:none}
+  .painted-world[data-scene=opening][data-hero-only=true] .painted-world-caption{top:calc(64px + env(safe-area-inset-top) + var(--tablet-art) + 8px);left:7%;width:86%;max-width:none}
   .painted-world[data-scene=opening][data-hero-only=true] .painted-world-caption h1{font-size:clamp(48px,7.4vw,76px)}
 }
 
@@ -246,6 +250,10 @@
 /* Its words change once the scene is ready; they sit in a box wide enough for either, so the arrow beside them never moves, and they stand against the arrow, so a short word is never left apart from it. */
 .painted-world[data-hero-only=true] .painted-world-scroll-cue>span{min-width:9.5em;text-align:end}
 .painted-world[data-hero-only=true][data-passed=true] .painted-world-scroll-cue{visibility:hidden}
+/* Where the painting runs under the foot (a wide window), the cue would stand on the hands and the cloth: it is printed on a slip of the page's paper, as the courtyard's held words are. */
+@media(min-aspect-ratio:10/11) and (min-height:501px){
+  .painted-world[data-hero-only=true] .painted-world-scroll-cue{padding:0 14px 0 10px;background:#f4eee0;color:#293f32;border-radius:2px 3px 2px 4px;box-shadow:0 1px 0 #3b2a1238,0 3px 6px #3b2a1224}
+}
 
 /* A phone on its side. Nothing is pinned: the phone painting stands at the left, whole, and the words beside it. The card is passed with the button. */
 @media(max-height:500px) and (min-aspect-ratio:10/11){

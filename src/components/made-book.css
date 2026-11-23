@@ -7,13 +7,14 @@
    beneath it, and the chapter's number, figures and tables kept in a margin column beside the words. */
 /* The home page's editorial scale from 1024 up, as art direction ruled: the chapter's head at display size, its words held to one 60ch measure
    in the left column right under it, and the chapter's figures and tables standing in the right column, top-aligned with the head. Every
-   sheet keeps the same width from here up, so a leaf turning in is never wider than the sheet it lands under. */
+   sheet keeps the same width from here up, so a leaf turning in is never wider than the sheet it lands under; with the sheets laid square the
+   insides are square too, so every head and paragraph keeps one left edge. */
 @media(min-width:1024px){
-  .public-words.public-made section{margin-inline:0;grid-template-columns:minmax(0,60ch) minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:clamp(48px,6vw,120px);align-items:start}
-  .public-words.public-made section>h2{grid-column:1;grid-row:1;text-wrap:balance;max-width:100%;margin-bottom:round(nearest,clamp(20px,2.4vw,40px),4px);font-size:clamp(56px,6vw,84px);line-height:var(--lead-2);letter-spacing:var(--track-2);align-self:start}
+  .public-words.public-made section{margin-inline:0;padding-inline:clamp(20px,5.4vw,104px);grid-template-columns:minmax(0,60ch) minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:clamp(48px,6vw,120px);align-items:start}
+  .public-words.public-made section>h2{grid-column:1;grid-row:1;text-wrap:balance;max-width:100%;margin-bottom:round(nearest,clamp(20px,2.4vw,40px),4px);font-size:clamp(56px,5.4vw,80px);line-height:var(--lead-2);letter-spacing:var(--track-2);align-self:start}
   .public-words.public-made section>h2::before{position:static;margin-bottom:.6em;font-size:13px;letter-spacing:.14em}
   .public-words.public-made section>div{grid-column:1;grid-row:2;max-width:60ch}
-  .public-words.public-made :is(.public-made-figure,.public-made-eval){grid-column:2;grid-row:1/span 2;align-self:start;margin:0}
+  .public-words.public-made :is(.public-made-figure,.public-made-eval,.public-made-anatomy){grid-column:2;grid-row:1/span 2;align-self:start;margin:0}
   .public-words.public-made .public-made-figure{display:block}
   .public-words.public-made section>.public-made-trace,
   .public-words.public-made section>.public-made-process{grid-column:1/-1;grid-row:3;width:auto;max-width:none}
@@ -48,6 +49,7 @@
 .public-words .public-made-checked li+li{margin-top:round(nearest,clamp(18px,2vw,26px),4px)}
 .public-made-checked li p{margin:0}
 .public-words .public-made-checked .public-made-checked-source{margin-top:4px;font-size:15px;line-height:1.5;color:#3d4f43}
+/* The head's display size stops at 80px (5.4vw): at 6vw "IA responsable, con Jev" left "IA" alone on its first line in the 507px column at 1440. */
 /* Heads balance their lines at every width rather than tying the last two words: tied, a long last word ("profundidad") ran past the head's column at 1920. */
 .public-words.public-made section>h2{text-wrap:balance}
 /* Lighthouse at the freeze: six columns do not fit a phone, so under 640px each run is its own short list, each number under its own name. */
@@ -57,3 +59,13 @@
 .public-words.public-made .public-made-stills li{margin:0;padding:0;text-indent:0}
 .public-words.public-made .public-made-stills li::before{content:none}
 @media(min-width:1024px){.public-words.public-made section>ol.public-made-stills{grid-template-columns:repeat(4,minmax(0,1fr))}}
+/* The title stops short of the help's piece of the painting beside it: at 9vw "Cómo lo hicimos" ran under the picture from 1024 to 1440. Set a
+   little smaller, it ends clear of the picture at every width from 1024. */
+@media(min-width:1024px){.public-words.public-made>h1{font-size:clamp(64px,7.6vw,144px)}}
+/* Under 640px the three heights' names leave their leaders and stand under the drawing: each name and its line share one baseline in a
+   short two-column key, and the note on the spacing stands clear below it rather than reading as one more line of "The page". */
+@container (max-width:639px){
+  .public-words .public-made-anatomy-labels li{display:grid;grid-template-columns:5.5em minmax(0,1fr);column-gap:12px;align-items:baseline}
+  .public-words .public-made-anatomy-labels li>span{font-size:15px}
+  .public-made-anatomy-source{margin-top:28px;padding-top:12px;border-top:1px solid #293f3224}
+}

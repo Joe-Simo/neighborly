@@ -164,8 +164,9 @@ export function FrescoThreshold() {
       put("--inside", inside.toFixed(4));
       host.style.setProperty("--standing", standingIn.toFixed(4));
       // The doors' headline is drawn up out of two cuts in the wall's paper, a line at a time, as the opening is lifted off the wall; with Reduce Motion it is simply there.
+      // On a wide window both lines are through by the time the sheet's edge has uncovered them, so the words beneath are never seen without their headline.
       // On a narrow window the headline sits under the opening's sheet until it has cleared, so its cut comes later, ending as the doors begin to open.
-      const come = media.matches ? 1 : phone ? clamp((travelled - .62) / .25) : clamp((travelled - .35) / .5);
+      const come = media.matches ? 1 : phone ? clamp((travelled - .62) / .25) : clamp((travelled - .22) / .35);
       put("--come", come.toFixed(4));
       // A line part way through its cut keeps the cut's edge and shade beside it, so no letter is ever seen without the paper it comes from.
       [0, 1].forEach(line => { const through = clamp((come - line * .3) / .7); host.dataset[`slip${line}`] = String(through > 0 && through < 1); });
