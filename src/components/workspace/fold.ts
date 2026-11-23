@@ -327,7 +327,11 @@ function openRoom(sheet: HTMLElement) {
   const { marginTop, marginBottom, paddingTop, paddingBottom } = style;
   const height = sheet.offsetHeight;
   holdThePage();
-  const shut = { overflow: "hidden", boxSizing: "border-box", minHeight: "0px" };
+  // The opening room is cut at the sheet's own edges by a clip-path as well as by overflow: a clip-path is drawn in
+  // the sheet's own space, settle turn and all, and cuts every part of it, a button on a layer of its own included.
+  // Safari's overflow clip did not reach such a button while the sheet turned, and a sliver of it showed above the
+  // corner of the opening card. Its sides keep the paper's shadow; its top and foot are the sheet's border.
+  const shut = { overflow: "hidden", boxSizing: "border-box", minHeight: "0px", clipPath: "inset(-1px -48px 0px -48px)" };
   const from = pageBefore !== undefined ? closedMargin(sheet, pageBefore) : (foldedMargin(sheet, style) ?? closedMargin(sheet, pageWithout(sheet, "gone")));
   // A line held over the page as it scrolls (sticky) is drawn whole from its first frame, its paper over what is
   // under it, and only its room opens, below it: grown a frame at a time, the page under it showed through its band.

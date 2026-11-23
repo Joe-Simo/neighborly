@@ -341,3 +341,13 @@ td.help-money[data-balance] { color: var(--live-muted); }
 /* A note, a need or a payee written with one very long word (a name without spaces, a pasted link) turns at the edge of
    its text column; every column it can sit in is minmax(0, 1fr), so the rows are laid out as before. */
 .help-sheet-body > div > :is(p, h2, h3), .help-row > div > :is(p, h3), .web-requests .help-row > * { overflow-wrap: anywhere; }
+
+/* A sheet turning in as a leaf (sheet-leaves.ts) is one flat piece of paper: its words and buttons are drawn into
+   the sheet's own surface and nothing of them reaches past its top edge. In Safari a button holding a layer of its
+   own was set on a plane apart from its tilted sheet, and a sliver of it showed above the folded corner as the leaf
+   settled. The clip keeps the sheet's shadow at its sides and foot; only the top edge is cut, at the border. */
+.help-sheet[data-leaf-turning] {
+  transform-style: flat;
+  isolation: isolate;
+  clip-path: inset(-1px -48px -72px -48px);
+}
