@@ -157,6 +157,6 @@
 @media(min-width:901px) and (max-width:1279px){.neighborly-continuation .neighborly-colophon{padding-top:30px}}
 
 /* One gutter with the header wordmark: 16px on a small phone, 20px to 900px, then 4% of the page. */
-@media(max-width:430px){.neighborly-together{padding-left:max(16px,var(--safe-l));padding-right:max(16px,var(--safe-r))}}
+@media(max-width:430px){.neighborly-together{padding-left:max(16px,var(--safe-l));padding-right:max(16px,var(--safe-r))}.neighborly-trust,.neighborly-close{margin-left:calc(-1 * max(16px,var(--safe-l)));margin-right:calc(-1 * max(16px,var(--safe-r)))}.neighborly-trust{padding-left:max(16px,var(--safe-l));padding-right:max(16px,var(--safe-r))}}
 /* The foot's paper reaches the page's two edges and no further; the band clips sideways so nothing in it can scroll the page. */
 @media(min-width:901px){.neighborly-together>.neighborly-colophon{margin-inline:calc(max(20px,4vw) - 7vw)}.neighborly-together{overflow-x:clip}}

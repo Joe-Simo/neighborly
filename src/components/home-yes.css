@@ -76,3 +76,16 @@
 
 /* High contrast is the reader's choice: the ground is the page's own Canvas, not a forced block. */
 @media(forced-colors:active){.home-yes{background:none}}
+/* The sheet keeps the list's height, so the draft's spare room goes between its words and its button: the request at the top, the yes and its foot line together at the foot, never a blank under the button. */
+@media(min-width:1101px){
+  .home-yes .help-sheet .help-sheet-body{flex:1 1 auto;align-content:space-between}
+}
+/* Wide, the sheet's words still need its whole width: in two columns the request's date and its quote broke into a narrow column. The button has its own row. */
+@media(min-width:1850px){
+  .home-yes .help-sheet .help-sheet-body{grid-template-columns:minmax(0,1fr)}
+  .home-yes-desk{min-height:calc(442px*var(--up))}
+}
+/* The kicker stands clear of the headline's tall capitals. */
+@media(min-width:1600px){.home-yes-kicker.home-yes-kicker{margin-bottom:clamp(22px,1.8vw,36px)}}
+/* At rest the year's card is laid wholly under the sheet it became, not left as a sliver over the sheet's top edge. */
+@media(min-width:1101px){.home-yes-desk .card-station{top:64px}}

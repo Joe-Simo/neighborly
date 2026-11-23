@@ -282,7 +282,7 @@ a:hover{text-decoration-thickness:2px}
 :focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:4px}
 .bar{display:flex;justify-content:space-between;align-items:center;gap:16px;max-width:1040px;margin:0 auto;padding:16px 24px}
 .mark,.lang,.slip p a{display:inline-flex;align-items:center;min-height:44px}
-.mark{font:400 24px/1 Georgia,"Times New Roman",serif;letter-spacing:-.02em;text-decoration:none}
+.mark{font:400 24px/1 Newsreader,Georgia,"Times New Roman",serif;letter-spacing:-.02em;text-decoration:none}
 .lang{font-size:16px}
 .exit{position:fixed;top:12px;right:12px;z-index:2;display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:4px;background:var(--ink);color:var(--sheet);font-weight:600;text-decoration:none;box-shadow:0 2px 6px #283c3240}
 .wall{display:grid;gap:32px;max-width:1040px;margin:0 auto;padding:8px 24px 48px}
@@ -293,8 +293,8 @@ body:has(.wall.plain)>.bar{max-width:640px}
 .sheet::after{content:"";position:absolute;top:0;right:0;width:37px;height:37px;background:linear-gradient(225deg,transparent 50%,var(--corner,#e7e1d2) 50%);box-shadow:-3px 3px 7px -4px #283c3259}
 .sheet.waits{--corner:var(--ochre)}.sheet.given{--corner:var(--green)}
 .kicker{margin:0 0 10px;font-size:14px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-h1{margin:0;font:400 clamp(34px,6vw,46px)/1.08 Georgia,"Times New Roman",serif;letter-spacing:-.02em;word-spacing:.04em;text-wrap:balance}
-h2{margin:0 0 8px;font:400 22px/1.2 Georgia,"Times New Roman",serif;word-spacing:.04em}
+h1{margin:0;font:400 clamp(34px,6vw,46px)/1.08 Newsreader,Georgia,"Times New Roman",serif;letter-spacing:-.02em;word-spacing:.04em;text-wrap:balance}
+h2{margin:0 0 8px;font:400 22px/1.2 Newsreader,Georgia,"Times New Roman",serif;word-spacing:.04em}
 .deck{margin:14px 0 0;color:var(--muted);text-wrap:pretty}
 .form{display:grid;gap:20px;margin-top:28px}
 .set{margin:0;padding:0;border:0;display:grid;gap:8px;min-width:0}
@@ -336,12 +336,13 @@ form:has(#safe-yes:checked) .when{display:none}
 .danger p{margin:0 0 8px}.danger .lines{margin:16px 0 12px}
 @media(max-width:559px){.sheet .lines .btn{flex:1 1 100%}}
 .btn{text-align:center;padding-block:10px}
-.danger-title{font:400 24px/1.2 Georgia,serif}
+.danger-title{font:400 24px/1.2 Newsreader,Georgia,serif}
 .slips{display:grid;gap:20px;align-content:start}
 .slip{padding:20px 22px;background:var(--sheet);border-radius:2px;box-shadow:0 1px 0 #fffdf7,0 8px 14px #283c321f,0 1px 2px #283c3224}
 .slip.kraft{background:var(--kraft);rotate:-.6deg}
 .slip ol{margin:0;padding-left:20px;display:grid;gap:8px}
 .slip p{margin:6px 0 0}
+p,li,.slip p a{text-wrap:pretty}
 .ladder{list-style:none;margin:28px 0 0;padding:0;border-top:1px solid var(--rule)}
 .ladder li{display:grid;padding:14px 0 14px 28px;border-bottom:1px solid var(--rule);position:relative;color:var(--muted)}
 .ladder li::before{content:"";position:absolute;left:2px;top:21px;width:10px;height:10px;border-radius:50%;border:2px solid #9aa391}

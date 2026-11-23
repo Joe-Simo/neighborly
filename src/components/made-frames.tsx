@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { late, lateMs, madeFrames } from "@/lib/made-frames";
 import type { madeWords } from "@/lib/made-words";
 import type { Language } from "@/lib/words";
+import { madeNumber } from "@/lib/made-said";
 
 type Said = (typeof madeWords)[Language]["frameStrip"];
 
@@ -9,7 +10,6 @@ type Said = (typeof madeWords)[Language]["frameStrip"];
 const ceiling = 40;
 // Each frame is a mark at the height of its own time, not a bar from the floor, so a run of even frames reads as one fine line well under the 33 ms line.
 const mark = 1.6;
-const whole = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
 const days = { en: new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }), es: new Intl.DateTimeFormat("es-US", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }) };
 /** Each frame's mark, as one subpath of a single path: a 1-wide box at the height of its own time. */
 const marks = (all: readonly number[], isLate: boolean) =>
@@ -22,6 +22,7 @@ const fill = (text: string, values: Record<string, string>) => text.replace(/\{(
  */
 export function MadeFrames({ said, language }: { said: Said; language: Language }) {
   // Both widths share one x-axis: a frame is the same width in each strip, so the longer run is the longer strip.
+  const whole = madeNumber[language];
   const span = Math.max(...madeFrames.widths.map(({ all }) => all.length));
   return <figure className="public-made-frames">
     <figcaption className="public-made-frames-title">{said.caption}</figcaption>

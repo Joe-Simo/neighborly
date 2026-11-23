@@ -37,12 +37,12 @@ const en = {
       "No advertising. We do not sell or share records. The site loads no analytics or tracking scripts. The only outside services it uses are the ones named on this page.",
       "So that it can open without a connection, the app keeps its own pages, pictures and fonts on your device. In the iPhone and iPad app, the first screen of This week and of the help line is kept too, so the app opens at once: what those screens show, callers’ names and numbers among it, but never an email. It is held in the app’s own protected storage and let go after a day, or at once on signing out. In a browser, words typed into a form and not yet saved stay only in that tab, and signing out clears what the site kept there.",
     ] },
-    { title: "The sample conference", blocks: ["“Look around a sample conference” opens a conference of made‑up people with made‑up phone numbers. It is rebuilt every night, and anything typed into it is thrown away then."] },
+    { title: "The sample conference", blocks: ["“Look around a sample conference” opens a conference of made‑up people with made‑up phone numbers. It is rebuilt every night, and anything typed into it is thrown away then."] },
     { title: "Removing a record, a person or a whole conference", blocks: [
       "Ask the owner of your conference first. The records are theirs, and only an owner can remove them. Each removal asks the owner to type the name, and it cannot be undone.",
       [
         ["A neighbor’s record.", "The record is erased, and the name and details are taken out of that household’s calls, requests, visits and ledger lines. The year’s totals stay as they were, with no name."],
-        ["A person in the conference.", "Their name, email, language, teams, availability, time off and the link to their sign-in are erased. The visits and hours they gave still count in the year, signed “A former member”."],
+        ["A person in the conference.", "Their name, email, language, teams, availability, time off and the link to their sign-in are erased. The visits and hours they gave still count in the year, signed “A former member”."],
         ["A whole conference.", "The owner is offered a download of the records first. Then everything the conference kept here is removed."],
       ],
       "One limit: a name someone typed by hand somewhere else, such as in a note on another record, a task or an announcement, is not searched for. The owner should look for those and change them.",
@@ -97,7 +97,7 @@ const es: typeof en = {
       "Pregunta primero al responsable de tu conferencia. Los registros son de la conferencia, y solo un responsable puede eliminarlos. En cada eliminación se le pide al responsable que escriba el nombre, y no se puede deshacer.",
       [
         ["El registro de un vecino.", "El registro se borra, y el nombre y los datos se quitan de las llamadas, las peticiones, las visitas y las líneas del libro de ese hogar. Los totales del año quedan como estaban, sin nombre."],
-        ["Una persona de la conferencia.", "Se borran su nombre, correo electrónico, idioma, equipos, disponibilidad, días libres y el vínculo con su inicio de sesión. Las visitas y las horas que dio siguen contando en el año, firmadas «A former member» (un miembro anterior)."],
+        ["Una persona de la conferencia.", "Se borran su nombre, correo electrónico, idioma, equipos, disponibilidad, días libres y el vínculo con su inicio de sesión. Las visitas y las horas que dio siguen contando en el año, firmadas «A former member» (un miembro anterior)."],
         ["Una conferencia entera.", "Primero se le ofrece al responsable una descarga de los registros. Después se elimina todo lo que la conferencia guardó aquí."],
       ],
       "Un límite: un nombre que alguien escribió a mano en otro lugar, por ejemplo en una nota de otro registro, en una tarea o en un aviso, no se busca. El responsable debe buscarlos y cambiarlos.",
