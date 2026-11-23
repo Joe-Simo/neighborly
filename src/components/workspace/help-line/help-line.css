@@ -469,3 +469,9 @@
   .help-row h3:has(> .help-phone) { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; }
   .help-row h3 > .help-phone { margin-left: 0; }
 }
+/* A neighbor's record has no picture in its head, so its facts line runs to a reading measure instead of
+   stopping where the art would begin: in Spanish it read four short lines at a tablet's width. */
+@media (min-width: 700px) {
+  .live-app .live-main:has(.help-record-head) .live-page-head[data-plain] .live-head-words { max-width: min(660px, 100%); }
+  .live-app .live-main:has(.help-record-head) .live-page-head[data-plain] .live-deck { max-width: 46ch; min-height: 0; }
+}
