@@ -1108,10 +1108,19 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
   width: 9px; height: 9px; background: none; box-shadow: inset 0 0 0 2px #a8791f;
 }
 .live-app :is(.visits-room, .visits-mine, .live-commitment-row) .live-status:is([data-state="declined"], [data-state="released"]) { color: var(--live-muted); }
+/* A canceled commitment is a quiet grey word too, behind a struck ring the size of the green tick, so its word starts
+   where "Accepted" does; its title steps back with it. */
+.live-app .live-commitment-row .live-status[data-state="cancelled"] { color: var(--live-muted); }
+.live-app .live-commitment-row .live-status[data-state="cancelled"]::before {
+  width: 16px; height: 16px; border-radius: 0; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m5 19 14-14'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m5 19 14-14'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.live-app .live-commitment-row:has(.live-status[data-state="cancelled"]) h3 { color: var(--live-muted); }
 /* A returned call is done: the same green tick as a visit the pair said yes to, in ink. */
 .live-app .live-status.help-returned { gap: var(--space-8) 8px; color: var(--live-ink); }
 @media (max-width: 429px) {
-  .live-app :is(.visits-room, .visits-mine, .live-commitment-row) .live-status:is(:not([data-state]), [data-state="accepted"])::before { width: 12px; height: 12px; }
+  .live-app :is(.visits-room, .visits-mine, .live-commitment-row) .live-status:is(:not([data-state]), [data-state="accepted"], [data-state="cancelled"])::before { width: 12px; height: 12px; }
 }
 
 /* A commitment row opens as the neighbor record's rows do: anywhere on it opens its details, through its one button. */
