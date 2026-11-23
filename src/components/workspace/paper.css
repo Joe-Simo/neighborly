@@ -894,9 +894,10 @@
 .live-dialog { font-size: 16px; }
 .live-dialog .live-field small, .live-dialog .live-detail small { font-size: 15px; line-height: 1.45; }
 .live-dialog.live-detail-dialog p { font-size: 15px; line-height: 1.5; }
-/* What to bring, under the facts: its label is set like theirs, its words as large as theirs, and the press stands a step under them. */
-.live-dialog .live-detail + section { margin-top: var(--space-32); }
-.live-dialog .live-detail + section > h3 { margin: 0 0 var(--space-8); font: 400 13px / 1.4 "Source Sans 3", "Source Sans 3 Fallback", sans-serif; letter-spacing: var(--caps-track); text-transform: uppercase; color: var(--live-muted); }
+/* What to bring and who to ask, under the facts: each label is set like theirs, and what follows stands a step under its words. */
+.live-dialog .live-detail ~ section { margin-top: 0; }
+.live-dialog .live-detail ~ section > p { margin: 0 0 var(--space-16); }
+.live-dialog .live-detail ~ section > h3 { margin: 0 0 var(--space-8); font: 400 13px / 1.4 "Source Sans 3", "Source Sans 3 Fallback", sans-serif; letter-spacing: var(--caps-track); text-transform: uppercase; color: var(--live-muted); }
 .live-dialog .live-detail + section > .live-prep { margin: 0 0 var(--space-16); font-size: 17px; line-height: 1.5; }
 .live-dialog .live-field > [data-slot="native-select-wrapper"] { width: 100%; }
 .live-dialog .live-manage [data-slot="button"] { height: auto; flex-direction: column; align-items: flex-start; gap: 2px; padding: var(--space-12) 16px; white-space: normal; text-align: left; }
