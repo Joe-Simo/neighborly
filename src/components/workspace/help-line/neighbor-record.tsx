@@ -767,7 +767,7 @@ function NeighborRecordView({
           </div>
           <div className="live-list">
             {alsoOpen.map((request) => (
-              <div className="help-row" key={request.id}>
+              <div className="help-row help-also-row" key={request.id}>
                 <DateLeaf said={format(request.createdAt, { month: "long", day: "numeric" })}>
                   <span>{format(request.createdAt, { day: undefined })}</span>
                   <strong>

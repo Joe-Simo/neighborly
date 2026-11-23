@@ -387,6 +387,12 @@
 .help-add { display: block; min-width: 0; max-width: 100%; overflow: hidden; white-space: nowrap; }
 .help-add-short, .help-add[data-tight] .help-add-long { display: none; }
 .help-add[data-tight] .help-add-short { display: inline; }
+/* A record's dated row (Also open) on a phone: the state goes under the words, so the date leaf stands beside both,
+   and the state sits under the summary instead of under the leaf's foot. */
+@media (min-width: 381px) and (max-width: 560px) {
+  .live-app .help-also-row > .live-date-leaf { grid-row: 1 / span 2; align-self: start; }
+  .live-app .help-also-row { align-content: start; }
+}
 /* A full name stays on one line. Under 381px the words column is too narrow for the longest names, so the time
    stands on its own line above the name (as at the iOS accessibility sizes) and the name, number, words and acts take the full width; the smaller acts wrap, never clip. */
 .help-row .help-row-more { flex-wrap: wrap; }
