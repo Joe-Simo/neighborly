@@ -19,6 +19,9 @@ type DetailNeighbor = { name: string; address: string; phone: string; householdS
 /** The home visit the page goes to, when it is printed from one. */
 type DetailVisit = { at: number; visitors: string[] };
 
+/** A conference name of up to 32 letters, its spaces made non-breaking; a longer one is left free to wrap. */
+const heldName = (name: string) => (name.length <= 32 ? name.replace(/ /g, "\u00a0") : name);
+
 /**
  * One assistance request on one printed page, for a home visit: who asked and how to reach them, what they asked
  * for, the help asked for before, and the visit. Drawn in place of the room's own page, so printing takes only it.
@@ -45,7 +48,8 @@ export function RequestDetailView({ neighbor, rows, requestId, visit }: { neighb
       <article className="request-detail paper-settle" aria-label={text.label(neighbor.name)}>
         <header>
           <strong className="request-detail-mark" aria-hidden="true">kind helps</strong>
-          <p className="request-detail-kicker">{sample ? text.kickerSample(data.church.name) : text.kicker(data.church.name)}</p>
+          {/* A short conference name holds together, so a narrow sheet turns the line at the dot, not inside the name. */}
+          <p className="request-detail-kicker">{sample ? text.kickerSample(heldName(data.church.name)) : text.kicker(heldName(data.church.name))}</p>
           <h2>{neighbor.name}</h2>
           <p className="request-detail-when">{fill(text.takenOn, { date: format(request.createdAt, { month: "long", day: "numeric", year: "numeric" }), name: request.createdByName })}</p>
         </header>
