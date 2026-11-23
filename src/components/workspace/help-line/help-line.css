@@ -297,14 +297,16 @@
 .help-name-whole { white-space: nowrap; }
 
 /* A neighbor row's facts, with a middle dot between them and never one at the start of a line: each fact
-   carries its dot in a margin on its left, and the row cuts off whatever lies left of its own edge. */
+   carries its dot in a margin on its left, and the row cuts off whatever lies left of its own edge. The dot is
+   inline text, not a positioned box: positioned facts inside this overflow clip were each a paint layer of their
+   own, and Safari kept their old paint when the row was laid out again, so a row's facts were seen twice. */
 .help-facts { overflow: hidden; }
 .help-facts > span { display: flex; flex-wrap: wrap; margin-left: -1.1em; }
-.help-facts > span > span { position: relative; padding-left: 1.1em; }
+.help-facts > span > span { padding-left: 1.1em; }
 /* The facts are drawn above the row for their dots; a press on them still opens the row, as everywhere else on it. */
 .help-row:has(.help-row-open) .help-facts { pointer-events: none; }
 .help-row:has(.help-row-open) .help-facts :is(a, button) { pointer-events: auto; }
-.help-facts > span > span::before { content: "·"; position: absolute; left: 0; width: 1.1em; text-align: center; }
+.help-facts > span > span::before { content: "·"; display: inline-block; width: 1.1em; margin-left: -1.1em; text-align: center; }
 
 /* When a call travels to "Returned this week" the lists move their own rows; the browser must not also shift
    the page to follow one of them, nor to follow the saved line laid in above them in that same frame. */
