@@ -33,9 +33,10 @@ export const recordHref = (neighborId: string) =>
 export const livesHere = (people: NeighborRecord["household"], said: (typed: string) => string = (typed) => typed) =>
   people
     .map((person) =>
-      person.age === null ? said(person.relationship) : `${said(person.relationship)}, ${person.age}`,
+      person.age === null ? said(person.relationship) : `${said(person.relationship)},\u00a0${person.age}`,
     )
-    .join(" · ");
+    // The dot holds to the person before it, so a turned line never opens on one.
+    .join("\u00a0· ");
 export const total = (lines: { amount: number }[]) =>
   lines.reduce((sum, line) => sum + line.amount, 0);
 export const accountKinds = {
