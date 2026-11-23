@@ -1195,21 +1195,20 @@ nav:is(.week-figures, .glance-tiles) a:focus-visible { box-shadow: 0 0 0 1px var
 .live-header [data-slot="dropdown-menu-trigger"] { transition-property: background-color, border-color, color; }
 @media (forced-colors: active), print { [data-slot="button"], nav:is(.week-figures, .glance-tiles) a { box-shadow: none !important; } }
 @media (prefers-reduced-motion: reduce) { [data-slot="button"] { transition: none; } }
-/* A Help line or commitment row that opens something lifts from flat to a slip: the slip is drawn once, under
-   the words, and only its opacity changes. People rows lift on the row itself (people.css). */
-.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens) { position: relative; isolation: isolate; }
-.help-row:has(.help-row-open)::before, .live-commitment-row:has(.live-row-opens)::before {
-  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  border-radius: 3px; background: var(--relief-paper); box-shadow: var(--relief-slip);
-  opacity: 0; transition: opacity 120ms var(--paper-ease, var(--ease-paper));
+/* A Help line or commitment row that opens something lifts from flat to a slip, painted on the row itself as People
+   rows are (people.css): its paper and shadow are drawn in the same pass as its words, under them, with no layer or
+   pseudo-element of its own. A slip on a layer of its own (a fading ::before under an isolated row) was moved by
+   Safari's scrolling apart from the words it lay under, and a row's slip was seen over the next row's name. */
+.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens) {
+  position: relative; isolation: isolate; border-radius: 3px;
+  transition: background-color 120ms var(--paper-ease, var(--ease-paper)), box-shadow 120ms var(--paper-ease, var(--ease-paper));
 }
 @media (hover: hover) {
-  :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):hover { background: none; box-shadow: none; }
-  :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):hover::before { opacity: 1; }
+  :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):hover { background-color: var(--relief-paper); box-shadow: var(--relief-slip); }
 }
-:is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):has(:focus-visible)::before { opacity: 1; }
-@media (forced-colors: active), print { :is(.help-row, .live-commitment-row)::before { box-shadow: none !important; } }
-@media (prefers-reduced-motion: reduce) { :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens))::before { transition: none; } }
+:is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)):has(:focus-visible) { background-color: var(--relief-paper); box-shadow: var(--relief-slip); }
+@media (forced-colors: active), print { :is(.help-row, .live-commitment-row) { box-shadow: none !important; } }
+@media (prefers-reduced-motion: reduce) { :is(.help-row:has(.help-row-open), .live-commitment-row:has(.live-row-opens)) { transition: none; } }
 /* The display serif is tracked tight (down to -.06em), and the space between words was tightened with it until
    "How we" read "Howwe". Word spacing gives the tracking back, so each heading keeps a true word space at every size. */
 :where(h1, h2, h3) { word-spacing: 0.04em; }
