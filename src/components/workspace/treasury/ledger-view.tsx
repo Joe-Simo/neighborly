@@ -62,7 +62,7 @@ function PaidLine({ paid }: { paid: Paid }) {
   const said = left > 0 ? w.saidLeft(formatFigure(left)) : w.said;
   const kind = categoryLabel(room, paid.request.kind);
   const day = dayLabel(words.locale, paid.date);
-  const to = [sampleSaid(paid.request.payeeName), paid.checkNumber && room.lines.check(paid.checkNumber)].filter(Boolean).join(" · ");
+  const to = [sampleSaid(paid.request.payeeName), paid.checkNumber && room.lines.check(paid.checkNumber)].filter(Boolean).join("\u00a0· ");
   // What a screen reader hears, the same from first to last: given as the line's words, so it is said once and the id never is.
   const read = `${fill(w.read, { day, kind, name: paid.request.neighborName, to, amount: formatFigure(paid.amount) })} ${said}`;
   // Asked for before the line is said, so a line that takes focus is read by that and not said twice.
@@ -85,7 +85,7 @@ function PaidLine({ paid }: { paid: Paid }) {
         <span className="treasury-paid-words" aria-hidden="true">
           <span className="treasury-paid-line">
             <span>
-              {day} · <span className="treasury-paid-kind">{room.lines.kindFor(kind)}{" "}</span>
+              {day}&nbsp;· <span className="treasury-paid-kind">{room.lines.kindFor(kind)}{" "}</span>
               {paid.request.neighborName}
             </span>
             <strong>{formatFigure(paid.amount)}</strong>

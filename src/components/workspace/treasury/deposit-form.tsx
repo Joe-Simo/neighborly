@@ -77,7 +77,7 @@ export function DepositForm({
             <span>
               <strong>{sampleSaid(gift.memo) || categoryLabel(room, gift.category, sampleSaid)}</strong>
               <small>
-                {dayLabel(words.locale, gift.date)} · {room.lines.from(gift.from)}
+                {dayLabel(words.locale, gift.date)}&nbsp;· {room.lines.from(gift.from)}
               </small>
             </span>
             <span className="treasury-gift-amount">{formatCents(gift.amount)}</span>

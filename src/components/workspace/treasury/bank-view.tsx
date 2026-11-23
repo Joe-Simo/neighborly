@@ -43,7 +43,7 @@ const under = (words: TreasuryWords, entry: BankEntry, typed?: (typed: string) =
     entry.reverses ? words.lines.reversal : categoryLabel(words, entry.category, typed),
   ]
     .filter(Boolean)
-    .join(" · ");
+    .join("\u00a0· ");
 
 // The day a statement was matched is a moment, written in the reader's own time zone.
 const stamp = (locale: Language, time: number) => formatDate(locale, time, { month: "short", day: "numeric" });
@@ -286,9 +286,9 @@ function BankView({
                   <div>
                     <h3>{w.waiting.deposit(formatFigure(deposit.total))}</h3>
                     <p>
-                      <span className="treasury-day">{day(deposit.date)} · </span>
+                      <span className="treasury-day">{day(deposit.date)}&nbsp;· </span>
                       {w.waiting.carried(deposit.count)}
-                      {deposit.memo && ` · ${sampleSaid(deposit.memo)}`}
+                      {deposit.memo && `\u00a0· ${sampleSaid(deposit.memo)}`}
                     </p>
                   </div>
                   <Button
@@ -307,7 +307,7 @@ function BankView({
                   <div>
                     <h3>{line(room, entry, sampleSaid)}</h3>
                     <p>
-                      <span className="treasury-day">{day(entry.date)} · </span>
+                      <span className="treasury-day">{day(entry.date)}&nbsp;· </span>
                       {under(room, entry, sampleSaid)}
                     </p>
                   </div>
