@@ -1841,6 +1841,11 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
   .live-form-actions:has(> [data-foot-aside])::after { content: ""; order: -1; flex-basis: 100%; height: 0; }
   .live-form-actions > [data-foot-aside] { order: -2; }
 }
+/* On a phone a sheet's presses fill the foot: two that share a line split it, and two that take a line each (Spanish
+   runs longer) are each the full width, one edge for both, never a ragged pair set to the right. */
+@media (max-width: 599px) {
+  .live-dialog .live-form-actions > :is([data-slot="button"], [data-slot="dialog-close"]) { flex: 1 1 auto; }
+}
 
 /* A neighbor's name that opens their request reaches 44px to the touch without moving a letter. */
 .live-app .help-row h3 > .help-row-open { display: inline-block; padding-block: 11px; margin-block: -11px; }
