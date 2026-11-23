@@ -283,6 +283,8 @@ export function en(set: WordSet) {
           : `${enN(count)} ${count === 1 ? "commitment" : "commitments"} affected`,
       explain:
         "Confirming will release only these commitments and record your time off. Team memberships and other dates stay the same.",
+      explainNone:
+        "Confirming will record your time off. Your commitments, team memberships and other dates stay the same.",
       back: "Back",
       saving: "Saving…",
       confirm: "Confirm time off",

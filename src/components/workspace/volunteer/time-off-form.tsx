@@ -145,7 +145,7 @@ function TimeOffConfirmation({
         </ul>
       )}
       <p className="volunteer-review-explain">
-        {words.timeOffForm.explain}
+        {snapshot.length ? words.timeOffForm.explain : words.timeOffForm.explainNone}
       </p>
       {error && <LiveFailure message={error} kept="" />}
       <div className="live-form-actions">
