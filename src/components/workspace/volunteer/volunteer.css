@@ -213,3 +213,18 @@
    does, instead of stopping short at 760px; its words keep their reading measure. */
 .live-app :is(.volunteer-tasks-list, .volunteer-meetings-list) > .live-empty { max-width: none; }
 .live-app :is(.volunteer-tasks-list, .volunteer-meetings-list) > .live-empty > div { max-width: 600px; }
+
+/* Both empty places stand the same distance under their rule, and the second rule the same distance under the
+   first place's picture: the hidden heads take no room, and the space between the two is the space under a rule. */
+.live-app :is(.volunteer-tasks-list, .volunteer-meetings-list):has(> .live-empty) > .live-section-head { margin-bottom: 0; }
+.live-app .volunteer-tasks-list > .live-empty[data-first] { padding-top: 0; }
+.live-app .volunteer-meetings-list > .live-empty { padding-top: var(--space-40); }
+.live-app .volunteer-tasks-list:has(> .live-empty) + .volunteer-meetings-list { margin-top: var(--space-8); }
+@media (min-width: 900px) and (max-height: 860px) {
+  .live-app .volunteer-meetings-list > .live-empty { padding-top: var(--space-32); }
+}
+@media (max-width: 560px) {
+  .live-app .volunteer-meetings-list > .live-empty { padding-top: var(--space-24); }
+  .live-app .volunteer-tasks-list > .live-empty { padding-bottom: var(--space-24); }
+  .live-app .volunteer-tasks-list:has(> .live-empty) + .volunteer-meetings-list { margin-top: 0; }
+}
