@@ -73,12 +73,24 @@
   .slip-folds-corner{width:calc(30px * var(--k));height:calc(30px * var(--k))}
 }
 /* Below 1024 the slip is held at the top of the window, just under the words it follows, rather than at the middle of an empty screen:
-   the stage is as tall as the slip, and the band runs on past it by the same four tenths of a window of scroll. */
+   the stage is as tall as the slip, and the band runs on past it by about a fifth of a window of scroll: enough for the fold, short enough that no long run of bare paper opens under the caption before the visit. */
 @media(max-width:1023px) and (prefers-reduced-motion:no-preference){
   .slip-folds{height:auto}
-  .slip-folds::after{content:"";display:block;height:40svh}
-  .slip-folds-stage{height:auto;place-items:start center;padding:40px 20px 56px}
+  .slip-folds::after{content:"";display:block;height:22svh}
+  .slip-folds-stage{height:auto;place-items:start center;padding:40px 20px 40px}
 }
 @media print{.slip-folds{height:auto}.slip-folds::after{display:none}.slip-folds-stage{position:static;height:auto}}
 /* The way into the sample is the one thing to do here: it is set in the serif, a step above the sentence it ends, never below it. */
 .slip-folds-figure .slip-folds-link{display:flex;justify-content:center;margin-top:4px;white-space:nowrap;font-family:'Newsreader','Newsreader Fallback',Georgia,serif;font-size:1.1em;letter-spacing:-.01em}
+
+/* The conference's name, kept at the body's head once the top has folded fully back (slip-folds.tsx), in one step, never faded. */
+.slip-folds-kept{display:none;margin:0 0 2px;font:500 calc(13px * var(--k,1))/1.3 "Source Sans 3","Source Sans 3 Fallback",sans-serif;letter-spacing:var(--caps-track);text-transform:uppercase;color:#5b6a5e}
+.slip-folds-slip[data-turned="true"] .slip-folds-kept{display:block}
+@media(prefers-reduced-motion:reduce){.slip-folds-kept{display:block}}
+.slip-folds:focus-within .slip-folds-kept{display:block}
+/* The visit follows at the site's usual rhythm: the band's last window is mostly the empty paper under the caption, so the visit's sheet is
+   laid over that tail rather than after it. It lies above the band, and its own top is bare paper, so nothing of the slip is covered. */
+@media(min-width:1024px){
+  .slip-folds{margin-bottom:-30svh}
+  .slip-folds + .relief-panel{z-index:2}
+}

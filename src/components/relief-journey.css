@@ -181,7 +181,7 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
   .relief-panel[data-chapter=year] .relief-hold{gap:0 4vw;padding-right:max(7%,var(--safe-r))}
   .relief-panel[data-chapter=year] .relief-words{margin-left:0}
   .relief-panel[data-chapter=year] .relief-picture{width:min(54vw,100svh);aspect-ratio:5/4}
-  .relief-panel[data-chapter=year] .relief-layers{width:133%;height:116%;margin:-8% 0 0 -11%}
+  .relief-panel[data-chapter=year] .relief-layers{width:133%;height:116%;margin:-8% 0 0 -15%}
 }
 /* Beside its picture a chapter's sentence is a sentence, not a caption: at least 32 letters to a line. */
 @media(min-width:821px){.relief-words p{max-width:17.5em}}

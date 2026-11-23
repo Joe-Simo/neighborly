@@ -21,7 +21,7 @@ export function SlipFolds() {
     if (!element || !slip || !panel || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const stage = element.querySelector<HTMLElement>(".slip-folds-stage");
     let top = 0, tall = 0, held = 0, near = false;
-    const set = { fold: "", lift: "", crease: "", risen: "" };
+    const set = { fold: "", lift: "", crease: "", risen: "", turned: "" };
     // Read in the shared frame's first half, before any part of the page has written (scroll-frame.ts).
     const read = () => { const box = element.getBoundingClientRect(); top = box.top; tall = box.height; held = stage?.offsetHeight || viewport.height; near = box.bottom > -viewport.height && box.top < viewport.height * 2; };
     const write = () => {
@@ -37,6 +37,9 @@ export function SlipFolds() {
       if (lift !== set.lift) slip.style.transform = set.lift = lift;
       if (crease !== set.crease) slip.dataset.crease = set.crease = crease;
       if (risenStep !== set.risen) slip.dataset.risen = set.risen = risenStep;
+      // Past upright the top's name is turned away, so from that step it is printed at the body's head instead.
+      const turned = String(folded > .5);
+      if (turned !== set.turned) slip.dataset.turned = set.turned = turned;
     };
     const { ask, drop } = frameStep(read, write);
     addEventListener("scroll", ask, { passive: true });
@@ -52,6 +55,8 @@ export function SlipFolds() {
         <div className="slip-folds-slip" data-crease="0" data-risen="false">
           <div className="slip-folds-top"><p>St. Example Conference</p></div>
           <div className="slip-folds-body">
+            {/* Once the top is folded back its name would be turned away: it is kept on the slip, printed at the head of what is left. */}
+            <span className="slip-folds-kept" aria-hidden="true">St. Example Conference</span>
             <strong>Rosa Fontaine</strong>{" "}
             <span>Behind on November rent, $450.</span>
           </div>

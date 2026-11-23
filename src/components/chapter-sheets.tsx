@@ -100,6 +100,11 @@ export function PageTurn({ children }: { children: ReactNode }) {
     // Each line's ink, not its full-width block.
     const ink = document.createRange();
     let clear: { left: number; top: number; right: number; bottom: number }[] = [];
+    // What follows the chapter beneath in the page's flow (the sample's sheet): its top, measured, never derived from window units, so it is
+    // known to stand below the turning page's words whatever 100svh, 100lvh and innerHeight are (they differ in Safari), or however late a
+    // sticky place is drawn. `ahead` is how far the page has scrolled since the last read: the words are cut as if one more such step had come.
+    const follower = to.nextElementSibling ?? to.parentElement?.nextElementSibling ?? null;
+    let follow = Infinity, ahead = 0, seen = scrollY, reachedCrease = false, crowded = false;
     const still = matchMedia("(prefers-reduced-motion: reduce)");
     // Where chapters are not held (relief-journey.css lets them scroll as plain pages up to 820px), nothing is turned. Read from the media query, never from a computed style.
     const plain = matchMedia("(max-width: 820px)");
@@ -130,6 +135,8 @@ export function PageTurn({ children }: { children: ReactNode }) {
       if (!on) return;
       bottom = from.getBoundingClientRect().bottom;
       const origin = turn.getBoundingClientRect();
+      follow = follower ? follower.getBoundingClientRect().top - origin.top : Infinity;
+      ahead = Math.max(0, scrollY - seen); seen = scrollY;
       clear = words.map(word => { ink.selectNodeContents(word); const box = ink.getBoundingClientRect(); return { left: box.left - origin.left, top: box.top - origin.top, right: box.right - origin.left, bottom: box.bottom - origin.top }; }).filter(box => box.right > box.left);
     };
     const update = () => {
@@ -137,6 +144,9 @@ export function PageTurn({ children }: { children: ReactNode }) {
       const close = bottom < tall * 2.5 && bottom > -tall;
       if (close !== near) { near = close; turn.toggleAttribute("data-near", near); }
       const turned = clamp(1 - bottom / tall);
+      // The words are also cut before anything that follows could come within 40px of them.
+      const nowCrowded = turned < 1 && clear.some(box => follow - ahead - box.bottom < 40);
+      if (nowCrowded !== crowded) { crowded = nowCrowded; turn.toggleAttribute("data-words-cut", crowded || reachedCrease); }
       if (turned === last) return;
       last = turned;
       // How far the page has been turned off the chapter beneath: what lies under it (the year's figures) stands up as it is uncovered.
@@ -144,8 +154,8 @@ export function PageTurn({ children }: { children: ReactNode }) {
       turn.dataset.turned = placeTurn(geometry, { round, page, back, roll, shade }, turned, clear);
       // The page's own words are cut away just before its turning edge would run across them (40px ahead of it), never covered by it.
       const { far, nx, ny, r, x0, y0 } = geometry, ox = x0 + nx * (far * turned - r), oy = y0 + ny * (far * turned - r);
-      const reached = turned > 0 && clear.some(({ left, top, right, bottom }) => Math.min(...[[left, top], [right, top], [left, bottom], [right, bottom]].map(([x, y]) => (x - ox) * nx + (y - oy) * ny)) < 40);
-      turn.toggleAttribute("data-words-cut", reached);
+      reachedCrease = turned > 0 && clear.some(({ left, top, right, bottom }) => Math.min(...[[left, top], [right, top], [left, bottom], [right, bottom]].map(([x, y]) => (x - ox) * nx + (y - oy) * ny)) < 40);
+      turn.toggleAttribute("data-words-cut", reachedCrease || crowded);
     };
     const { ask: request, drop } = frameStep(read, update);
     // Tab can land on words while the page is part turned, where they are hidden and would drop the focus: the page is

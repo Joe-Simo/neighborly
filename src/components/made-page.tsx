@@ -21,6 +21,7 @@ import { MadeProcess } from "@/components/made-process";
 import { MadeTrace } from "@/components/made-trace";
 import { MadeAnatomy } from "@/components/made-anatomy";
 import { MadeChecked } from "@/components/made-checked";
+import { madeSaid } from "@/lib/made-said";
 import "@/components/made-book.css";
 
 export { privacyViewport as madeViewport } from "@/components/privacy-page";
@@ -62,8 +63,8 @@ export function MadePage({ language }: { language: Language }) {
         <section data-figure={figure || stills || table ? "" : undefined}>
           <CutHead>{title}</CutHead>
           <div>{blocks.map((block) => typeof block === "string"
-            ? <p key={block}>{block}</p>
-            : <ul key={block[0].lead} className="public-made-tones">{block.map(({ lead, rest, tone }) => <li key={lead} data-tone={tone}><strong>{lead}</strong> {rest}</li>)}</ul>)}
+            ? <p key={block}>{madeSaid(block, language)}</p>
+            : <ul key={block[0].lead} className="public-made-tones">{block.map(({ lead, rest, tone }) => <li key={lead} data-tone={tone}><strong>{lead}</strong> {madeSaid(rest, language)}</li>)}</ul>)}
 </div>
           {table === "eval" && <figure className="public-made-eval">
             <table>
@@ -75,7 +76,7 @@ export function MadePage({ language }: { language: Language }) {
           </figure>}
           {table === "frames" && <MadeFrames said={said.frameStrip} language={language} />}
           {table === "frames" && <MadeLighthouse said={said.lighthouse} language={language} />}
-          {table === "process" && <MadeProcess said={said.process} />}
+          {table === "process" && <MadeProcess said={said.process} language={language} />}
           {table === "trace" && <MadeTrace said={said.trace} />}
           {table === "anatomy" && <MadeAnatomy said={said.anatomy} />}
           {/* eslint-disable-next-line @next/next/no-img-element -- a 960px working file shown as it is */}
@@ -87,7 +88,7 @@ export function MadePage({ language }: { language: Language }) {
             <figcaption>{caption}</figcaption></figure></li>)}</ol>}
         </section>
       </Fragment>)}
-      <MadeChecked said={said.checked} />
+      <MadeChecked said={said.checked} language={language} />
       <section>
         <div><dl className="public-made-colophon" aria-label={said.colophon.label}>{said.colophon.lines.map(([term, line]) => <div key={term}><dt>{term}</dt><dd>{line}</dd></div>)}</dl>
         <p className="public-words-last">{lastLead}<span className="public-words-address">{address}</span>{lastTail}</p></div>

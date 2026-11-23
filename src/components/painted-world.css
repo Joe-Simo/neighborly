@@ -338,6 +338,7 @@
 /* A piece of the opening's words that the sheet's edge would reach has left the sheet in one cut (neighborly-experience.tsx). */
 /* A piece the edge has passed is cut from sight in one step, but stays in the Tab order: Tab onto it and the opening comes back (neighborly-experience.tsx). */
 .neighborly-connected-world.is-connected .painted-world[data-hero-only=true] [data-gone]{opacity:0;pointer-events:none;transition:none}
+.neighborly-connected-world.is-connected .fresco-invitation [data-under]{visibility:hidden;transition:none}
 /* Under the head, what Kind Helps is, and a quiet way into the sample. */
 .painted-world-description.painted-world-what{max-width:38ch;pointer-events:auto}
 .painted-world-sample{white-space:nowrap;color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;pointer-events:auto}
@@ -350,3 +351,6 @@
   .painted-world[data-hero-only=true] .painted-world-opening-actions a,.painted-world[data-hero-only=true] .painted-world-opening-actions .painted-world-primary-invitation{font-size:calc(16px * var(--big));min-height:calc(48px * var(--big))}
   .painted-world[data-hero-only=true] .painted-world-opening-actions .painted-world-primary-invitation{height:calc(48px * var(--big));padding:0 calc(24px * var(--big))}
 }
+/* The way in stands where the chapters' header puts it (relief-journey.css .fresco-header): on a wide screen it steps back onto the paper there, so it steps back by the same measure here, and the header never jumps between the opening and the chapters. */
+@media (min-width:901px) and (min-aspect-ratio:17/10){.painted-world-header{right:10%}.painted-world[data-hero-only=true] .painted-world-header{right:0;padding-right:max(20px,10%)}}
+@media (min-width:901px) and (min-aspect-ratio:2/1){.painted-world-header{right:13%}.painted-world[data-hero-only=true] .painted-world-header{right:0;padding-right:max(20px,13%)}}

@@ -2,7 +2,8 @@
    deeper crease while the next one turns, as the home page's chapters do (relief-journey.css). */
 .public-made>section{transform-origin:50% 0}
 .public-made>[data-leaf-turning]+section{will-change:transform}
-.public-made>section[data-leaf-turning]::after{content:"";position:absolute;z-index:2;left:0;right:0;bottom:-14px;height:14px;pointer-events:none;background:linear-gradient(#3b2a121f,#3b2a1200)}
+/* The crease lies beneath the sheet's own paper and rises from inside its torn edge, so it follows the tear and never shows a straight top. */
+.public-made>section[data-leaf-turning]::after{content:"";position:absolute;z-index:-2;left:0;right:0;bottom:-14px;height:44px;pointer-events:none;background:linear-gradient(#3b2a1200,#3b2a1214 8px,#3b2a1214 30px,#3b2a1200)}
 /* The home page's editorial scale from 1024 up: the chapter's head is set at display size across its sheet, the words held to one measure
    beneath it, and the chapter's number, figures and tables kept in a margin column beside the words. */
 /* The home page's editorial scale from 1024 up, as art direction ruled: the chapter's head at display size, its words held to one 60ch measure
@@ -72,4 +73,17 @@
   .public-made-anatomy-source{margin-top:28px;padding-top:12px;border-top:1px solid #293f3224}
 }
 /* On a wide screen the held-out table and the frame chart take the whole right column, so neither stands as a narrow strip beside bare paper. */
-@media(min-width:1600px){.public-words.public-made .public-made-eval table,.public-words.public-made .public-made-frames{max-width:none;width:100%}}
+@media(min-width:1600px){.public-words.public-made .public-made-frames{max-width:none;width:100%}}
+/* From 1600 up a chapter whose words ran long under its head beside a short table (05, 09), or whose stills sit below it (07, 08), left half its sheet bare.
+   There it is laid like the figureless chapters: the number and head hold the left column, and the words fill the right, under the table or beside the head. The table keeps one measure so its counts sit by their names. */
+@media(min-width:1600px){
+  .public-words.public-made section:has(>.public-made-eval,>.public-made-frames,>.public-made-process,>.public-made-trace)>h2{grid-row:1/span 2;position:sticky;top:clamp(32px,4vw,64px)}
+  .public-words.public-made section:has(>.public-made-eval,>.public-made-frames)>div:not([class]){grid-column:2;grid-row:2;margin-top:clamp(32px,3vw,56px)}
+  .public-words.public-made section:has(>.public-made-eval,>.public-made-frames)>:is(.public-made-eval,.public-made-frames){grid-row:1}
+  .public-words.public-made section:has(>.public-made-process,>.public-made-trace)>div:not([class]){grid-column:2;grid-row:1/span 2}
+  .public-words.public-made .public-made-eval table{max-width:34em}
+}
+@media(min-width:1600px){.public-words.public-made>[data-leaf-turning]+section>h2{position:static}}
+.public-made-named{font-style:italic}
+/* The sheet after the courtyard lies on the bare table, not under another sheet, so its top is torn as well as its foot instead of a straight cut. */
+.public-words.public-made>.made-courtyard+section::before{-webkit-mask:var(--cut,var(--cut-a)) bottom/100% 30px no-repeat,url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M0 10H100V4C84 7 70 2 52 3S20 8 0 5Z'/%3E%3C/svg%3E") top/100% 24px no-repeat,linear-gradient(#000,#000) 0 23px/100% calc(100% - 52px) no-repeat;mask:var(--cut,var(--cut-a)) bottom/100% 30px no-repeat,url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M0 10H100V4C84 7 70 2 52 3S20 8 0 5Z'/%3E%3C/svg%3E") top/100% 24px no-repeat,linear-gradient(#000,#000) 0 23px/100% calc(100% - 52px) no-repeat}

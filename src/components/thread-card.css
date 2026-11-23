@@ -38,7 +38,7 @@
 .neighborly-close-offer{position:absolute;z-index:2;left:0;width:100%;overflow-x:clip;top:calc(28% - 19.911cqw);height:71.111cqw;pointer-events:none}
 /* The card and the field over it share one turned stack, anchored at the card's resting middle; the card grows to its words, the note follows it in flow. */
 .card-stack{--card-w:max(20.8cqw,240px);position:absolute;left:69%;top:calc(77.6% - var(--card-w) / 3);width:var(--card-w);translate:-50% 0;rotate:-4deg;display:grid}
-.card-offer{grid-area:1/1;position:relative;aspect-ratio:1.5;display:flex;flex-direction:column;justify-content:flex-end;padding:calc(7.4% + 1.6 * clamp(17px,1.5cqw,29px)) 8% 8.7% 9%;pointer-events:auto;color:#253e31;text-decoration:none;background:url(/assets/home/card-blank-480.webp) center/100% 100% #f7f2e6;filter:drop-shadow(2px 5px 4px #2a1e1452);transition:translate .2s var(--ease-paper),filter .2s}
+.card-offer{grid-area:1/1;position:relative;aspect-ratio:1.5;display:flex;flex-direction:column;justify-content:center;padding:calc(7.4% + 1.6 * clamp(17px,1.5cqw,29px)) 8% 8.7% 9%;pointer-events:auto;color:#253e31;text-decoration:none;background:url(/assets/home/card-blank-480.webp) center/100% 100% #f7f2e6;filter:drop-shadow(2px 5px 4px #2a1e1452);transition:translate .2s var(--ease-paper),filter .2s}
 .card-offer>i{position:absolute;left:8%;top:14%;width:8%;aspect-ratio:1;background:#c8962e}
 .card-offer>svg{position:absolute;right:8%;top:12%;width:18px;height:18px}
 .card-offer-words{display:flex;flex-direction:column;gap:6px;transition:opacity 0s .12s}
@@ -65,7 +65,7 @@
 .card-for-line input{flex:1;min-width:0;min-height:44px;margin:-12px 0;padding:0 0 1px;border:0;background:transparent;font:inherit;color:transparent;caret-color:#253e31;outline:none}
 .card-for-line:has(input:focus-visible){outline:2px solid #283c32;outline-offset:3px;border-radius:4px}
 /* The note is written on a slip of the card's own paper, so it reads over the cloth, the cut and the foot alike. */
-.card-for-note{grid-row:2;justify-self:end;margin:8px 9% 0 0;width:max-content;max-width:82%;padding:3px 10px 4px;background:#f7f2e6;box-shadow:0 1px 2px rgb(40 60 50 / 0.3);font:400 15px/1.35 'Source Sans 3','Source Sans 3 Fallback',sans-serif;color:#3d4f43;rotate:2.5deg;pointer-events:none}
+.card-for-note{grid-row:2;justify-self:end;margin:18px 9% 0 0;width:max-content;max-width:82%;padding:3px 10px 4px;background:#f7f2e6;box-shadow:0 1px 2px rgb(40 60 50 / 0.3);font:400 15px/1.35 'Source Sans 3','Source Sans 3 Fallback',sans-serif;color:#3d4f43;rotate:2.5deg;pointer-events:none}
 .card-offer[data-given]~:is(.card-for,.card-for-note){opacity:0}
 /* The card's own face for its last flight, into the open hand: the same paper, square, words and line as the card it becomes, drawn at the travelling card's 240px. */
 /* A window 320 wide: the card is a little larger on the band, so its headline clears the "For" line and the gold square. */

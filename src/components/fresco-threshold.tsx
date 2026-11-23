@@ -142,9 +142,14 @@ export function FrescoThreshold() {
       // On a phone, walking in, the painting is drawn on to its focus: across to the arch and up from the paving, never past its own edges.
       const paintingWidth = sceneHeight * 2 * cover, paintingHeight = sceneHeight * cover;
       const toward = phone ? Math.min(1, inside * 1.6) : 0;
-      const pan = Math.max(0, Math.min((phoneFocus.x - .5) * paintingWidth, paintingWidth / 2 - width / 2)) * toward;
-      const raise = Math.max(0, Math.min((.5 - phoneFocus.y) * paintingHeight, paintingHeight / 2 - height / 2)) * toward;
-      const lift = (height / 2 - centreY) * inside + raise;
+      // Never past its own edges: the drawn painting always covers every part of the opening that is inside the window, so no wall colour shows at an edge mid-walk.
+      const centreX = mix(mix(doorX, width / 2, grow), width / 2, inside) - held, base = centreY + (height / 2 - centreY) * inside;
+      const within = (want: number, low: number, high: number) => low > high ? (low + high) / 2 : Math.max(low, Math.min(high, want));
+      const seenLeft = Math.max(0, centreX + held - w / 2), seenRight = Math.min(width, centreX + held + w / 2);
+      const seenTop = Math.max(0, centreY - h / 2), seenBottom = Math.min(height, centreY + h / 2);
+      const pan = within((phoneFocus.x - .5) * paintingWidth * toward, centreX - paintingWidth / 2 - seenLeft, centreX + paintingWidth / 2 - seenRight);
+      const raise = within((.5 - phoneFocus.y) * paintingHeight * toward, seenBottom - base - paintingHeight / 2, seenTop - base + paintingHeight / 2);
+      const lift = base - centreY + raise;
       scene.style.scale = String(cover);
       // The painting is centred in the opening by translate too, from the opening's corner.
       scene.style.translate = `calc(-50% + ${(w / 2 - held - pan).toFixed(2)}px) calc(-50% + ${(h / 2 + lift).toFixed(2)}px)`;
@@ -172,9 +177,11 @@ export function FrescoThreshold() {
       [0, 1].forEach(line => { const through = clamp((come - line * .3) / .7); host.dataset[`slip${line}`] = String(through > 0 && through < 1); });
       // Standing in the courtyard, the words are a strip of paper laid on the paving that stands up as the walk ends, and lies back down as the courtyard draws back into its frame.
       // It is never seen more than 60° off upright: hidden until the walk is past halfway, then stood up from 60°.
-      put("--stand", ease(clamp((inside - .55) / .45)).toFixed(4));
+      // It is upright, its cut's edge gone, a little before the walk's last ease, so the words are never held half stood (a stretched line over a hairline) while the window is all but still.
+      const stand = ease(clamp((inside - .55) / .37));
+      put("--stand", stand.toFixed(4));
       host.dataset.standing = String(inside > .55);
-      host.dataset.stood = String(inside >= 1);
+      host.dataset.stood = String(stand >= 1);
       host.dataset.inside = String(inside > .98);
       // The courtyard is all painting: the bar drawn over it leaves in one cut as the visitor steps in and returns in one as they step out.
       host.dataset.within = String(inside > 0);

@@ -107,7 +107,13 @@ export function NeighborlyExperience() {
     };
     // Read in the shared frame's first half, before any part of the page has written (scroll-frame.ts).
     let read = 0;
-    const measureFrame = () => { const stage = element.querySelector<HTMLElement>(".painted-world-viewport"); read = Math.max(0, Math.min(1, -element.getBoundingClientRect().top / Math.max(1, stage?.getBoundingClientRect().height ?? innerHeight))); };
+    // Where each of the doors' own words begins, read with the scroll: the sheet's edge passes over them as it lifts.
+    let beneath: [HTMLElement, number][] = [];
+    const measureFrame = () => {
+      const stage = element.querySelector<HTMLElement>(".painted-world-viewport");
+      read = Math.max(0, Math.min(1, -element.getBoundingClientRect().top / Math.max(1, stage?.getBoundingClientRect().height ?? innerHeight)));
+      beneath = [...element.querySelectorAll<HTMLElement>(".fresco-invitation > *")].map(piece => [piece, piece.getBoundingClientRect().top]);
+    };
     const update = () => {
       const reduce = media.matches;
       // A phone on its side reads as a plain page: nothing is pinned, nothing gives way, and everything stays reachable.
@@ -136,6 +142,8 @@ export function NeighborlyExperience() {
       const edge = Math.min(120, Math.max(52, viewport.width * .075));
       const band = ((pieces?.tall ?? viewport.height) + edge) * portraitShown - edge;
       pieces?.feet.forEach(([piece, foot]) => piece.toggleAttribute("data-gone", !reduce && scrolled > 0 && band < foot + 4));
+      // The doors' own words wait whole under the sheet and are shown in one cut once its cut (whose deepest point lies .65 of the band down, cut-edges.css) has passed above them, so the edge never lies across a line.
+      beneath.forEach(([piece, top]) => piece.toggleAttribute("data-under", !reduce && portraitShown > 0 && band + edge * .65 > top - 4));
       const portrait = element.querySelector<HTMLElement>(".painted-world-track");
       const courtyard = element.querySelector<HTMLElement>(".fresco-stage");
       const entered = progress >= (reduce ? .5 : .6);

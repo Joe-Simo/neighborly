@@ -59,13 +59,17 @@ main.painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fa
   .neighborly-together .neighborly-close-words{z-index:2}
   /* The band's foot is one cut. The empty hand laid over the picture reaches below that cut, so it is cut by the same edge, in the same place, and carries the same shade. */
   /* A window much wider than it is tall would cut the picture through the hand that holds the card. The band is then as tall as the hand and its card need, and no taller than the picture. */
-  .neighborly-together .neighborly-close{--close-h:min(100vw / 1.40625,max(100svh,63.3vw + 75px));height:var(--close-h);--close-foot:calc(var(--close-h) * .72 - 24.95cqw)}
+  .neighborly-together .neighborly-close{--close-h:calc(100vw / 1.40625);height:var(--close-h);--close-foot:calc(var(--close-h) * .72 - 24.95cqw)}
   .neighborly-together .neighborly-close-hand .thread-empty{-webkit-mask:linear-gradient(#000,#000) 0 0/100% calc(var(--close-foot) - 43px) no-repeat,var(--cut-close-bottom) -61.111cqw calc(var(--close-foot) - 44px)/100cqw 44px no-repeat;mask:linear-gradient(#000,#000) 0 0/100% calc(var(--close-foot) - 43px) no-repeat,var(--cut-close-bottom) -61.111cqw calc(var(--close-foot) - 44px)/100cqw 44px no-repeat}
   .neighborly-together .neighborly-close-hand .thread-empty::after{content:"";position:absolute;left:-61.111cqw;width:100cqw;top:calc(var(--close-foot) - 44px);height:44px;background:var(--shade-close-bottom) 0 0/100% 100% no-repeat;pointer-events:none}
   /* The foot lies on a plain piece of the page's paper, as it does on a phone: the painted paper behind the ending is a small picture, and stretched this wide it goes soft. The band's cut edge falls on it. */
   .neighborly-together .neighborly-colophon{position:relative;isolation:isolate}
   .neighborly-together .neighborly-colophon::before{content:"";position:absolute;z-index:-1;left:calc(-1 * max(20px,4vw));right:calc(-1 * max(20px,4vw));top:calc(-46px - clamp(28px,3.4vw,52px));bottom:0;background:#eee7d7}
   .neighborly-together .neighborly-close{z-index:1}
+  /* No face is cut: the band is the picture's own shape, so the picture is shown whole, top to foot. Its cut top lies up under the
+     trust sheet's cut foot, so the two cuts are one edge and no strip of the cloth shows between them. */
+  .neighborly-together .neighborly-trust{z-index:2}
+  .neighborly-together .neighborly-trust+.neighborly-close{margin-top:calc(-1 * clamp(28px,3.4vw,52px) - 44px)}
 }
 /* The close, between a tablet and a wide window: the words stand under the picture, and they and the foot lie on plain paper too, with the picture's cut edge falling on it. */
 @media(min-width:901px) and (max-width:1279px){
@@ -78,7 +82,9 @@ main.painted-world[data-hero-only=true] :is(.painted-world-art,.painted-world-fa
 /* The close, on a phone or tablet: the painted paper behind the band runs dark under it, so the foot lies on a piece of the page's own paper, cut by hand like the opening. */
 @media(max-width:900px){
   .neighborly-together .neighborly-colophon{position:relative;isolation:isolate}
-  .neighborly-together .neighborly-colophon::before{content:"";position:absolute;z-index:-1;left:-20px;right:-20px;top:-24px;bottom:0;background:var(--background);-webkit-mask:var(--cut-paper-top) 0 0/100% 56px no-repeat,linear-gradient(#000,#000) 0 55px/100% calc(100% - 55px) no-repeat;mask:var(--cut-paper-top) 0 0/100% 56px no-repeat,linear-gradient(#000,#000) 0 55px/100% calc(100% - 55px) no-repeat}
+  .neighborly-together .neighborly-colophon::before{content:"";position:absolute;z-index:-1;left:calc(-1 * max(20px,var(--safe-l)));right:calc(-1 * max(20px,var(--safe-r)));top:-24px;bottom:0;background:var(--background);-webkit-mask:var(--cut-paper-top) 0 0/100% 56px no-repeat,linear-gradient(#000,#000) 0 55px/100% calc(100% - 55px) no-repeat;mask:var(--cut-paper-top) 0 0/100% 56px no-repeat,linear-gradient(#000,#000) 0 55px/100% calc(100% - 55px) no-repeat}
 }
 /* On the public pages the ending stands on the public sheet's paper. */
 .public-page .neighborly-together{--paper-above:#e6decb}
+/* Under 431px the page's gutter is 16px: the foot's paper reaches exactly to the window's edges, never past them. */
+@media(max-width:430px){.neighborly-together .neighborly-colophon::before{left:calc(-1 * max(16px,var(--safe-l)));right:calc(-1 * max(16px,var(--safe-r)))}}
