@@ -146,6 +146,8 @@
    the row on every width instead of dropping below it, left-aligned, the moment the dates run to two lines. */
 .live-app .volunteer-days-row > div:first-child { flex: 1 1 auto; min-width: 0; }
 .live-app .volunteer-days-row > [data-slot="button"] { flex: none; margin-left: auto; }
+/* Each half of a span of days (DaysWords) keeps together where it fits, so the line breaks before "to" / "al". */
+:is(.live-app, .live-dialog) .volunteer-days-part { display: inline-block; }
 /* A span of dates breaks as two even lines, never leaving a year alone on the second. */
 .live-app .live-row > .volunteer-days { display: block; text-wrap: balance; }
 
