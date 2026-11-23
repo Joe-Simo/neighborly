@@ -946,7 +946,7 @@ function Openings({ openings, text, format }: { openings: Record["openings"]; te
         {shown.map((opening) => (
           <li key={`${opening.who}-${opening.at}`}>
             <strong>{opening.who}</strong> ·{" "}
-            {fill(text.day(opening.count), { day: format(opening.at, { weekday: "short", month: "short", day: "numeric", year: "numeric" }), time: format(opening.at, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" }).replace(" ", "\u00a0") })}
+            {fill(text.day(opening.count), { day: format(opening.at, { weekday: "short", month: "short", day: "numeric", year: "numeric" }).replace(/ /g, "\u00a0"), time: format(opening.at, { month: undefined, day: undefined, hour: "numeric", minute: "2-digit" }).replace(" ", "\u00a0") })}
           </li>
         ))}
       </ul>
