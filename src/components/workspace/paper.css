@@ -1372,19 +1372,21 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
     box-shadow: inset 3px 0 #55714c, inset 0 1px 0 rgb(255 255 255 / 0.7), 0 1px 1px rgb(40 60 50 / 0.14), 0 6px 10px -8px rgb(40 60 50 / 0.4);
   }
 }
-/* The head's cut edge: one rule and one contact shade, the slip's, from the relief scale. */
-.live-app .live-page-head { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 3px 3px -3px rgb(40 60 50 / 0.34); }
+/* The head's cut edge: one rule and one contact shade, the slip's, from the relief scale. The shade is cast by a
+   1px strip along the rule, never by the head's own box, so it falls under the rule only and draws no faint line
+   down the head's sides (on a phone those would start right under the picture's torn foot). */
+.live-app .live-page-head { border-bottom-color: rgb(40 60 50 / 0.18); }
+.live-app .live-page-head::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; box-shadow: 0 3px 3px -3px rgb(40 60 50 / 0.34); pointer-events: none; }
 /* In the framed room the rule ends short of the picture, so its light and shade end there too. */
 @media (min-width: 1700px) {
-  .live-app .live-main > .live-page-head { box-shadow: none; }
   .live-app .live-main > .live-page-head::after { border-bottom-color: rgb(40 60 50 / 0.18); box-shadow: 0 3px 3px -3px rgb(40 60 50 / 0.34); }
 }
 @media (forced-colors: active) {
-  .live-app .live-page-head { box-shadow: none; }
+  .live-app .live-page-head::after { box-shadow: none; }
   .live-app .live-page-head::before { content: none; }
   .live-app .live-nav-marker { box-shadow: none; outline: 2px solid Highlight; }
 }
-@media print { .live-app .live-page-head, .live-app .live-page-head::after { box-shadow: none; } .live-app .live-page-head::before { content: none; } }
+@media print { .live-app .live-page-head::after { box-shadow: none; } .live-app .live-page-head::before { content: none; } }
 
 /* w91: the workspace's keys on one sheet. Each key a small slip of paper, its name beside it. */
 .live-keys dl { display: grid; gap: var(--space-8) 6px; margin: var(--space-4) 0 0; }
