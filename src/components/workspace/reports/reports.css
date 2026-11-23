@@ -701,7 +701,7 @@
 /* What the check before sending found: the one sheet. */
 .report-check { margin: var(--space-32) 0 var(--space-48); }
 .report-check[data-clear="true"] .help-sheet-label { color: var(--live-accent); }
-.report-check p { font-size: 17px; }
+.report-check p:not(.help-sheet-label) { font-size: 17px; }
 /* While the year is read: three marks that take ink one after another. Still under Reduce Motion. */
 /* The year is being read: after 400ms the still ochre ring says so beside the heading. Its place is kept from the start, so the heading never moves. */
 .report-reading { display: inline-block; width: 10px; height: 10px; margin-left: 14px; vertical-align: middle; box-sizing: border-box; border: 2px solid #a8791f; border-radius: 50%; }
