@@ -162,9 +162,8 @@ function LiveCoverChooser({
   return (
     <section>
       <h3>{text.askTitle}</h3>
-      <p>
-        {text.askDeck}
-      </p>
+      {/* The deck tells what the list of people below means: with someone already asked there is no list, only the wait. */}
+      {!waiting.length && <p>{text.askDeck}</p>}
       {waiting.map((request) => (
         <div className="live-note volunteer-waiting-note" key={request.id}>
           {((name: string | undefined) => (name ? text.awaiting(name) : text.awaitingMember))(
