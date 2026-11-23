@@ -137,7 +137,8 @@ export function TasksSection() {
       <section className="live-section">
         <div className="live-section-head">
           <h2 className={data.meetings.length ? undefined : "sr-only"}>{words.tasks.meetings}</h2>
-          {isOwner && (
+          {/* With no meeting yet the button goes into the empty place below, as its one act, rather than stand alone. */}
+          {isOwner && data.meetings.length > 0 && (
             <Button variant="outline" onClick={() => open("meeting")}>
               <Plus size={15} aria-hidden="true" /> {words.actions.meeting}
             </Button>
@@ -241,7 +242,7 @@ export function TasksSection() {
             })}
           </div>
         ) : (
-          <LiveEmpty title={words.tasks.noMeetingsTitle}>
+          <LiveEmpty title={words.tasks.noMeetingsTitle} action={isOwner ? { label: words.actions.meeting, run: () => open("meeting") } : undefined}>
             {words.tasks.noMeetingsDetail}
           </LiveEmpty>
         )}
