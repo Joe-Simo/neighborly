@@ -255,3 +255,8 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
     mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
   }
 }
+
+/* Side by side, two import cards share a height; the sample-file link sits on the card's last line in both, so
+   a longer help line in one card does not leave the two links at different heights. */
+.tools-leaf > .tools-file:has(> .tools-sample) { flex: 1 0 auto; display: flex; flex-direction: column; align-items: flex-start; }
+.tools-leaf > .tools-file:has(> .tools-sample) > .tools-small { flex: 1 0 auto; }

@@ -5,7 +5,7 @@ import type { Language, Terms } from "@/lib/words/sets";
  * room's first load carries them. Every sentence is written whole in each language.
  */
 const en = (t: Terms) => ({
-  title: "Your conference’s files",
+  title: `Your ${t.group}’s files`,
   deck: `Minutes, forms and anything else your ${t.group} keeps. Open to coordinators and owners only.`,
   neighborTitle: "Files",
   neighborDeck: "A lease, a utility bill or anything else kept with this record. Open to coordinators and owners only.",
@@ -30,7 +30,7 @@ const en = (t: Terms) => ({
 });
 
 const es = (t: Terms): ReturnType<typeof en> => ({
-  title: "Los archivos de tu conferencia",
+  title: `Los archivos de tu ${t.group}`,
   deck: `Actas, formularios y cualquier otra cosa que tu ${t.group} guarde. Solo para coordinadores y responsables.`,
   neighborTitle: "Archivos",
   neighborDeck: "Un contrato de alquiler, una factura de servicios o cualquier otra cosa guardada con este registro. Solo para coordinadores y responsables.",

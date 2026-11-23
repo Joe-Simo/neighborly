@@ -278,6 +278,8 @@ export function es(set: WordSet): Words {
             : `${esN(count)} compromisos afectados`,
       explain:
         "Al confirmar se liberan solo estos compromisos y se anotan tus días libres. Tus equipos y las otras fechas siguen igual.",
+      explainNone:
+        "Al confirmar se anotan tus días libres. Tus compromisos, tus equipos y las otras fechas siguen igual.",
       back: "Volver",
       saving: "Guardando…",
       confirm: "Confirmar días libres",

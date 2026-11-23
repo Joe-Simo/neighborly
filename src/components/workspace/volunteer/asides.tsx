@@ -9,7 +9,7 @@ import { useWorkspace } from "@/components/workspace/context";
 
 const capital = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
-/** The seven days from a Sunday, as the shell writes them: "Sun", "dom", "dim". */
+/** The seven days from the week's first day, as the shell writes them: "Sun", "dom", "dim". */
 function useWeekdays(sunday: DateTime) {
   const { format } = useWorkspace();
   return Array.from({ length: 7 }, (_, index) => {
@@ -27,12 +27,15 @@ export function MonthAway() {
   const text = words.timeOff;
   const today = DateTime.fromMillis(now, { zone: data.church.timeZone, locale: "en-US" });
   const first = today.startOf("month");
-  const weekdays = useWeekdays(first.startOf("week", { useLocaleWeeks: true }));
+  // The week starts where the day picker beside it starts it (date-month.tsx): Sunday in English, Monday in Spanish.
+  const weekStart = words.locale === "es" ? 1 : 0;
+  const lead = (first.weekday % 7 - weekStart + 7) % 7;
+  const weekdays = useWeekdays(first.minus({ days: lead }));
   const mine = <T extends { personId: string }>(items: T[]) => items.filter((item) => item.personId === data.user.id);
   const within = (key: string, spans: { start: string; end: string }[]) => spans.some((span) => span.start <= key && key <= span.end);
   const away = mine(data.timeOff), offered = mine(data.availability);
   const cells = [
-    ...Array.from({ length: first.weekday % 7 }, () => null),
+    ...Array.from({ length: lead }, () => null),
     ...Array.from({ length: first.daysInMonth ?? 30 }, (_, index) => first.plus({ days: index })),
   ];
   const weeks = Array.from({ length: Math.ceil(cells.length / 7) }, (_, week) => cells.slice(week * 7, week * 7 + 7));

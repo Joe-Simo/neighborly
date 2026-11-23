@@ -11,7 +11,9 @@
 .web-row .web-choice { display: flex; gap: 8px; align-items: center; min-height: 44px; }
 .web-requests .web-notify { display: flex; gap: 8px; align-items: center; min-height: 44px; margin-top: 12px; }
 .web-requests .web-traces h3 { font-size: 13px; margin: 16px 0 4px; }
-.web-requests .web-traces ul { margin: 0; padding-left: 18px; font-size: 15px; overflow-wrap: anywhere; }
+/* Each pass is a plain line under its heading, flush with it: no marker, so no stray indent. */
+.web-requests .web-traces ul { margin: 0; padding: 0; list-style: none; font-size: 15px; overflow-wrap: anywhere; }
+.web-requests .web-traces li { padding: 2px 0; }
 .service-area-figure { margin: 8px 0 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
 .service-area-figure figcaption { font-size: 15px; }
 .web-requests .web-partners { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--rule, #ddd6c6); }
@@ -60,3 +62,13 @@
 /* The web form's sentences end on more than one word: no "No / genuina los mantiene." on a tablet. */
 .web-requests :is(p, .web-partner > span:first-child) { text-wrap: pretty; }
 .web-reach > span { white-space: nowrap; }
+/* Partners and Passed on are peers of the review's title, so they wear the same small-caps kicker. */
+.web-requests .web-partners h3,
+.web-requests .web-traces h3 { font-family: inherit; font-size: 13px; font-weight: 650; line-height: 1.4; text-transform: uppercase; letter-spacing: var(--caps-track); color: #52644f; }
+.web-requests .web-traces h3 { margin: var(--space-24, 24px) 0 var(--space-8, 8px); }
+.web-requests .web-partners h3 { margin: 0 0 var(--space-8, 8px); }
+/* When the notify line wraps (a tablet in Spanish), its box sits by the first line, not between the two. */
+.web-requests .web-notify { align-items: flex-start; padding-block: 10px; }
+.web-requests .web-notify > input { flex: none; margin: calc((1lh - 13px) / 2) 0 0; }
+/* The add-a-partner form closes the list with a hairline and a breath, so its first label is not crowded against the last partner. */
+.web-requests .web-partners > .live-form { margin-top: 0; padding-top: var(--space-16, 16px); border-top: 1px solid var(--live-line, #ddd6c6); }

@@ -19,7 +19,7 @@ const said = {
     yours: "Yours",
     whole: "The conference at a glance",
     visits: "Next 7 days",
-    visitsLine: (next: string) => (next ? `Next ${next}` : "Nothing of yours in the next 7 days"),
+    visitsLine: (next: string) => (next ? `Next ${next}` : "Nothing of yours in the next 7\u00a0days"),
     asks: (n: number) => (n ? `${n} home visit${n === 1 ? "" : "s"} waiting for your answer` : ""),
     tasks: "Your tasks",
     tasksLine: (late: number) => (late ? `${late} past due` : "None past due"),
@@ -49,7 +49,7 @@ const said = {
     yours: "Lo tuyo",
     whole: "La conferencia de un vistazo",
     visits: "Próximos 7 días",
-    visitsLine: (next: string) => (next ? `Lo próximo: ${next}` : "Nada tuyo en los próximos 7 días"),
+    visitsLine: (next: string) => (next ? `Lo próximo: ${next}` : "Nada tuyo en los próximos 7\u00a0días"),
     asks: (n: number) => (n ? (n === 1 ? "1 visita espera tu respuesta" : `${n} visitas esperan tu respuesta`) : ""),
     tasks: "Tus tareas",
     tasksLine: (late: number) => (late ? `${late} con la fecha pasada` : "Ninguna con la fecha pasada"),
@@ -138,7 +138,7 @@ export function Glance({ quiet = false }: { quiet?: boolean }) {
   const next = week[0];
   const when = next ? formatDate(locale, next.start, { timeZone: data.church.timeZone, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
   const mine: Tile[] = [
-    { href: "/app/mine", label: w.visits, figure: `${week.length}`, line: [w.visitsLine(when), w.asks(own.visitAsks)].filter(Boolean).join(" · "), waits: own.visitAsks > 0 },
+    { href: "/app/mine", label: w.visits, figure: `${week.length}`, line: [w.visitsLine(when), w.asks(own.visitAsks)].filter(Boolean).join("\u00a0· "), waits: own.visitAsks > 0 },
     { href: "/app/tasks", label: w.tasks, figure: `${own.tasks}`, line: w.tasksLine(own.tasksLate), waits: own.tasksLate > 0 },
   ];
   // A leader with nothing of their own this fortnight sees the conference alone.
