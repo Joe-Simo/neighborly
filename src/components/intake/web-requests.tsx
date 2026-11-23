@@ -1,7 +1,7 @@
 "use client";
 
 import { systemSaid } from "@/lib/system-sentences";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useAction, useMutation } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { api } from "../../../convex/_generated/api";
@@ -141,7 +141,8 @@ function WebRow({ row, churchId, sample }: { row: Row; churchId: Id<"churches">;
       <p className="live-name">{row.kinds.map((kind) => w.kinds[kind]).join(" · ")}{row.language === "es" ? ` · ${w.spanish}` : ""}</p>
       {/* The person's own words, as plain text: React escapes them and nothing is turned into a link. */}
       <p className="web-need">{row.need}</p>
-      <p className="live-muted">{[row.phone && phoneLine(row.phone), row.email, row.zip].filter(Boolean).join(" · ")}</p>
+      {/* Each way to reach them stays whole, and a line breaks before a dot, never after one. */}
+      <p className="live-muted web-reach">{[row.phone && phoneLine(row.phone), row.email, row.zip].filter(Boolean).map((part, index) => <Fragment key={index}>{index ? " " : null}<span>{index ? `· ${part}` : part}</span></Fragment>)}</p>
       {row.unverified && <p className="web-mark">{w.unverified}</p>}
       {row.doNotMessage && <p className="web-mark">{w.doNotMessage(row.callAt)}</p>}
       {row.meet && <p className="web-mark">{w.meet(row.meet)}</p>}
