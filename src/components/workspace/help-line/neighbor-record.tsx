@@ -818,7 +818,7 @@ function NeighborRecordView({
       {alike}
 
       <section
-        className={first || alsoOpen.length ? "live-section" : undefined}
+        className={first || alsoOpen.length ? "live-section help-history" : "help-history"}
       >
         <div className="live-section-head">
           <h2>{text.history.title}</h2>

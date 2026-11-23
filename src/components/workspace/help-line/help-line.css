@@ -456,3 +456,5 @@
 .help-form > div[aria-live="polite"]:not([class]):empty { position: absolute; }
 /* An empty state's text link starts on its text's edge: the outlined buttons' inset (treasury.css) is not its own. */
 .live-app .help-empty .help-text-action[data-slot="button"] { padding-inline: 0; }
+/* A record with no history yet: the empty state's rules run the full measure, as the heading above them does. */
+.help-history > .help-empty { max-width: none; }
