@@ -13,3 +13,7 @@
 }
 /* Why "Email to members" cannot be pressed yet: one muted line on the button row, whole, never faded. */
 .meeting-sheet .meeting-send-why { flex: 1 0 100%; margin: 0; font-size: 13px; line-height: 1.4; color: var(--live-muted); text-align: end; }
+/* Decide is a link to the request's record: it is underlined as the room's other text links are (Show replies,
+   Change reply), so it does not read as a plain word at the end of the row. */
+.meeting-decide { color: var(--live-ink, #283c32); text-decoration: underline; text-decoration-color: rgb(40 60 50 / 0.35); text-underline-offset: 4px; }
+.meeting-decide:hover { text-decoration-color: currentColor; }
