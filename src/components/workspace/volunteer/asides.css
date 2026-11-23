@@ -5,6 +5,9 @@
 .live-aside-sheet .volunteer-month caption { caption-side: top; text-align: left; margin-bottom: var(--space-12); font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-size: 24px; line-height: 1.15; letter-spacing: -0.01em; color: var(--live-ink); }
 .live-aside-sheet :is(.volunteer-month, .volunteer-teams-week) thead th { padding: 0 0 var(--space-8); font-size: 13px; font-weight: 400; text-align: center; color: var(--live-muted); border-bottom: 1px solid var(--live-line); }
 .live-aside-sheet .volunteer-teams-week tbody + tbody tr:first-child th { border-top: 1px solid var(--live-line); }
+/* A team is one group, its name over its marks: the shared table rule (paper.css) drew a line between the two and another
+   under the marks, a hair above the key's own rule. Teams are parted by the rule above the next team alone. */
+.live-aside-sheet table.volunteer-teams-week tbody :is(th, td) { border-bottom: 0; }
 .live-aside-sheet .volunteer-teams-week thead th[data-today] { font-weight: 600; color: var(--live-ink); }
 .live-aside-sheet .volunteer-month td { height: 36px; padding: 0; text-align: center; font-size: 15px; color: var(--live-ink); }
 .live-aside-sheet .volunteer-month tbody tr:first-child td { padding-top: var(--space-8); }
