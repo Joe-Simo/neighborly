@@ -545,6 +545,12 @@
   .report-months li { padding-inline: 4px; }
   .report-months p.help-amount { font-size: 19px; }
 }
+/* Twelve months across: a month's amount is held to its column, so four-figure months side by side keep paper between
+   them ("$1,745 $1,535" never reads as one run of figures). Sized by the row's own width, not the window's. */
+@media screen and (min-width: 601px) {
+  .report-months { container-type: inline-size; }
+  .report-months:not([data-months="3"]) p.help-amount { font-size: clamp(15px, calc(100cqi / 38 - 4px), 22px); }
+}
 @media (max-width: 850px) {
   .report-period { align-items: flex-start; flex-direction: column; }
   /* The whole key stays: it wraps under the heading. */
