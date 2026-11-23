@@ -451,3 +451,6 @@
 .live-section:has(> .tools-file-pick) > .tools-file-pick .tools-small { margin: 0; }
 /* Who opened the record: a turned line never leaves the time alone on the last line. */
 .help-opened li { text-wrap: pretty; }
+/* The decision sheet's place for the household's lines, while nothing has come: out of the form's flow, so it adds
+   no second gap between the amount and the note. It stays in the page, to say the lines when they arrive. */
+.help-form > div[aria-live="polite"]:not([class]):empty { position: absolute; }
