@@ -65,6 +65,8 @@
 .people-row .live-meta > span[data-joined] { color: var(--paper-green); }
 .people-invitations + .live-empty, .people-deck + .live-empty { margin-top: var(--space-24); }
 .live-app .people-deck { margin-bottom: 0; }
+/* On a desk the deck's two sentences stand one to a line; balancing them as one text broke the first mid-thought. */
+@media (min-width: 701px) { .people-deck > span { display: block; } }
 
 /* Between a phone and a desk the columns give the name room, so an address stays on one line. The list's own
    width decides, not the screen's: on an iPad the side column takes its share before the rows do. */
