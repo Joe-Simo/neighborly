@@ -517,3 +517,15 @@
 @media (max-width: 560px) {
   .help-timeline li > .help-amount { grid-column: 2 / -1; justify-self: start; margin-top: var(--space-4); }
 }
+/* A returned call's words run the whole width under its name; who returned it stands beside the name, not beside the words.
+   On a phone it follows the words, as before. */
+.help-row[data-quiet] { grid-template-columns: 96px minmax(0, 1fr); }
+.help-returned-body { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 30px; }
+.help-returned-body > * { grid-column: 1 / -1; }
+.help-returned-body > h3 { grid-column: 1; }
+.help-returned-body > .help-returned { grid-column: 2; grid-row: 1; align-self: start; margin-top: 4px; }
+@media (max-width: 850px) {
+  .help-row[data-quiet] { grid-template-columns: 66px minmax(0, 1fr); }
+  .help-returned-body { display: flex; flex-direction: column; }
+  .help-returned-body > .help-returned { order: 9; margin-top: var(--space-16); }
+}
