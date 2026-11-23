@@ -142,7 +142,7 @@ function WebRow({ row, churchId, sample }: { row: Row; churchId: Id<"churches">;
       {/* The person's own words, as plain text: React escapes them and nothing is turned into a link. */}
       <p className="web-need">{row.need}</p>
       {/* Each way to reach them stays whole, and a line breaks before a dot, never after one. */}
-      <p className="live-muted web-reach">{[row.phone && phoneLine(row.phone), row.email, row.zip].filter(Boolean).map((part, index) => <Fragment key={index}>{index ? " " : null}<span>{index ? `· ${part}` : part}</span></Fragment>)}</p>
+      <p className="live-muted web-reach">{[row.phone && phoneLine(row.phone), row.email, row.zip].filter(Boolean).map((part, index, parts) => <Fragment key={index}>{index ? " " : null}<span>{index < parts.length - 1 ? `${part}\u00a0·` : part}</span></Fragment>)}</p>
       {row.unverified && <p className="web-mark">{w.unverified}</p>}
       {row.doNotMessage && <p className="web-mark">{w.doNotMessage(row.callAt)}</p>}
       {row.meet && <p className="web-mark">{w.meet(row.meet)}</p>}
