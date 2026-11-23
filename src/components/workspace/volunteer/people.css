@@ -219,3 +219,7 @@
   .live-app .people-invitations .live-row-actions:has(> :nth-child(2)) { flex-direction: column; align-items: stretch; gap: var(--space-8); width: max-content; justify-self: end; }
   .live-app .people-invitations .live-row-actions [data-slot="button"] { padding-inline: 14px; }
 }
+/* Each team card opens on its own green rule: under the head's rule too, the two read as a double rule. The head
+   closes on space alone when teams follow; an empty room keeps the rule. */
+.live-app .live-main:has(> .live-room > .live-teams:first-child > .team-card:first-child) > .live-page-head { border-bottom-color: transparent; }
+.live-app .live-main:has(> .live-room > .live-teams:first-child > .team-card:first-child) > .live-page-head::after { content: none; }
