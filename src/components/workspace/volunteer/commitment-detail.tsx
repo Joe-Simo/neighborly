@@ -1,4 +1,5 @@
 "use client";
+import "./volunteer.css";
 
 import { useState } from "react";
 import { usePaginatedQuery } from "@/components/workspace/query";
@@ -76,7 +77,7 @@ export function CommitmentDetail({
                 </Button>
               </div>
             )}
-          <dl className="live-detail">
+          <dl className="live-detail volunteer-commitment-facts">
             <div>
               <dt>{words.detail.when}</dt>
               <dd>
