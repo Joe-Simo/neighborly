@@ -3,7 +3,11 @@
 .report .report-book { border: 0; box-shadow: none; }
 /* The book and its printed sheets keep the room's figures: lining and tabular (see .report in reports.css). */
 .report-book, .report-book-print { font-feature-settings: "lnum" 1, "tnum" 1; }
-.report-book { margin: var(--space-8) 0 var(--space-56); overflow: clip; overflow-clip-margin: 12px; padding: 0 0 var(--space-4); }
+/* The book paints only inside its own box and the 12px of its sheets' shadows, whatever the turn's parts do. overflow
+   clip alone is not enough in Safari: it ignores overflow-clip-margin, and a composited leaf in its page-sized round
+   could paint over the section below while scrolling. A clip path clips every descendant, layer or not, in every
+   engine, and changes no layout, so the book still ends above what follows. */
+.report-book { margin: var(--space-8) 0 var(--space-56); overflow: clip; overflow-clip-margin: 12px; clip-path: inset(-12px); padding: 0 0 var(--space-4); }
 .book-desk {
   position: relative; display: grid; grid-template-columns: minmax(0, 1fr); width: min(100%, 520px);
   outline: none;
@@ -101,7 +105,8 @@
 .book-turn-roll { top: -4px; transform-origin: calc(var(--turn-long) / 2) 4px; background: radial-gradient(circle at 50% calc(4px + var(--turn-r)), #0000 calc(var(--turn-r) - 170px), #f6ecd466 calc(var(--turn-r) - 62px), #f8efd9b3 calc(var(--turn-r) - 40px), #0000 calc(var(--turn-r) - 15px), #5a47262e calc(var(--turn-r) - 4px), #3c2e1857 var(--turn-r)); }
 .book-turn:not([data-turned="no"]) .book-turn-shade { display: block; top: -150px; z-index: 1; transform-origin: calc(var(--turn-long) / 2) 150px; background: radial-gradient(circle at 50% calc(150px + var(--turn-r)), #0000 calc(var(--turn-r) - 1px), #2e24165e var(--turn-r), #2e241629 calc(var(--turn-r) + 14px), #2e24160f calc(var(--turn-r) + 60px), #0000 calc(var(--turn-r) + 140px)); }
 .book-turn[data-turned="yes"] { visibility: hidden; }
-.report-book:is(:hover, :focus-within) .book-turn[data-laid] .book-turn-page, .book-turn:not([data-turned="no"]) :is(.book-turn-round, .book-turn-page, .book-turn-back, .book-turn-roll, .book-turn-shade) { will-change: transform; }
+/* Layers only while a page is turning: a leaf promoted on hover alone sat composited through every scroll. */
+.book-turn:not([data-turned="no"]) :is(.book-turn-round, .book-turn-page, .book-turn-back, .book-turn-roll, .book-turn-shade) { will-change: transform; }
 /* The lower right corner can be taken in the hand and drawn back. */
 .book-corner { position: absolute; right: 0; bottom: 0; z-index: 3; width: 56px; height: 56px; cursor: grab; touch-action: none; }
 .book-corner:active { cursor: grabbing; }
