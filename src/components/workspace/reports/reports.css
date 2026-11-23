@@ -1001,7 +1001,7 @@
 }
 
 /* The Housing Provider Summary: a wide table of months that scrolls inside its own frame, never the page. */
-.housing-section { margin-top: var(--space-24); min-width: 0; max-width: 100%; }
+.housing-section { margin-top: var(--space-56); min-width: 0; max-width: 100%; }
 /* The table is wider than a phone: the frame scrolls, never the page. width 0 with min-width 100% keeps the table's width from reaching any grid or flex parent. */
 .housing-body { min-width: 0; max-width: 100%; }
 .housing-note { margin: var(--space-8) 0; color: var(--live-ink); }
