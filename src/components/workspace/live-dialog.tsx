@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, startTransition, useContext, useDeferredValue, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, startTransition, useContext, useDeferredValue, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -107,9 +107,31 @@ export function LiveDialog({
   const opener = useRef<HTMLElement | null>(null);
   // The way back is taken as the dialog is asked to open, before its form is drawn (the sheet itself follows a frame
   // later, see `ready`): a box that focuses itself as it is drawn (autoFocus) is inside the sheet, not the way back.
+  // Where the page stood as the dialog was asked to open, before the lock (react-remove-scroll) hides its scrollbar and
+  // gives <body> a margin. WebKit can move the window as the lock comes off and as focus comes back, so on the way out
+  // the page is put back exactly there, in the close's own frame and the next two (the lock is taken off after it).
+  const stood = useRef<{ x: number; y: number } | null>(null);
   useLayoutEffect(() => {
-    if (open) opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    if (open) {
+      opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      stood.current = { x: window.scrollX, y: window.scrollY };
+    }
   }, [open]);
+  const standBack = useCallback(() => {
+    const at = stood.current;
+    if (!at) return;
+    const put = () => {
+      if (window.scrollX !== at.x || window.scrollY !== at.y) window.scrollTo({ left: at.x, top: at.y, behavior: "instant" });
+    };
+    put();
+    requestAnimationFrame(() => {
+      put();
+      requestAnimationFrame(() => {
+        put();
+        if (stood.current === at) stood.current = null;
+      });
+    });
+  }, []);
   const [sheet, setSheet] = useState<HTMLElement | null>(null);
   useEffect(() => (sheet ? dragDownToClose(sheet, onClose) : undefined), [sheet, onClose]);
   // A save button that waits is disabled (or the step it was on is redrawn), and the browser drops its focus to the
@@ -133,7 +155,10 @@ export function LiveDialog({
   useLayoutEffect(() => {
     drawn.current = sheet;
   }, [sheet]);
-  useLayoutEffect(() => () => leaving(drawn.current), []);
+  useLayoutEffect(() => () => {
+    leaving(drawn.current);
+    standBack();
+  }, [standBack]);
   // Opened in a transition too: the press is answered in its own frame, and the sheet, form and all, is drawn in the next.
   // It closes at once. What is drawn is the same; only the press no longer waits for the sheet to be built.
   const ready = useDeferredValue(open, false);
@@ -160,6 +185,7 @@ export function LiveDialog({
           const free = !document.activeElement || document.activeElement === document.body;
           // The person is where they were when they opened it; coming back must not move the page.
           if (free && from?.isConnected) from.focus({ preventScroll: true });
+          standBack();
         }}
         onOpenAutoFocus={(event) => {
           const now = document.activeElement;
