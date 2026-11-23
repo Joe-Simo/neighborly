@@ -336,3 +336,10 @@
   .live-app .visits-mine > .live-section-head { flex-wrap: wrap; gap: var(--space-8) 16px; }
   .live-app .visits-mine > .live-section-head h2 { flex-basis: 100%; margin-bottom: 0; }
 }
+/* Between the phone and the wide desk, help.css sets a two-button row's answer under its words. My visits list mixes
+   two-button rows with a status and one button, so every row here takes that shape and the list reads as one column. */
+@media (min-width: 851px) and (max-width: 1279px) {
+  .live-app .visits-mine .help-row { grid-template-columns: 96px minmax(0, 1fr); row-gap: var(--space-16); }
+  .live-app .visits-mine .help-row > :first-child { grid-row: 1 / span 2; }
+  .live-app .visits-mine .help-row > .live-row-actions { grid-column: 2; justify-content: flex-start; }
+}
