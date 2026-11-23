@@ -712,7 +712,7 @@ function NeighborRecordView({
                   ` ${fill(text.sheet.approvedBy, { name: first.decidedByName ?? "", amount: money(first.amountApproved ?? 0), payee: first.payeeName })}`}
               </p>
               {onPrint && (
-                <Button variant="link" className="help-text-action" onClick={() => onPrint(first.id)}>
+                <Button variant="link" className="help-text-action help-sheet-print" onClick={() => onPrint(first.id)}>
                   {words.locale === "es" ? "Imprimir petición" : "Print request"}
                 </Button>
               )}

@@ -29,6 +29,7 @@
   .help-row[data-call]:not([data-quiet]) > :is(:first-child, .live-row-actions) { align-self: start; }
 }
 .help-text-action[data-slot="button"], .live-app .help-row .help-text-action[data-slot="button"], .live-app .help-actions .help-text-action[data-slot="button"] { min-height: 44px; height: auto; padding: 0; border: 0; background: none; font-size: inherit; font-weight: 400; color: #35553c; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; flex: 0 0 auto; }
+.live-app .help-sheet .help-sheet-print[data-slot="button"] { font-size: inherit; }
 .help-matches .live-row { border-bottom: 0; border-top: 1px solid var(--live-line); margin-top: var(--space-8); }
 .help-sheet .help-assistant-line { display: flex; align-items: baseline; max-width: none; margin: var(--space-16) 0 0; padding-top: var(--space-16); border-top: 1px solid var(--live-line); font-size: 16px; }
 .help-assistant-line svg { position: relative; top: 2px; }
