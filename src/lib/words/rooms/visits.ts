@@ -135,7 +135,7 @@ export const en = (t: Terms, place: string) => ({
     place: "Where it was",
     places: { home: "At home", prison: "In prison or jail", hospital: "In the hospital", eldercare: "In a nursing home or eldercare", other: "Somewhere else, in person" },
     guestHours: "Hours from other volunteers",
-    guestHoursHelp: "Anyone who came along and isn't a member, all together. Leave it empty if no one did.",
+    guestHoursHelp: "Anyone who came along and isn’t a member, all together. Leave it empty if no one did.",
     drove: "Who drove",
     droveHelp: "The miles go to the driver, so one car is counted once.",
     chooseDrove: "Choose who drove",

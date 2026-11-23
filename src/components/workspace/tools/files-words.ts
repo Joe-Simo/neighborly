@@ -5,7 +5,7 @@ import type { Language, Terms } from "@/lib/words/sets";
  * room's first load carries them. Every sentence is written whole in each language.
  */
 const en = (t: Terms) => ({
-  title: "Your conference's files",
+  title: "Your conference’s files",
   deck: `Minutes, forms and anything else your ${t.group} keeps. Open to coordinators and owners only.`,
   neighborTitle: "Files",
   neighborDeck: "A lease, a utility bill or anything else kept with this record. Open to coordinators and owners only.",
