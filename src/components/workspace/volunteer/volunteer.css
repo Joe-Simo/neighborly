@@ -146,6 +146,13 @@
    the row on every width instead of dropping below it, left-aligned, the moment the dates run to two lines. */
 .live-app .volunteer-days-row > div:first-child { flex: 1 1 auto; min-width: 0; }
 .live-app .volunteer-days-row > [data-slot="button"] { flex: none; margin-left: auto; }
+/* On a phone a span of days runs to two lines and its button drops below, while a single day keeps its button beside it:
+   every row there stacks the same way instead, the days over their button, both on the left edge. */
+@media (max-width: 599px) {
+  .live-app .live-row.volunteer-days-row { flex-direction: column; align-items: flex-start; gap: var(--space-12); }
+  .live-app .live-row.volunteer-days-row > div:first-child { flex: none; width: 100%; }
+  .live-app .volunteer-days-row > [data-slot="button"] { margin-left: 0; }
+}
 /* Each half of a span of days (DaysWords) keeps together where it fits, so the line breaks before "to" / "al". */
 :is(.live-app, .live-dialog) .volunteer-days-part { display: inline-block; }
 /* A span of dates breaks as two even lines, never leaving a year alone on the second. */
@@ -232,3 +239,9 @@
 /* The empty meetings place's one act reads as every other outlined button in the room, in ink, not in the muted
    grey of the sentence above it. */
 .live-app .volunteer-meetings-list > .live-empty [data-slot="button"] { color: var(--live-ink); }
+
+/* Repeats and how many times share a row: the count fills its half, so both boxes end on the sheet's edge like every field above them. */
+:is(.live-app, .live-dialog) .live-form-grid.volunteer-repeat-grid .live-field input[type="number"] { max-width: none; }
+
+/* When the facts close the commitment's sheet, they end on the sheet's own padding: no extra margin leaves a hollow under the last line. */
+.live-dialog .live-detail.volunteer-commitment-facts:last-child { margin-bottom: 0; }

@@ -1037,8 +1037,11 @@ function HelpLineView({
                 key={call.id}
               >
                 {leaf(call.returnedAt ?? call.takenAt)}
-                <div>
+                <div className="help-returned-body">
                   <h3>{caller(call, words)}</h3>
+                  <span className="live-status help-returned">
+                    {call.returnedByName ? text.returnedBy(call.returnedByName) : text.returned}
+                  </span>
                   <p>{call.outcome ? systemSaid(words.locale, sampleSaid(call.outcome)) : sampleSaid(call.note)}</p>
                   {call.nextStep && (
                     <p className="help-assistant help-next-step">
@@ -1057,9 +1060,6 @@ function HelpLineView({
                     </p>
                   )}
                 </div>
-                <span className="live-status help-returned">
-                  {call.returnedByName ? text.returnedBy(call.returnedByName) : text.returned}
-                </span>
               </div>
             ))}
           </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import "./volunteer.css";
 import { keepTitle } from "@/lib/words/titles";
 import { peopleWords } from "@/lib/words/rooms/people";
 import { lazy, Suspense, useState, type FormEvent } from "react";
@@ -303,7 +304,7 @@ export function LiveCreateForm({
         </LiveField>
       )}
       {kind === "commitment" && (
-        <div className="live-form-grid">
+        <div className="live-form-grid volunteer-repeat-grid">
           <LiveField label={actions.commitmentForm.repeats}>
             <NativeSelect name="intervalWeeks" defaultValue="1" required>
               <option value="1">{actions.commitmentForm.everyWeek}</option>

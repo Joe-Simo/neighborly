@@ -80,6 +80,18 @@
 /* An adult's work sits under the line on its own, with its labels always shown. */
 .help-line-row .help-work { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-8) 12px; align-items: end; }
 .help-lines[data-shape] .help-line-row .help-work .live-field > span { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
+/* In the household's line on a wider screen the boxes keep to four even columns: who and the work take the left
+   half, the birth year (with "adult or child" beside it while no year is given) and the workplace the right half,
+   so every edge lines up from row to row. */
+@media (min-width: 561px) {
+  .help-lines[data-shape="three"] .help-line-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .help-lines[data-shape="three"] .help-line-row > :first-child { grid-column: span 2; }
+  .help-lines[data-shape="three"] .help-line-row:has(> span:empty) > :nth-child(2) { grid-column: span 2; }
+  .help-lines[data-shape="three"] .help-line-row > span:empty { display: none; }
+  .help-lines[data-shape="three"] .help-line-row .live-field input[inputmode="numeric"] { max-width: none; }
+  .help-lines[data-shape="three"] .help-line-row .help-work { grid-template-columns: subgrid; }
+  .help-lines[data-shape="three"] .help-line-row .help-work > * { grid-column: span 2; }
+}
 /* On a phone the work and the workplace each take the line, so "Trabaja tiempo completo" is read whole and never
    runs under the select's chevron; the select keeps its right padding clear of the chevron. */
 @media (max-width: 560px) {
@@ -449,6 +461,8 @@
 
 /* "Same phone as …" sits among a waiting call's quiet acts at their size: the room's lead note would pull it up over them. */
 .help-row .help-row-more > .help-note { margin: 0; font-size: inherit; line-height: inherit; max-width: none; }
+/* It starts its own line, so it reads with the two acts it leads to ("Use this household", "Add as a neighbor"), not after "Draft a request". */
+.help-row .help-row-more > .help-note { flex-basis: 100%; }
 
 /* The quiet acts are not a dotted list of facts: whoever is calling back keeps their initials whole, with no dot before them. */
 .help-row .help-row-more > .help-person { margin-left: 0; flex-wrap: nowrap; }
@@ -504,14 +518,24 @@
 
 /* No neighbors yet: the block closes with a rule as wide as the page head's above it, not one cut short at 760px. */
 .live-app .help-empty.help-neighbors-none { max-width: none; }
-/* On a phone the two smaller figures stand side by side: their labels share one row, so when one label takes two
-   lines ("Visitas domiciliarias") both figures still start on one line. */
-@media (max-width: 850px) {
-  .live-main:has(.help-record-head) .help-figures > div:not(:first-child) { display: grid; grid-row: span 2; grid-template-rows: subgrid; }
-}
+/* The figures' labels share one row, so when one label takes two lines ("Visitas domiciliarias" on a tablet or a
+   phone) every figure beside it still starts on one line. */
+.live-main:has(.help-record-head) .help-figures > div { display: grid; grid-row: span 2; grid-template-rows: subgrid; }
 /* "Not the same" stands beside "Merge into this record" at the button's size, so the pair reads as one choice. */
 .live-app .help-row .help-same-actions .help-text-action[data-slot="button"] { font-size: 15px; }
 /* On a phone what was paid stands under the line it pays for, so the line keeps the column and does not wrap a word a line. */
 @media (max-width: 560px) {
   .help-timeline li > .help-amount { grid-column: 2 / -1; justify-self: start; margin-top: var(--space-4); }
+}
+/* A returned call's words run the whole width under its name; who returned it stands beside the name, not beside the words.
+   On a phone it follows the words, as before. */
+.help-row[data-quiet] { grid-template-columns: 96px minmax(0, 1fr); }
+.help-returned-body { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 30px; }
+.help-returned-body > * { grid-column: 1 / -1; }
+.help-returned-body > h3 { grid-column: 1; }
+.help-returned-body > .help-returned { grid-column: 2; grid-row: 1; align-self: start; margin-top: 4px; }
+@media (max-width: 850px) {
+  .help-row[data-quiet] { grid-template-columns: 66px minmax(0, 1fr); }
+  .help-returned-body { display: flex; flex-direction: column; }
+  .help-returned-body > .help-returned { order: 9; margin-top: var(--space-16); }
 }

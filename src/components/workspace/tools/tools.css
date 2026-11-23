@@ -107,7 +107,7 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 :is(.live-app, .live-dialog) .tools-address input::selection { background: #dde5d3; color: var(--live-ink); }
 
 /* Your files, in paper: each thing to bring in is a leaf of paper; the one in use opens across the page. */
-.tools-leaves { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-24) 22px; margin-top: var(--space-40); max-width: 1040px; }
+.tools-leaves { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-24) 22px; margin-top: var(--space-40); }
 .tools-leaf { display: flex; flex-direction: column; min-width: 0; padding: var(--space-32) 30px var(--space-24); background: var(--relief-paper); border: 1px solid var(--relief-edge); border-radius: 3px; box-shadow: var(--relief-card); }
 .live-app .tools-leaf > h2 { margin: 0 0 var(--space-8); font: 400 26px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; color: var(--live-ink); }
 .tools-leaf-deck { margin: 0; max-width: 62ch; font-size: 17px; line-height: 1.5; color: var(--live-muted); }
