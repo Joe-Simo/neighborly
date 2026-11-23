@@ -181,6 +181,8 @@
   padding: var(--space-24) 0;
   border-bottom: 1px solid var(--live-line);
 }
+/* The words give way before the button does: a long line wraps beside its button instead of pushing it under. */
+.treasury-foot > div > div { flex: 1 1 18rem; min-width: 0; }
 .treasury-foot h2 {
   font: 400 26px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif;
   letter-spacing: -0.02em;
