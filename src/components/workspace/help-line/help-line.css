@@ -460,3 +460,5 @@
 .live-app .help-empty .help-text-action[data-slot="button"] { padding-inline: 0; }
 /* A record with no history yet: the empty state's rules run the full measure, as the heading above them does. */
 .help-history > .help-empty { max-width: none; }
+/* Two short boxes side by side fill their columns, so their right edges line up with the full-width boxes around them. */
+@media (min-width: 561px) { .help-form .live-form-grid .live-field :is(input[type="number"], input[inputmode="decimal"], input[inputmode="numeric"]) { max-width: none; } }
