@@ -279,3 +279,16 @@
     mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
   }
 }
+
+/* Where a commitment's team and time share one line, a middle dot parts them, as the line under them parts its
+   person and place: a bare gap read "Food pantry Tue, Nov 24" as one run. Where each takes its own line (a phone,
+   or a list between 680px and 860px wide), there is nothing to part. */
+.live-app .live-commitment-row .live-meta > .live-commitment-time::before { content: "·"; margin: 0 6px 0 -4px; }
+@media (max-width: 560px) {
+  .live-app .live-commitment-row .live-meta > .live-commitment-time::before { content: none; }
+}
+@media (min-width: 721px) {
+  @container (min-width: 680px) and (max-width: 859.98px) {
+    .live-app .live-list > .live-commitment-row .live-meta > .live-commitment-time::before { content: none; }
+  }
+}
