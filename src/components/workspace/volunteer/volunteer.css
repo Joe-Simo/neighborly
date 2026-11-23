@@ -156,3 +156,12 @@
 
 /* Two day fields side by side are narrower than a month: while one is open the pair stacks, so the month never slides under its neighbour. */
 :is(.live-app, .live-dialog) .live-form-grid.volunteer-days-grid:has(.live-date[data-open]) { grid-template-columns: minmax(0, 1fr); }
+
+/* Time off, second step: the days being checked lead, then what they touch, one line each, then what confirming does. */
+.live-dialog .volunteer-review-days { margin: 0; font-size: 19px; font-weight: 600; line-height: 1.3; color: var(--live-ink, #283c32); font-feature-settings: "lnum" 1, "tnum" 1; text-wrap: balance; }
+.live-dialog .volunteer-review-count { margin: var(--space-8) 0 0; font-size: 13px; font-weight: 600; line-height: 1.4; letter-spacing: var(--caps-track); text-transform: uppercase; color: var(--live-muted); }
+.live-dialog .volunteer-review-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--live-line); }
+.live-dialog .volunteer-review-list li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: var(--space-4) 16px; padding: var(--space-12) 0; border-bottom: 1px solid var(--live-line); font-size: 16px; line-height: 1.4; overflow-wrap: anywhere; }
+.live-dialog .volunteer-review-when { color: var(--live-muted); font-feature-settings: "lnum" 1, "tnum" 1; white-space: nowrap; }
+.live-dialog .live-form.volunteer-review { gap: var(--space-16); }
+.live-dialog .volunteer-review-explain { margin: var(--space-8) 0 0; line-height: 1.5; }

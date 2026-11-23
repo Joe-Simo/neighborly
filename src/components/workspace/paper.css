@@ -921,7 +921,9 @@
   .live-dialog-fixed [data-slot="dialog-header"] {
     animation: sheet-title-rule steps(1, jump-end) both;
     animation-timeline: scroll(nearest block);
-    animation-range: 0px 1px;
+    /* From the second pixel, not the first: a sheet that could scroll and then grew short (a month put away, the
+       time-off check replacing its form) kept the rule drawn under its title with nothing scrolled. */
+    animation-range: 1px 2px;
   }
 }
 /* The smallest phones with the keyboard up: title and button are both still held, each drawn closer, so the
