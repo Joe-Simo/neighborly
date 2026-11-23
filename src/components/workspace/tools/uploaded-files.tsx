@@ -144,8 +144,8 @@ export default function UploadedFiles(place: Place) {
                   <Button variant="ghost" onClick={() => setRemoving(null)}>{text.keep}</Button>
                 </div>
               ) : (
-                <div className="help-actions">
-                  <Button variant="ghost" aria-label={`${text.remove}: ${row.name}`} onClick={() => setRemoving(row.id)}>{text.remove}</Button>
+                <div className="tools-agency-line">
+                  <button type="button" className="tools-agency-act" aria-label={`${text.remove}: ${row.name}`} onClick={() => setRemoving(row.id)}>{text.remove}</button>
                 </div>
               )}
             </li>

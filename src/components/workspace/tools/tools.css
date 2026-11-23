@@ -211,7 +211,7 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 .tools-agency span { color: var(--live-muted); font-size: 15px; }
 /* Edit / Remove are quiet text actions on the phone line, so a long list never grows a column of buttons. */
 .tools-agency-line { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-16); }
-.tools-agency .tools-agency-act { min-height: 44px; padding: 0; border: 0; background: none; font: inherit; font-size: 13px; color: var(--live-muted); text-decoration: none; text-underline-offset: 3px; cursor: pointer; }
+:is(.tools-agency, .tools-files) .tools-agency-act { min-height: 44px; padding: 0; border: 0; background: none; font: inherit; font-size: 15px; color: var(--live-muted); text-decoration: none; text-underline-offset: 3px; cursor: pointer; }
 .tools-agency-act:hover, .tools-agency-act:focus-visible { text-decoration: underline; text-decoration-thickness: 1px; }
 .tools-agency-act:disabled { cursor: default; }
 @media (pointer: fine) { .tools-agency-act { min-height: 28px; } }
