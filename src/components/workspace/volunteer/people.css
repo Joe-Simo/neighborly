@@ -136,6 +136,8 @@
   /* Faces and the count on one line; the two things to do share the next. */
   .team-faces { flex-basis: 100%; }
   .live-app .team-card .live-team-line { justify-content: space-between; }
+  /* Alone on its line (a team you are invited to has no members link), the add button keeps the right edge too. */
+  .live-app .team-card .team-add { margin-left: auto; }
 }
 
 /* An invitation to a team waits on you: an ochre corner until you answer, green when you join. */
