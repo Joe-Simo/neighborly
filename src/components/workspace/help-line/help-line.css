@@ -511,3 +511,7 @@
 }
 /* "Not the same" stands beside "Merge into this record" at the button's size, so the pair reads as one choice. */
 .live-app .help-row .help-same-actions .help-text-action[data-slot="button"] { font-size: 15px; }
+/* On a phone what was paid stands under the line it pays for, so the line keeps the column and does not wrap a word a line. */
+@media (max-width: 560px) {
+  .help-timeline li > .help-amount { grid-column: 2 / -1; justify-self: start; margin-top: var(--space-4); }
+}
