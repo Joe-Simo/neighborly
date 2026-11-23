@@ -249,3 +249,5 @@
 /* A commitment's sheet: a long title, team or note wraps inside the sheet instead of widening it past its edge. */
 .live-dialog:has(.volunteer-commitment-facts) > *, .volunteer-commitment-facts > * { min-width: 0; }
 .live-dialog:has(.volunteer-commitment-facts) :is(h2, .live-kicker, p, dd) { overflow-wrap: anywhere; }
+/* Time off with none planned: the list already draws its top rule, so the empty state does not lay a second one on it. */
+.live-app .live-list > .live-empty:only-child { border-top: 0; }
