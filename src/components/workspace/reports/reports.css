@@ -1067,6 +1067,8 @@
 .council-form > :is(h3, p, [role="alert"]) { flex: 1 0 100%; }
 .council-form > h3 + p { margin-top: calc(var(--space-8) * -1); }
 .council-form .live-field { margin: 0; }
+/* The button beside the code field stands as tall as the field, so their tops and bottoms meet. */
+.council-form > [data-slot="button"] { height: 46px; }
 .council-list { list-style: none; margin: var(--space-8) 0; padding: 0; }
 .council-list li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-8); padding: var(--space-8) 0; border-bottom: 1px solid var(--live-line); color: var(--live-ink); }
 .council-list small { color: var(--live-muted); }
