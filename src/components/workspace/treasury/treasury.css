@@ -710,6 +710,8 @@
 .treasury-budget { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-20) 40px; padding: var(--space-24) 0; border-bottom: 1px solid var(--live-line); }
 .treasury-budget h2 { font: 400 26px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; letter-spacing: -0.02em; margin: 0 0 var(--space-8); font-feature-settings: "lnum", "tnum"; }
 .treasury-budget p { margin: 0; color: var(--live-muted); font-size: 17px; }
+/* The budget's field says what an empty amount means at the size every sheet's field help is set (paper.css). */
+.treasury-budget .live-field small { font-size: 15px; line-height: 1.45; }
 .treasury-budget > form { flex-basis: 100%; }
 /* The month check: what waits on a person, a flag the assistant raised included, is ochre; nothing is red. */
 /* The month check is its own row, set 24px clear of the budget's line, so it never reads as one of the budget's buttons. */
