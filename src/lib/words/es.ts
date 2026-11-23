@@ -126,7 +126,7 @@ export function es(set: WordSet): Words {
       },
       mine: {
         title: "Tu parte.",
-        deck: "Lo que has aceptado y cómo prepararte.",
+        deck: "Lo que has aceptado y\u00a0cómo\u00a0prepararte.",
       },
       "time-off": {
         title: "Tiempo para la vida.",
