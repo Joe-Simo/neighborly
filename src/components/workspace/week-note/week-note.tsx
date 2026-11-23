@@ -221,7 +221,7 @@ function WeekNoteView({ counts, monday, brief, waiting = false, onDone }: { coun
           {also.length > 0 && (
             <ul className={`mt-7 mb-0 grid list-none gap-x-10 gap-y-3 border-t border-[#e6e2d2] p-0 pt-5 text-[17px] leading-snug text-[var(--live-ink)] min-[761px]:grid-cols-3 ${waiting ? "" : "paper-rows"}`}>
               {also.map((line) => (
-                <li key={line.area} className={`block ${waiting ? held : ""}`}>
+                <li key={line.area} className={`block min-[761px]:flex min-[761px]:flex-col min-[761px]:justify-between ${waiting ? held : ""}`}>
                   <span>{line.parts.map((part) => part.text).join(" ")}</span>
                   <Link href={`/app/${line.area}`} className={`${quietLink} !min-h-10 -mt-0.5 -mb-2 !flex w-fit`}>
                     {words.menu[line.area]}
