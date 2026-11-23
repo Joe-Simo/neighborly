@@ -228,3 +228,7 @@
   .live-app .volunteer-tasks-list > .live-empty { padding-bottom: var(--space-24); }
   .live-app .volunteer-tasks-list:has(> .live-empty) + .volunteer-meetings-list { margin-top: 0; }
 }
+
+/* The empty meetings place's one act reads as every other outlined button in the room, in ink, not in the muted
+   grey of the sentence above it. */
+.live-app .volunteer-meetings-list > .live-empty [data-slot="button"] { color: var(--live-ink); }
