@@ -454,3 +454,5 @@
 /* The decision sheet's place for the household's lines, while nothing has come: out of the form's flow, so it adds
    no second gap between the amount and the note. It stays in the page, to say the lines when they arrive. */
 .help-form > div[aria-live="polite"]:not([class]):empty { position: absolute; }
+/* An empty state's text link starts on its text's edge: the outlined buttons' inset (treasury.css) is not its own. */
+.live-app .help-empty .help-text-action[data-slot="button"] { padding-inline: 0; }
