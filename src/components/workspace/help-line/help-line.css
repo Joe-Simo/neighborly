@@ -560,3 +560,5 @@
     mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
   }
 }
+/* Food, furniture and clothing are three short counts: one row of three, not two and an orphan. */
+@media (min-width: 561px) { .live-form-grid.help-goods-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

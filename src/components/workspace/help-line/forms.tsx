@@ -651,7 +651,7 @@ export function DecideForm({
       <fieldset className="help-lines">
         <legend>{w.goods}</legend>
         <p className="help-form-note">{w.goodsHelp}</p>
-        <div className="live-form-grid">
+        <div className="live-form-grid help-goods-grid">
           {(["food", "furniture", "clothing"] as const).map((kind) => (
             <LiveField key={kind} label={w.goodsKinds[kind]}>
               <Input name={kind} type="number" inputMode="numeric" min={0} max={500} />
