@@ -91,7 +91,8 @@
 .volunteer-meetings .help-sheet { margin: 0; padding: var(--space-24) 30px; }
 .volunteer-yes { --paper-corner: #365c46; }
 .volunteer-choice.paper-fold .help-sheet-label { color: #365c46; }
-.volunteer-meeting .help-sheet-body { align-items: center; }
+/* A meeting reads down at every width: the reply sits over its agenda button, never off at the right edge alone. */
+.volunteer-meeting .help-sheet-body { grid-template-columns: minmax(0, 1fr); align-items: start; }
 .volunteer-meeting-desk {
   display: flex;
   flex-wrap: wrap;
@@ -177,7 +178,9 @@
 .live-dialog .volunteer-review-days { margin: 0; font-size: 19px; font-weight: 600; line-height: 1.3; color: var(--live-ink, #283c32); font-feature-settings: "lnum" 1, "tnum" 1; text-wrap: balance; }
 .live-dialog .volunteer-review-count { margin: var(--space-8) 0 0; font-size: 13px; font-weight: 600; line-height: 1.4; letter-spacing: var(--caps-track); text-transform: uppercase; color: var(--live-muted); }
 .live-dialog .volunteer-review-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--live-line); }
-.live-dialog .volunteer-review-list li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: var(--space-4) 16px; padding: var(--space-12) 0; border-bottom: 1px solid var(--live-line); font-size: 16px; line-height: 1.4; overflow-wrap: anywhere; }
+/* Each affected commitment is its title over its time, every row the same: a long title used to push its time onto
+   a second line while a short one kept it at the right, so the list read as two layouts. */
+.live-dialog .volunteer-review-list li { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-4); padding: var(--space-12) 0; border-bottom: 1px solid var(--live-line); font-size: 16px; line-height: 1.4; overflow-wrap: anywhere; }
 .live-dialog .volunteer-review-when { color: var(--live-muted); font-feature-settings: "lnum" 1, "tnum" 1; white-space: nowrap; }
 .live-dialog .live-form.volunteer-review { gap: var(--space-16); }
 .live-dialog .volunteer-review-explain { margin: var(--space-8) 0 0; line-height: 1.5; }
@@ -214,7 +217,7 @@
 }
 
 /* A canceled commitment's note stands where Edit and Cancel stand on a live one, at the same distances from the team above and the details below. */
-.live-dialog.live-detail-dialog .live-kicker + .live-note { margin-block: 0; }
+.live-dialog.live-detail-dialog .live-kicker + .live-note { margin-block: 0; text-wrap: pretty; }
 
 /* With no task or meeting yet, the empty place's rule runs the room's full measure, as the head's rule above it
    does, instead of stopping short at 760px; its words keep their reading measure. */
@@ -245,3 +248,32 @@
 
 /* When the facts close the commitment's sheet, they end on the sheet's own padding: no extra margin leaves a hollow under the last line. */
 .live-dialog .live-detail.volunteer-commitment-facts:last-child { margin-bottom: 0; }
+
+/* A commitment's sheet: a long title, team or note wraps inside the sheet instead of widening it past its edge. */
+.live-dialog:has(.volunteer-commitment-facts) > *, .volunteer-commitment-facts > * { min-width: 0; }
+.live-dialog:has(.volunteer-commitment-facts) :is(h2, .live-kicker, p, dd) { overflow-wrap: anywhere; }
+/* Time off with none planned: the list already draws its top rule, so the empty state does not lay a second one on it. */
+.live-app .live-list > .live-empty:only-child { border-top: 0; }
+
+/* My commitments: from 1700px with no side column the head's picture stops at the room's column edge (paper.css), and
+   this room's painting (the hand, the plum ground) runs off its right side, so it ended on a hard vertical cut. It
+   fades out into the paper on that side too, as Visits and Your files do. */
+/* From 1700px the head's picture stops at the room's column edge (paper.css), the same edge as the month beside the
+   rows. Time off's painting (the hill, the blanket) runs off its right side, so it ended there on a hard vertical
+   cut; it fades out into the paper on that side instead. */
+/* From 1700px the head's picture stops at the room's column edge (paper.css), and this room's painting runs off its
+   right side (a sleeve, the plum ground), so it ended on a hard vertical cut, with or without the side column. It fades
+   out into the paper on that side too, as it already does on the left where the words end. */
+@media (min-width: 1700px) {
+  .live-app .live-main > .live-page-head .live-head-art[data-area="time-off"] {
+    -webkit-mask-image: linear-gradient(90deg, #000 80%, transparent);
+    mask-image: linear-gradient(90deg, #000 80%, transparent);
+  }
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art[data-area="mine"],
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art[data-area="time-off"],
+  .live-app .live-main > .live-page-head .live-head-art[data-area="tasks"],
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art[data-area="tasks"] {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
+  }
+}

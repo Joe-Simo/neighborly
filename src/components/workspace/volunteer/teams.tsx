@@ -102,6 +102,7 @@ export function TeamsSection() {
       )}
       {addingTo && (
         <LiveDialog
+          className="team-add-sheet"
           title={text.addTo(sampleSaid(addingTo.team.name))}
           description={text.addDeck}
           onClose={() => setAddingTo(null)}

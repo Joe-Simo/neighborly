@@ -76,6 +76,11 @@
 @media (max-width: 560px) {
   .help-lines[data-shape="three"] .help-line-row { grid-template-columns: 1.2fr 1fr 0.8fr; gap: var(--space-8) 8px; padding-right: 50px; }
   .help-lines[data-shape="three"] .live-field input, .help-lines[data-shape="three"] .live-field select { padding-inline: 8px; }
+  /* Once a birth year is given, the year takes the room "adult or child" leaves, so the line reaches the remove
+     button instead of stopping short of it with an empty gap, and its right edge meets the line's select below. */
+  .help-lines[data-shape="three"] .help-line-row:has(> span:empty) > :nth-child(2) { grid-column: span 2; }
+  .help-lines[data-shape="three"] .help-line-row > span:empty { display: none; }
+  .help-lines[data-shape="three"] .help-line-row .live-field input[inputmode="numeric"] { max-width: none; }
 }
 /* An adult's work sits under the line on its own, with its labels always shown. */
 .help-line-row .help-work { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-8) 12px; align-items: end; }
@@ -538,4 +543,20 @@
   .help-row[data-quiet] { grid-template-columns: 66px minmax(0, 1fr); }
   .help-returned-body { display: flex; flex-direction: column; }
   .help-returned-body > .help-returned { order: 9; margin-top: var(--space-16); }
+}
+/* Accounts sheet: "Show numbers" runs on from the covered-numbers note, in the note's own size, its tap area kept. */
+.live-dialog .help-form-note-act .help-text-action[data-slot="button"] { min-height: 24px; font-size: inherit; color: var(--live-ink); vertical-align: baseline; }
+/* On a desk a long name (or a wider Spanish button beside it) can push the number to a second line: it keeps a little air under the name. */
+@media (min-width: 851px) and (pointer: fine) {
+  .live-app .help-row[data-call] h3:has(> a.help-phone) { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.4em; row-gap: var(--space-4, 4px); }
+}
+
+/* From 1700px with no side column (no calls yet) the head's picture stops at the room's column edge (paper.css), and
+   this painting runs off its right side (the sleeve, the purple ground), so it ended on a hard vertical cut. It fades
+   out into the paper on that side too, as it already does on the left where the words end. */
+@media (min-width: 1700px) {
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art[data-area="help-line"] {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
+  }
 }

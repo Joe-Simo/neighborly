@@ -620,7 +620,7 @@ function HelpLine() {
       {forms && step?.kind === "return" && (
         <LiveDialog
           title={text.sheets.returned.title}
-          description={`${caller(step.call, words)}${step.call.phone ? `, ${step.call.phone}` : ""}`}
+          description={`${caller(step.call, words)}${step.call.phone ? `, ${phoneLine(step.call.phone)}` : ""}`}
           onClose={close}
         >
           <forms.ReturnForm

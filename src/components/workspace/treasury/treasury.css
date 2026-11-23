@@ -232,6 +232,9 @@
 }
 .live-app .treasury-statement input[name="statement"] {
   width: 168px;
+  /* Same box and type as the date beside it, and as the amounts in the sheets. */
+  height: 46px;
+  font-size: 16px;
 }
 .help-sheet h2[data-waiting] {
   color: var(--help-ochre-ink);
@@ -509,6 +512,10 @@
 }
 .treasury-statement label {
   font-size: 15px;
+}
+/* Same weight as the date's label beside it. */
+.treasury-statement-label {
+  font-weight: 600;
 }
 /* From 600px up a button is a button: its own width, at the row's right. */
 @media (min-width: 600px) and (max-width: 850px) {

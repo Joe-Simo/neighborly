@@ -23,6 +23,8 @@
   .tools-address { flex-direction: column; align-items: stretch; }
 }
 .tools-rota { margin-top: var(--space-32); }
+/* In the print sheet the deck sits under the title as every sheet's does, not a paragraph further down. */
+.tools-rota-dialog .live-deck:first-child { margin-top: 0; }
 .tools-rota header p { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: var(--caps-track); color: var(--live-muted); }
 .tools-rota header h3 { margin: var(--space-4) 0 var(--space-16); font: 400 26px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; color: var(--live-ink); }
 .tools-rota td { vertical-align: top; }
@@ -209,7 +211,7 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 .tools-agency span { color: var(--live-muted); font-size: 15px; }
 /* Edit / Remove are quiet text actions on the phone line, so a long list never grows a column of buttons. */
 .tools-agency-line { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-16); }
-.tools-agency .tools-agency-act { min-height: 44px; padding: 0; border: 0; background: none; font: inherit; font-size: 13px; color: var(--live-muted); text-decoration: none; text-underline-offset: 3px; cursor: pointer; }
+:is(.tools-agency, .tools-files) .tools-agency-act { min-height: 44px; padding: 0; border: 0; background: none; font: inherit; font-size: 15px; color: var(--live-muted); text-decoration: none; text-underline-offset: 3px; cursor: pointer; }
 .tools-agency-act:hover, .tools-agency-act:focus-visible { text-decoration: underline; text-decoration-thickness: 1px; }
 .tools-agency-act:disabled { cursor: default; }
 @media (pointer: fine) { .tools-agency-act { min-height: 28px; } }
@@ -243,3 +245,13 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 .live-app .tools-leaf > h2:has(> svg) > svg { flex: none; margin-right: 0; translate: 0 2px; }
 /* An empty list's line inside a card keeps clear of the deck above it, so its top rule never sits on the words. */
 .live-app .tools-leaf > .help-empty-line { margin-top: var(--space-16); }
+
+/* From 1700px with no side column the head's picture stops at the room's column edge (paper.css), and this room's
+   painting runs off its right side (a sleeve, the ochre ground), so it ended on a hard vertical cut. It fades out
+   into the paper on that side too, as it already does on the left where the words end. */
+@media (min-width: 1700px) {
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art[data-area="tools"] {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
+  }
+}

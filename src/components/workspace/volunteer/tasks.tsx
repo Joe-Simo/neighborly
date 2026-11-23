@@ -272,7 +272,7 @@ function LiveMeetingResponses({
       </Button>
       {open && (
         <>
-          <div className="live-list">
+          {responses.results.length > 0 && <div className="live-list">
             {responses.results.map((item) => (
               <div className="live-row" key={item.personId}>
                 <span>{item.name}</span>
@@ -281,7 +281,7 @@ function LiveMeetingResponses({
                 </span>
               </div>
             ))}
-          </div>
+          </div>}
           {responses.status === "Exhausted" && !responses.results.length && (
             <p>{text.none}</p>
           )}

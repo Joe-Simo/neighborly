@@ -188,7 +188,8 @@ function LiveCoverChooser({
       ))}
       {!waiting.length && (
         <>
-          <LiveField label={text.person}>
+          {/* Nobody to ask is said as the field's own help, spaced and read with it, not as a bare line pressed under the box. */}
+          <LiveField label={text.person} help={candidates.status === "Exhausted" && !candidates.results.length ? text.nobody : undefined}>
             <NativeSelect
               value={recipient}
               onChange={(event) =>
@@ -207,9 +208,6 @@ function LiveCoverChooser({
               ))}
             </NativeSelect>
           </LiveField>
-          {candidates.status === "Exhausted" && !candidates.results.length && (
-            <p>{text.nobody}</p>
-          )}
           {candidates.status !== "Exhausted" && (
             <Button
               variant="ghost"

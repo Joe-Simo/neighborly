@@ -33,7 +33,7 @@ export const en = (t: Terms, place: string) => ({
   twinningGift: "Twinning gift",
   /** The two lines a ledger row reads as, and the way a statement line reads. */
   lines: {
-    check: (number: string) => `Check ${number}`,
+    check: (number: string) => `Check\u00a0${number}`,
     reversedTitle: "Reversed: {what}, {why}",
     reversed: (detail: string) => `Reversed · ${detail}`,
     reversal: "Reversal",
@@ -309,7 +309,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   spending: { pantry: "Compra para la despensa", supplies: "Materiales", dues: "Cuotas del consejo", fee: "Comisión del banco", twinning: "Donativo de hermanamiento a otra conferencia", other: "Otro gasto" },
   twinningGift: "Donativo de hermanamiento",
   lines: {
-    check: (number) => `Cheque ${number}`,
+    check: (number) => `Cheque\u00a0${number}`,
     reversedTitle: "Anulado: {what}, {why}",
     reversed: (detail) => `Anulado · ${detail}`,
     reversal: "Anulación",
@@ -420,7 +420,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     toConference: "A qué conferencia",
     paidTo: "Pagado a",
     from: "De parte de",
-    fromExample: "La parroquia, la Caminata, un donativo anónimo",
+    fromExample: "La parroquia, la Caminata, un anónimo",
     check: "Número de cheque (opcional)",
     note: "Nota (opcional)",
     submit: { gift: "Anotar el donativo", out: "Anotar dinero que sale", in: "Anotar dinero que entra" },

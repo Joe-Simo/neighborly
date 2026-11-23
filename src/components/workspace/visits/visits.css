@@ -366,3 +366,14 @@
   .visits-room .live-section-head > .room-tally .live-count { text-align: right; }
   .visits-room .live-section-head > .room-tally dl > div { align-items: flex-end; }
 }
+.visits-found-one { white-space: nowrap; }
+
+/* From 1700px with no side column the head's picture stops at the room's column edge (paper.css), and this room's
+   painting runs off its right side (a sleeve, the ochre ground), so it ended on a hard vertical cut. It fades out
+   into the paper on that side too, as it already does on the left where the words end. */
+@media (min-width: 1700px) {
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art[data-area="visits"] {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
+  }
+}

@@ -109,7 +109,8 @@ export function AtHome({
               <small data-short={left < 0 ? "" : undefined}>
                 {fill(left < 0 ? at.shortAsOf : at.leftAsOf, {
                   amount: shortMoney(Math.abs(left)),
-                  date: format(money.updatedAt, { weekday: undefined, year: "numeric" }),
+                  // "Nov 16, 2026" never breaks between its month and day.
+                  date: format(money.updatedAt, { weekday: undefined, year: "numeric" }).replace(/ /g, "\u00a0"),
                 })}
               </small>
             </dd>
@@ -543,23 +544,26 @@ export function AccountsForm({
           </>
         )}
       </Lines>
-      <p className="help-form-note">
+      {/* "Show numbers" stands with the sentence about covered numbers, not wedged between Cancel and Save. */}
+      <p className="help-form-note help-form-note-act">
         {numbers
           ? text.looked
           : text.covered}
-      </p>
-      <FormEnd error={error} pending={pending} submit={text.save}>
         {!numbers && accounts.some((account) => account.ending) && (
-          <Button
-            type="button"
-            variant="link"
-            className="help-text-action"
-            onClick={onShowNumbers}
-          >
-            {text.showNumbers}
-          </Button>
+          <>
+            {" "}
+            <Button
+              type="button"
+              variant="link"
+              className="help-text-action"
+              onClick={onShowNumbers}
+            >
+              {text.showNumbers}
+            </Button>
+          </>
         )}
-      </FormEnd>
+      </p>
+      <FormEnd error={error} pending={pending} submit={text.save} />
     </form>
   );
 }

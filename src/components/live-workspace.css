@@ -1025,6 +1025,14 @@
 .live-dialog {
   max-height: min(90svh, calc(var(--live-view-height, 100svh) - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
 }
+/* 90% of a screen is often a fraction (1024px tall: 921.6px), which leaves the centred sheet on half a pixel: its
+   held foot then lands a pixel above the sheet's own edge and the field scrolling under it shows through that
+   sliver. Held to whole, even pixels, the sheet and its foot share one edge. */
+@supports (max-height: round(down, 1px, 2px)) {
+  .live-dialog {
+    max-height: round(down, min(90svh, calc(var(--live-view-height, 100svh) - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom))), 2px);
+  }
+}
 /* On a touch screen a dialog opens on its title; the title shows no ring. */
 .live-dialog [data-slot="dialog-title"]:focus-visible { outline: 0; }
 /* iOS gives a date field a width of its own; let it fit its column. */

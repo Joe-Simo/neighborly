@@ -124,8 +124,9 @@
 .team-card h2 { margin-bottom: 0; overflow-wrap: anywhere; }
 .live-app .team-card > p { font-size: 17px; overflow-wrap: anywhere; }
 .team-faces { display: flex; align-items: center; margin-right: auto; }
-.team-faces .live-avatar { width: 36px; height: 36px; font-size: 13px; box-shadow: 0 0 0 2px var(--paper, #f7f4ed); }
-.team-faces .live-avatar + .live-avatar { margin-left: -8px; }
+.team-faces .live-avatar { width: 36px; height: 36px; font-size: 12px; letter-spacing: -0.02em; box-shadow: 0 0 0 2px var(--paper, #f7f4ed); }
+/* Wide pairs (WO, MW) stay whole: the next face overlaps only the circle's empty edge. */
+.team-faces .live-avatar + .live-avatar { margin-left: -5px; }
 .team-faces .live-meta { margin: 0 0 0 12px; white-space: nowrap; }
 .live-app .team-card .live-team-line { gap: var(--space-8) 20px; min-height: 44px; }
 /* Teams side by side share their rows: name, description, a word on joining, members. Whichever card's name or note
@@ -176,6 +177,9 @@
 /* Adding someone: a face, a name, one button a finger can find. */
 .team-candidates .live-row { min-height: 80px; padding-block: var(--space-16); }
 .team-candidates h3 { font-size: 19px; }
+/* A long team or member name wraps inside the sheet instead of widening it past its edge. */
+.team-add-sheet > *, .team-candidates .live-person { min-width: 0; }
+.team-add-sheet :is(h2, p, h3) { overflow-wrap: anywhere; }
 .team-candidates p { margin: 2px 0 0; font-size: 16px; }
 .team-roster { margin-top: var(--space-16); }
 .team-roster .live-row { min-height: 80px; padding-block: var(--space-12); }
@@ -214,4 +218,18 @@
 @media (min-width: 701px) {
   .live-app .people-invitations .live-row-actions:has(> :nth-child(2)) { flex-direction: column; align-items: stretch; gap: var(--space-8); width: max-content; justify-self: end; }
   .live-app .people-invitations .live-row-actions [data-slot="button"] { padding-inline: 14px; }
+}
+/* Each team card opens on its own green rule: under the head's rule too, the two read as a double rule. The head
+   closes on space alone when teams follow; an empty room keeps the rule. */
+.live-app .live-main:has(> .live-room > .live-teams:first-child > .team-card:first-child) > .live-page-head { border-bottom-color: transparent; }
+.live-app .live-main:has(> .live-room > .live-teams:first-child > .team-card:first-child) > .live-page-head::after { content: none; }
+
+/* From 1700px with no side column the head's picture stops at the room's column edge (paper.css), and this room's
+   painting runs off its right side (sleeves, the plum ground), so it ended on a hard vertical cut. It fades out
+   into the paper on that side too, as it already does on the left where the words end. */
+@media (min-width: 1700px) {
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art[data-area="people"] {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
+  }
 }
