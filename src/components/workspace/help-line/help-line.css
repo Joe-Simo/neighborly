@@ -218,7 +218,7 @@
 .help-sheet .help-reading-title { margin: var(--space-4) 0 var(--space-16); font: 400 22px / 34px "Newsreader", "Newsreader Fallback", Georgia, serif; color: var(--live-muted); }
 /* The way on from the line that says what changed. */
 .help-done { flex-wrap: wrap; }
-.help-done > span, .help-done > .contents > span { flex: 1 1 14rem; min-width: 0; }
+.help-done > span, .help-done > .contents > span { flex: 1 1 9rem; min-width: 0; }
 .help-done > :is(a, [data-slot="button"]) { margin-left: auto; }
 .help-done > a { min-height: 44px; display: inline-flex; align-items: center; }
 @media (prefers-reduced-motion: reduce) { .help-reading-title { animation: none; } }
