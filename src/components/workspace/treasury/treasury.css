@@ -27,7 +27,12 @@
 }
 /* In the ledger's table a neighbor's name turns between its words, never inside one: breaking anywhere let the
    table squeeze the For column to a letter's width on a tablet. */
-.live-app .help-ledger td[data-for] .live-name { overflow-wrap: break-word; }
+/* It stands inline, so a name that does turn keeps its first line on the row's baseline with the date and the entry,
+   and beside the full ledger the column is wide enough for a first and last name on one line. */
+.live-app .help-ledger td[data-for] .live-name { display: inline; overflow-wrap: break-word; }
+@media screen and (min-width: 1101px) {
+  .help-ledger:not(.treasury-shelf) td[data-for] { min-width: 10em; }
+}
 /* Beside the menu on a tablet (a room of about 700px) six columns do not fit: the For column steps aside, as it does
    on a phone, and the neighbor is named in the entry's own sheet. The amounts keep their whole width. */
 @media screen and (min-width: 851px) and (max-width: 1100px) {
