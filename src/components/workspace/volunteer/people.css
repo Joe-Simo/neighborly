@@ -106,8 +106,14 @@
 .team-faces .live-avatar + .live-avatar { margin-left: -8px; }
 .team-faces .live-meta { margin: 0 0 0 12px; white-space: nowrap; }
 .live-app .team-card .live-team-line { gap: var(--space-8) 20px; min-height: 44px; }
-/* Teams side by side keep their members on one line across: each description holds two lines' room. */
-@media (min-width: 1181px) { .live-app .team-card > p { min-height: 2lh; } }
+/* Teams side by side share their rows: name, description, a word on joining, members. Whichever card's name or note
+   runs longer, the members' line of every card in that row stands at one height, with no room held for a line not written. */
+@media (min-width: 901px) {
+  /* The grid's own row gap would fall between a card's rows too, so the cards hold it as their margin instead. */
+  .live-app .live-teams { row-gap: 0; }
+  .live-app .team-card { display: grid; grid-row: span 4; grid-template-rows: subgrid; row-gap: 0; align-content: start; margin-bottom: var(--space-32); }
+  .live-app .team-card > :last-child { grid-row: 4; align-self: start; }
+}
 /* Two teams side by side need a desk; below it each team has the full width for its members. */
 @media (max-width: 900px) {
   .live-app .live-teams { grid-template-columns: minmax(0, 1fr); }
