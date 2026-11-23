@@ -689,6 +689,10 @@
 @container (max-width: 940px) {
   .treasury-paper { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
   .treasury-balance { grid-column: 1 / -1; }
+  /* Side by side, the two slips share their rows: a label that wraps (Spanish "Entradas de noviembre") lowers its
+     neighbour's label with it, so both figures stand on one line. */
+  .treasury-paper > div:not(.treasury-balance) { display: grid; grid-template-rows: subgrid; grid-row: span 2; row-gap: 0; }
+  .treasury-paper > div:not(.treasury-balance) dt { align-self: end; }
   .treasury-paper b { --figure-room: calc(50cqi - 20px); }
 }
 @container (max-width: 760px) {
