@@ -730,12 +730,17 @@ function VisitsView({
                   </p>
                   {visit.found && (
                     <p className="visits-found">
-                      {fill(text.written.found, {
-                        what: [
-                          ...(visit.found.kind ? [words.kinds[visit.found.kind]] : []),
-                          ...whyFirst({ reasons: visit.found.signs, day: null }, words),
-                        ].join(", "),
-                      })}
+                      {/* Each thing read stays whole on its line: "Shut-off" never breaks at its hyphen. */}
+                      {text.written.found.split("{what}").map((part, index) =>
+                        index === 0 ? part : (
+                          <span key={index}>
+                            {[...(visit.found!.kind ? [words.kinds[visit.found!.kind]] : []), ...whyFirst({ reasons: visit.found!.signs, day: null }, words)].map((thing, at) => (
+                              <span key={at}>{at > 0 && ", "}<span className="visits-found-one">{thing}</span></span>
+                            ))}
+                            {part}
+                          </span>
+                        ),
+                      )}
                     </p>
                   )}
                   {href && <ArrowRight className="help-row-arrow" size={20} aria-hidden="true" />}

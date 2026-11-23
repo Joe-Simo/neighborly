@@ -366,3 +366,4 @@
   .visits-room .live-section-head > .room-tally .live-count { text-align: right; }
   .visits-room .live-section-head > .room-tally dl > div { align-items: flex-end; }
 }
+.visits-found-one { white-space: nowrap; }
