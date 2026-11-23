@@ -123,6 +123,10 @@
   .live-app .live-teams { row-gap: 0; }
   .live-app .team-card { display: grid; grid-row: span 4; grid-template-rows: subgrid; row-gap: 0; align-content: start; margin-bottom: var(--space-32); }
   .live-app .team-card > :last-child { grid-row: 4; align-self: start; }
+  /* A card is too narrow for faces, the members link and the add button on one line, so the add button always
+     takes the line below, in every card alike, rather than only where the members link happens to push it. */
+  .live-app .team-card .live-team-line { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 44px; }
+  .live-app .team-card .team-add { grid-column: 1; justify-self: start; }
 }
 /* Two teams side by side need a desk; below it each team has the full width for its members. */
 @media (max-width: 900px) {
