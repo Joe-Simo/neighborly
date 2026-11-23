@@ -803,3 +803,8 @@
   width: 16px; height: 16px; margin-right: 2px; opacity: 0.6; color: transparent;
   background: no-repeat center / 16px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23283c32' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
+
+/* An entry's words that run to a second line take a few words down with them, never one left alone under the rest. */
+.help-ledger :is(td, th[scope="row"]).help-what {
+  text-wrap: pretty;
+}
