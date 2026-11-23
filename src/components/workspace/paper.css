@@ -895,7 +895,7 @@
    560px wide (640 for a commitment's details), 32px of paper around, words at 16px,
    help lines at 14px, and every field the full width except a day and time pair. */
 @media (min-width: 700px) {
-  .live-dialog.live-dialog-fixed { --live-dialog-pad: 32px; padding: var(--space-32) 32px !important; }
+  .live-dialog.live-dialog-fixed { --live-dialog-pad: 32px; --live-dialog-top: var(--space-32); padding: var(--live-dialog-top) 32px !important; }
   .live-dialog.live-detail-dialog { max-width: 640px !important; }
 }
 .live-dialog { font-size: 16px; }
@@ -919,7 +919,7 @@
 [data-live-short] .live-dialog-fixed [data-slot="dialog-header"] { position: static; }
 /* Once a long sheet has scrolled, a hairline in the relief edge parts its held title from the fields passing under
    it. Driven by the sheet's own scroll, switched by a cut (one step), drawn as a shadow so nothing moves. */
-@keyframes sheet-title-rule { to { box-shadow: 0 -30px 0 #f5f3ec, 0 1px 0 var(--relief-edge); } }
+@keyframes sheet-title-rule { to { box-shadow: 0 1px 0 var(--relief-edge); } }
 @supports (animation-timeline: scroll()) {
   .live-dialog-fixed [data-slot="dialog-header"] {
     animation: sheet-title-rule steps(1, jump-end) both;
@@ -1220,6 +1220,12 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
    right edge, the same edge the body and side column stop at, never the paper past it. */
 @media (min-width: 1700px) {
   .live-app .live-main .live-page-head .live-head-art { right: 0; width: calc(var(--head-wide) * 0.46 - var(--live-pad)); }
+  /* With no side column the room's column is 1040px and stops short of the paper's edge (an empty room, or one with
+     nothing to set beside it): the picture ends on that column's edge too, and takes only what the words' 660px
+     measure leaves beside them, so it never reaches past the rule nor over a word. */
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art { right: calc(100% - 1040px); width: calc(1040px - 660px - var(--space-32)); }
+  /* Narrower than the head is tall, the whole picture is shown at that width, standing on the rule. */
+  .live-app .live-main:not(:has(> .live-aside:not(:empty))) > .live-page-head .live-head-art > .relief { inset: auto 0 0 auto; width: 100%; height: auto; }
 }
 /* From 1280 the rule under the head is the room's column: it runs exactly as far as the rows below it (the same
    measure .live-main gives them, beside the side column where there is one), passing under the picture's foot,
@@ -1783,7 +1789,8 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
    figures; nothing moves. */
 .room-tally { display: grid; justify-items: end; gap: var(--space-8); }
 .room-tally dl { display: flex; align-items: flex-end; gap: clamp(14px, 2vw, 24px); margin: 0; }
-.room-tally dl > div { display: flex; flex-direction: column-reverse; align-items: flex-start; }
+/* Figure, its words and the line under them keep to the tally's one edge: the right on a desk, the left on a phone. */
+.room-tally dl > div { display: flex; flex-direction: column-reverse; align-items: flex-end; }
 .room-tally dt { margin-top: var(--space-8); font-size: 13px; line-height: 1.3; color: var(--live-muted); }
 .room-tally dd, .room-tally-figure { margin: 0; }
 .room-tally b {
@@ -1793,7 +1800,7 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 }
 .room-tally .live-count { text-align: right; }
 .people-tally { margin: 0 0 var(--space-24); }
-@media (max-width: 700px) { .room-tally { justify-items: start; } .room-tally .live-count { text-align: left; } }
+@media (max-width: 700px) { .room-tally { justify-items: start; } .room-tally dl > div { align-items: flex-start; } .room-tally .live-count { text-align: left; } }
 /* A slow first load says one thing at a time: the launch mark alone, then, once the room says "Opening…", that line
    alone. A cut, not a fade. */
 .live-app:has(.live-opening) > .paper-loading-mark { display: none; }
@@ -1840,6 +1847,11 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 @media (max-width: 599px) {
   .live-form-actions:has(> [data-foot-aside])::after { content: ""; order: -1; flex-basis: 100%; height: 0; }
   .live-form-actions > [data-foot-aside] { order: -2; }
+}
+/* On a phone a sheet's presses fill the foot: two that share a line split it, and two that take a line each (Spanish
+   runs longer) are each the full width, one edge for both, never a ragged pair set to the right. */
+@media (max-width: 599px) {
+  .live-dialog .live-form-actions > :is([data-slot="button"], [data-slot="dialog-close"]) { flex: 1 1 auto; }
 }
 
 /* A neighbor's name that opens their request reaches 44px to the touch without moving a letter. */

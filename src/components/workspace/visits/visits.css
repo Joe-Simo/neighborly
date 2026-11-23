@@ -364,4 +364,5 @@
   .visits-room .live-section-head > .room-tally { justify-items: end; margin-left: auto; }
   /* A long title (Spanish) pushes the tally onto its own line: it keeps to the right edge there too, not adrift mid-column. */
   .visits-room .live-section-head > .room-tally .live-count { text-align: right; }
+  .visits-room .live-section-head > .room-tally dl > div { align-items: flex-end; }
 }

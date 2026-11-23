@@ -115,7 +115,7 @@ export default function UploadedFiles(place: Place) {
   };
 
   return (
-    <section className={place.neighborId ? "live-section" : "tools-leaf"} aria-labelledby={headingId}>
+    <section className={place.neighborId ? "live-section" : "tools-leaf tools-leaf-list"} aria-labelledby={headingId}>
       <h2 id={headingId}>
         {!place.neighborId && <FileText size={18} aria-hidden="true" />} {place.neighborId ? text.neighborTitle : text.title}
       </h2>

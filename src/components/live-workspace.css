@@ -410,7 +410,9 @@
   max-height: 90svh;
   overflow-y: auto;
   background: #f5f3ec !important;
-  padding: var(--space-32) 30px !important;
+  /* The paper above the first line; the held title reaches up through it (LiveDialog, below). */
+  --live-dialog-top: var(--space-32);
+  padding: var(--live-dialog-top) 30px !important;
 }
 .live-dialog h2 {
   /* Room between lines for a capital's accent (É, Á) on a title that wraps; "normal" in Newsreader is about 1. */
@@ -604,7 +606,8 @@
     padding: var(--space-32) 20px var(--space-64);
   }
   .live-dialog {
-    padding: var(--space-24) 24px !important;
+    --live-dialog-top: var(--space-24);
+    padding: var(--live-dialog-top) 24px !important;
   }
   .live-app h1 {
     font-size: var(--type-figure-s);
@@ -706,7 +709,9 @@
   and so does the form's last line, the button.
 */
 .live-dialog-fixed { --live-dialog-pad: 30px; }
-.live-dialog-fixed [data-slot="dialog-header"] { position: sticky; top: 0; z-index: 2; flex-direction: row; align-items: flex-start; justify-content: space-between; gap: var(--space-12) 12px; background: #f5f3ec; box-shadow: 0 -30px 0 #f5f3ec; padding-bottom: var(--space-8); }
+/* The held title is held at the sheet's very edge, not under its top paper: it takes that paper into itself (drawn up
+   into it, padded down by it), so whatever scrolls passes under the title's own paper and never shows above it. */
+.live-dialog-fixed [data-slot="dialog-header"] { position: sticky; top: calc(-1 * var(--live-dialog-top)); z-index: 2; flex-direction: row; align-items: flex-start; justify-content: space-between; gap: var(--space-12) 12px; background: #f5f3ec; margin-top: calc(-1 * var(--live-dialog-top)); padding-top: var(--live-dialog-top); padding-bottom: var(--space-8); }
 .live-dialog-fixed [data-slot="dialog-header"] :is([data-slot="button"], [data-slot="dialog-close"]) { flex: none; width: 44px; height: 44px; margin: -6px -10px 0 0; color: var(--live-muted); }
 .live-dialog-fixed [data-slot="dialog-description"] { margin-top: -14px; }
 .live-dialog-fixed .live-form-actions { position: sticky; bottom: 0; z-index: 1; margin: var(--space-8) calc(-1 * var(--live-dialog-pad)) 0; padding: var(--space-16) var(--live-dialog-pad) 0; background: #f5f3ec; border-top: 1px solid var(--live-line); box-shadow: 0 var(--live-dialog-pad) 0 #f5f3ec; }
