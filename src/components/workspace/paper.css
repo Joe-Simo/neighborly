@@ -1809,6 +1809,14 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
     .live-head-art[data-area="mine"] > .relief img { object-fit: cover; }
   }
 }
+/* Treasury and Reports, the same: on a tablet their place is narrower than the picture, and the tear is the edge. */
+@media (min-width: 700px) {
+  .live-head-art:is([data-area="treasury"], [data-area="reports"]) { container-type: size; }
+  @container (max-aspect-ratio: 3 / 2) {
+    .live-head-art:is([data-area="treasury"], [data-area="reports"]) > .relief { inset: 0; width: 100%; aspect-ratio: auto; }
+    .live-head-art:is([data-area="treasury"], [data-area="reports"]) > .relief img { object-fit: cover; }
+  }
+}
 
 /* A room's one figure (Home visits, People, Help line): in ink on the page's own paper, its words under it; lining tabular
    figures; nothing moves. */
