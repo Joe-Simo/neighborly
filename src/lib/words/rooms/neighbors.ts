@@ -107,7 +107,7 @@ export const en = (t: Terms, place: string) => ({
     },
     figures: {
       year: "Help this year",
-      requests: (count: number) => (count === 1 ? "1 request, paid direct" : `${enN(count)} requests, paid direct`),
+      requests: (count: number) => (count === 0 ? "None yet" : count === 1 ? "1 request, paid direct" : `${enN(count)} requests, paid direct`),
       visits: "Home visits",
       lastVisit: (date: string) => `Last on ${date}`,
       noVisits: "None yet",
@@ -339,7 +339,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     },
     figures: {
       year: "Ayuda este año",
-      requests: (count) => (count === 1 ? "1 petición, pagada directamente" : `${esN(count)} peticiones, pagadas directamente`),
+      requests: (count) => (count === 0 ? "Ninguna todavía" : count === 1 ? "1 petición, pagada directamente" : `${esN(count)} peticiones, pagadas directamente`),
       visits: "Visitas domiciliarias",
       lastVisit: (date) => `La última, el ${date}`,
       noVisits: "Ninguna todavía",
