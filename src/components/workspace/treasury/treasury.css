@@ -145,6 +145,12 @@
   font-size: 17px;
   margin: 0;
 }
+/* A reversed entry's sheet says so in one sentence: a paragraph, not the two-column list .live-detail lays out, which
+   squeezed it into the sheet's left half. */
+.treasury-dialog p.live-detail {
+  display: block;
+  max-width: 52ch;
+}
 @media (prefers-reduced-motion: reduce) {
   .live-app .help-what [data-slot="button"] {
     transition: none;
