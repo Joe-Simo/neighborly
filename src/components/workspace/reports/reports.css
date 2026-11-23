@@ -66,6 +66,9 @@
   padding-inline: 16px;
   font-size: 16px;
 }
+/* An empty year's rules run the room's full width, as the year's own rules do once it has figures; its words keep
+   their own measure. */
+.report .help-empty { max-width: none; }
 .report .help-done {
   margin: 0 0 var(--space-24);
 }
