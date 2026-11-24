@@ -263,7 +263,7 @@ export function en(set: WordSet) {
       coverStart: "Receive cover requests",
       availableTitle: "When you can help",
       availableDeck:
-        "Volunteer dates when you’re available for cover. Availability is not an accepted commitment.",
+        "Add the dates you’re free to cover for someone. Offering dates does not sign you up for anything.",
       firstAvailable: "First available day",
       lastAvailable: "Last available day",
       addAvailable: "Add available dates",

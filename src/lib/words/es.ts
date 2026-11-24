@@ -256,10 +256,10 @@ export function es(set: WordSet): Words {
       coverStart: "Recibir peticiones",
       availableTitle: "Cuándo puedes ayudar",
       availableDeck:
-        "Ofrece las fechas en que puedes cubrir un turno. Estar disponible no es aceptar un compromiso.",
+        "Agrega las fechas en que puedes cubrir a alguien. Ofrecer fechas no te apunta a ningún compromiso.",
       firstAvailable: "Primer día disponible",
       lastAvailable: "Último día disponible",
-      addAvailable: "Agregar disponibilidad",
+      addAvailable: "Agregar fechas disponibles",
     },
     timeOffForm: {
       teamSees: "Tu equipo ve los días que estás fuera.",
