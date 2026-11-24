@@ -35,7 +35,7 @@ export function MineSection() {
       <MyVisits />
       <section className="live-section mine-accepted">
         <h2 className={mine.length ? undefined : "sr-only"}>{words.mine.accepted}</h2>
-        <CommitmentRows items={mine} own fresh={fresh} empty={{ title: visits?.length ? words.mine.emptyTitleBeside : words.mine.emptyTitle, detail: words.mine.emptyDetail, go: "commitments" }} />
+        <CommitmentRows items={mine} own fresh={fresh} empty={{ title: visits?.length ? words.mine.emptyTitleBeside : words.mine.emptyTitle, detail: words.mine.emptyDetail, go: "time-off" }} />
         {accepted && <p className="tools-quiet">
           <Button variant="link" onClick={() => setCalendar(true)}>{words.mine.addToCalendar}</Button>
         </p>}

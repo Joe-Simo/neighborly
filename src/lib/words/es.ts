@@ -182,7 +182,7 @@ export function es(set: WordSet): Words {
       emptyTitle: "Hay lugar para tu primer sí.",
       emptyTitleBeside: "También hay lugar para un\u00a0compromiso.",
       emptyDetail:
-        "Cuando das tu sí a un compromiso, se guarda aquí con lo que hay que preparar.",
+        "Cuando quien coordina te pide cubrir una fecha, tu sí se guarda aquí con lo que hay que preparar. Para que te lo pidan, elige «Recibir peticiones» en Días libres.",
     },
     commitments: {
       weekByTeam: "Esta semana por equipo",

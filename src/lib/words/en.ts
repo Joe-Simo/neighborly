@@ -190,7 +190,7 @@ export function en(set: WordSet) {
       /** Above it the member already has home visits, so a "first" yes would read wrong. */
       emptyTitleBeside: "Room for a\u00a0commitment too.",
       emptyDetail:
-        "Say yes to a commitment and it is kept here, with what to prepare.",
+        "When a coordinator asks you to cover a date, your yes is kept here with what to prepare. To be asked, choose “Receive cover requests” in Time off.",
     },
     commitments: {
       weekByTeam: "This week by team",
