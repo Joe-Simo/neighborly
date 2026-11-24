@@ -234,8 +234,8 @@ export function en(set: WordSet) {
       readyTitle: "Ready to take part",
       noPreparation:
         "No preparation has been added yet. Ask your coordinator for what you need.",
-      change: "Change this commitment",
-      changeTitle: "Change one commitment",
+      change: "I can’t make this date",
+      changeTitle: "Give up this date?",
       released: "Commitment released. Your other dates are unchanged.",
     },
     timeOff: {

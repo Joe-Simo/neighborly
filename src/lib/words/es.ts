@@ -227,8 +227,8 @@ export function es(set: WordSet): Words {
       readyTitle: "Para llegar con calma",
       noPreparation:
         "Todavía no hay preparación. Pregunta a quien coordina qué necesitas.",
-      change: "Cambiar este compromiso",
-      changeTitle: "Cambiar un compromiso",
+      change: "No puedo ir esa fecha",
+      changeTitle: "¿Dejar esta fecha?",
       released: "Compromiso liberado. Tus otras fechas siguen igual.",
     },
     timeOff: {
