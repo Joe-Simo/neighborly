@@ -139,6 +139,16 @@ const en = (t: Terms, place: string) => ({
     everyone: `Everyone in your ${t.group} is already on this team.`,
     /** Under an opened roster with nobody on it: for a member, and for whoever can add. */
     rosterEmpty: "No one is on this team yet.",
+    /** What came of a choice, said on the page once it has gone through. */
+    done: {
+      added: (name: string, team: string) => `${name} is invited to ${team}.`,
+      removed: (name: string, team: string) => `${name} is no longer on ${team}.`,
+      withdrawn: (name: string, team: string) => `${name}’s invitation to ${team} is withdrawn.`,
+      ready: (name: string, team: string) => `${name} is marked ready for ${team}.`,
+      notReady: (name: string, team: string) => `${name} is marked not ready for ${team}.`,
+      coordinator: (name: string, team: string) => `${name} now coordinates ${team}.`,
+      member: (name: string, team: string) => `${name} is now a member of ${team}.`,
+    },
     rosterEmptyAdd: "No one is on this team yet. Use “Add a member” to invite someone.",
     manage: "Manage",
     manageLabel: (name: string) => `Manage ${name}`,
@@ -287,6 +297,15 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => {
       addLabel: (name) => `Agregar a ${name}`,
       everyone: `Todas las personas de tu ${t.group} ya están en este equipo.`,
       rosterEmpty: "Todavía no hay nadie en este equipo.",
+      done: {
+        added: (name, team) => `${name} recibió una invitación a ${team}.`,
+        removed: (name, team) => `${name} ya no está en ${team}.`,
+        withdrawn: (name, team) => `Se retiró la invitación de ${name} a ${team}.`,
+        ready: (name, team) => `${name} ya puede tomar los compromisos de ${team}.`,
+        notReady: (name, team) => `${name} se queda en ${team}, pero por ahora no se le pide cubrir turnos.`,
+        coordinator: (name, team) => `${name} ahora coordina ${team}.`,
+        member: (name, team) => `${name} ahora es miembro de ${team}.`,
+      },
       rosterEmptyAdd: "Todavía no hay nadie en este equipo. Usa «Agregar un miembro» para invitar a alguien.",
       manage: "Administrar",
       manageLabel: (name) => `Administrar a ${name}`,

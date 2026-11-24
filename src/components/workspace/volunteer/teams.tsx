@@ -124,7 +124,10 @@ export function TeamsSection() {
                       const from = addingTo;
                       setFailedIn(null);
                       setSentFrom(from);
-                      const added = await perform({ type: "setTeamMember", teamId: from.team.id, personId: person.id, member: true });
+                      const added = await perform(
+                        { type: "setTeamMember", teamId: from.team.id, personId: person.id, member: true },
+                        text.done.added(keepTitle(person.name), sampleSaid(from.team.name)),
+                      );
                       setSentFrom((now) => (now === from ? null : now));
                       // The answer may come long after (a held save): it closes only the opening it was sent
                       // from, and a failure is said only there.
@@ -166,7 +169,7 @@ function LiveTeamRoster({
   data: LiveWorkspaceData;
   team: LiveWorkspaceData["teams"][number];
   isOwner: boolean;
-  run: (command: LiveCommand) => Promise<boolean>;
+  run: (command: LiveCommand, success?: string) => Promise<boolean>;
   pending: boolean;
   add: () => void;
 }) {
@@ -181,10 +184,15 @@ function LiveTeamRoster({
   );
   const [managingId, setManagingId] = useState<string | null>(null);
   const managing = roster.results.find((person) => person.personId === managingId);
-  // One choice at a time: the dialog closes as the choice is sent, and the row shows what came of it.
-  const choose = (command: LiveCommand) => {
-    setManagingId(null);
-    void run(command);
+  // One choice at a time. The dialog stays while the choice is sent: once it has gone through it closes and the page
+  // says what came of it; if it fails, the failure is said here, where the person is looking, and they can try again.
+  const [failedFor, setFailedFor] = useState<string | null>(null);
+  const choose = async (command: LiveCommand, said: (name: string, team: string) => string) => {
+    if (!managing) return;
+    const who = managing.personId;
+    setFailedFor(null);
+    if (await run(command, said(keepTitle(managing.name), sampleSaid(team.name)))) setManagingId((now) => (now === who ? null : now));
+    else setFailedFor(who);
   };
   const faces = team.memberIds.flatMap((id) => data.people.find((person) => person.id === id) ?? []).slice(0, 4);
   return (
@@ -215,7 +223,7 @@ function LiveTeamRoster({
         <LiveDialog
           title={managing.name}
           description={<>{sampleSaid(team.name)} · {managing.role === "coordinator" ? t.coordinator : t.member}</>}
-          onClose={() => setManagingId(null)}
+          onClose={() => { setFailedFor(null); setManagingId(null); }}
         >
           <div className="live-manage">
             {managing.status === "active" && (
@@ -224,7 +232,7 @@ function LiveTeamRoster({
                   variant="outline"
                   size="sm"
                   disabled={pending}
-                  onClick={() => choose({ type: "setTeamApproval", teamId: team.id, personId: managing.personId, approved: !managing.approved })}
+                  onClick={() => void choose({ type: "setTeamApproval", teamId: team.id, personId: managing.personId, approved: !managing.approved }, managing.approved ? text.done.notReady : text.done.ready)}
                 >
                   {managing.approved ? text.markNotReady : text.markReady}
                   <small>
@@ -239,12 +247,15 @@ function LiveTeamRoster({
                     size="sm"
                     disabled={pending}
                     onClick={() =>
-                      choose({
-                        type: "setTeamRole",
-                        teamId: team.id,
-                        personId: managing.personId,
-                        role: managing.role === "coordinator" ? "member" : "coordinator",
-                      })
+                      void choose(
+                        {
+                          type: "setTeamRole",
+                          teamId: team.id,
+                          personId: managing.personId,
+                          role: managing.role === "coordinator" ? "member" : "coordinator",
+                        },
+                        managing.role === "coordinator" ? text.done.member : text.done.coordinator,
+                      )
                     }
                   >
                     {managing.role === "coordinator" ? text.makeMember : text.makeCoordinator}
@@ -262,7 +273,7 @@ function LiveTeamRoster({
               variant="outline"
               size="sm"
               disabled={pending}
-              onClick={() => choose({ type: "setTeamMember", teamId: team.id, personId: managing.personId, member: false })}
+              onClick={() => void choose({ type: "setTeamMember", teamId: team.id, personId: managing.personId, member: false }, managing.status === "invited" ? text.done.withdrawn : text.done.removed)}
             >
               {managing.status === "invited" ? text.withdrawInvitation : text.removeFromTeam}
               <small>
@@ -272,6 +283,8 @@ function LiveTeamRoster({
               </small>
             </Button>
           </div>
+          {/* Below the choices, so nothing above moves when it comes. Nothing was typed here. */}
+          {failedFor === managing.personId && <LiveFailure message={words.states.notSaved} kept="" />}
         </LiveDialog>
       )}
       {open && (
@@ -293,7 +306,7 @@ function LiveTeamRoster({
                 </div>
                 {team.canCoordinate && (
                   <div className="live-row-actions">
-                    <Button variant="outline" size="sm" aria-label={text.manageLabel(person.name)} onClick={() => setManagingId(person.personId)}>
+                    <Button variant="outline" size="sm" aria-label={text.manageLabel(person.name)} onClick={() => { setFailedFor(null); setManagingId(person.personId); }}>
                       {text.manage}
                     </Button>
                   </div>
