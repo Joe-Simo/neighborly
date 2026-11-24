@@ -430,6 +430,7 @@ export function es(set: WordSet): Words {
       makeNewTitle: "¿Crear una dirección nueva?",
       makeNewDetail: "La dirección anterior deja de funcionar de inmediato. Tendrás que agregar la nueva a tu calendario otra vez.",
       keep: "Conservar esta dirección",
+      made: "Dirección nueva creada. La anterior dejó de funcionar; agrega esta a tu calendario otra vez.",
       get: "Obtener mi dirección de calendario",
       finding: "Buscando tu calendario",
       failed: "No se pudo crear tu dirección de calendario. No ha cambiado nada; revisa tu conexión e inténtalo de nuevo.",

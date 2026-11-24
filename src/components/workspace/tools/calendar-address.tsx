@@ -32,7 +32,7 @@ function calendarLinks(address: string, first: CalendarApp) {
 }
 const noChange = () => () => {};
 
-function CalendarAddressView({ address, busy, error, onCreate, titled = true }: { address: string | null; busy: boolean; error: string; onCreate: () => void; titled?: boolean }) {
+function CalendarAddressView({ address, busy, error, renewed, onCreate, titled = true }: { address: string | null; busy: boolean; error: string; renewed: boolean; onCreate: () => void; titled?: boolean }) {
   const [copied, setCopied] = useState(false);
   const [replacing, setReplacing] = useState(false);
   const text = useWorkspace().words.calendar;
@@ -51,6 +51,12 @@ function CalendarAddressView({ address, busy, error, onCreate, titled = true }: 
       {error && <LiveFailure message={error} kept="" />}
       {address ? (
         <div className="paper-rows">
+          {/* A replaced address says so where the new one is: the old one in the person's calendar no longer works. */}
+          {renewed && (
+            <p className="live-success tools-renewed" role="status">
+              <CircleCheck size={18} aria-hidden="true" className="text-[var(--paper-green)]" /> {text.made}
+            </p>
+          )}
           <div className="help-actions tools-after tools-calendars">
             {calendarLinks(address, device).map((link, index) => (
               <Button key={link.app} variant="outline" className={index === 0 ? "tools-first" : undefined} asChild>
@@ -106,6 +112,7 @@ export function CalendarAddress({ titled = true }: { titled?: boolean }) {
   const create = useAction(api.calendar.createAddress);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [renewed, setRenewed] = useState(false);
   if (address === undefined)
     return (
       <LiveLoading label={words.calendar.finding} />
@@ -117,10 +124,14 @@ export function CalendarAddress({ titled = true }: { titled?: boolean }) {
       titled={titled}
       busy={busy}
       error={error}
+      renewed={renewed}
       onCreate={() => {
         setBusy(true);
         setError("");
+        setRenewed(false);
+        const replacing = Boolean(address);
         void create({ churchId: data.church.id })
+          .then(() => setRenewed(replacing))
           .catch((cause: unknown) => setError(sayFailure(words.notices,cause, words.calendar.failed, words.calendar.offline)))
           .finally(() => setBusy(false));
       }}
