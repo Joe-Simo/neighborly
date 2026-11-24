@@ -43,8 +43,7 @@
   .tools-rota tr:not(.tools-rota-day) td { display: block; padding: 0; border: 0; font-size: 17px; }
   .tools-rota tr:not(.tools-rota-day) td:first-child { font-size: 15px; color: var(--live-muted); margin-bottom: 2px; }
   .tools-rota tr:not(.tools-rota-day) td:nth-child(2) { font-weight: 600; }
-  .tools-rota td small { display: inline; font-weight: 400; font-size: 15px; }
-  .tools-rota td small::before { content: " · "; }
+  .tools-rota td small { display: block; margin-top: 2px; font-weight: 400; font-size: 15px; }
   .tools-rota .tools-rota-day th { display: block; padding-left: 0; }
   .tools-rota .tools-rota-day { display: block; }
   .tools-rota .tools-rota-none, .tools-rota .tools-rota-none td { display: block; padding: var(--space-12) 0; border-bottom: 1px solid var(--live-line); }
