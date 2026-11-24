@@ -18,14 +18,15 @@ import { helpLineWords } from "@/lib/words/rooms/help-line";
 type Draft = FunctionReturnType<typeof api.drafts.draftRequest>;
 /** Only what the sheet itself reads, so it can be laid down anywhere a call and its draft are known. */
 type Sheet = {
-  call: Pick<Call, "neighborId" | "neighborName" | "callerName" | "takenAt" | "note">;
+  call: Pick<Call, "neighborId" | "neighborName" | "callerName" | "takenAt" | "note"> & { fromWeb?: boolean; phone?: string };
   draft: Pick<Draft, "kind" | "amountRequested" | "payeeKind" | "payeeName" | "quote">;
 };
 
 /** The name the person typed when they took the call leads; a record's name stands in only when none was typed. */
-export const caller = (call: Pick<Call, "neighborName" | "callerName">, words?: Words) =>
-  // The backend writes "Web request" (in English) where a web form's caller gave no name: a Spanish room says it in Spanish.
-  (call.callerName === "Web request" && (words ?? book()).locale === "es" ? "Petición web" : call.callerName) ||
+export const caller = (call: Pick<Call, "neighborName" | "callerName"> & { fromWeb?: boolean; phone?: string }, words?: Words) =>
+  // A web form's caller who gave no name is named "Web request" in the reader's language. New calls keep no name for
+  // it (fromWeb, empty name, a phone); older ones were saved with the English words themselves.
+  (call.callerName === "Web request" || (call.fromWeb && !call.callerName && call.phone) ? (words ?? book()).assistant.sheet.webRequest : call.callerName) ||
   call.neighborName ||
   (words ?? book()).assistant.sheet.newCaller;
 
@@ -101,7 +102,8 @@ export function DraftSheet({
 }) {
   const text = words.assistant;
   const sheet = text.sheet;
-  const callerName = call.callerName.trim();
+  // "Web request" stands for no name (older web calls were saved with it), so it is never offered as a person's name.
+  const callerName = call.callerName.trim() === "Web request" ? "" : call.callerName.trim();
   const firstName = callerName.split(/\s+/)[0] ?? "";
   const room = helpLineWords(words).draft;
   const complete =
@@ -156,7 +158,7 @@ export function DraftSheet({
           {/* The card leads with the call it was made from, so the line under it is never taken for a ledger entry.
               The name is read from the call row for display only; it is not part of the draft or of what the assistant saw. */}
           <p className="help-from text-pretty">
-            {call.neighborName || call.callerName ? (
+            {call.neighborName || call.callerName || (call.fromWeb && call.phone) ? (
               <strong>{caller(call, words)}</strong>
             ) : (
               sheet.noName
@@ -179,7 +181,7 @@ export function DraftSheet({
           {/* What to do about a blank reads with the text, at its measure, never beside the buttons. */}
           {!complete && !call.neighborId && (
             <p className="help-why">
-              {sheet.addFirst(call.callerName)}
+              {sheet.addFirst(callerName)}
             </p>
           )}
           {toDo}

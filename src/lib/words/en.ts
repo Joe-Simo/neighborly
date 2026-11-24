@@ -342,10 +342,10 @@ export function en(set: WordSet) {
       onTeam: "You’re on this team.",
       joined: "Joined {team}.",
       declined: "Declined the invitation to {team}.",
-      invited: "You’re invited to this team. Joining does not accept a commitment.",
       declineTitle: "Decline this invitation?",
       declineAction: "Decline invitation",
       declineBody: (team: string) => `You won’t join ${team}. A team leader can invite you again later.`,
+      invited: "You’re invited to this team. Joining does not accept a commitment.",
       join: "Join team",
       decline: "Decline",
       members: (count: number) => (count === 1 ? "1 member" : `${enN(count)} members`),
@@ -614,6 +614,7 @@ export function en(set: WordSet) {
       /** The draft's own sheet, sentence by sentence, so it reads whole in each language. */
       sheet: {
         newCaller: "New caller",
+        webRequest: "Web request",
         noName: "A caller who gave no name",
         calledOn: (day: string) => `called on ${day}`,
         nothingYet: "Nothing to draft from this note yet",

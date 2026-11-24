@@ -539,4 +539,20 @@ describe("the call a web request becomes", () => {
     expect(doc.note).toContain("Phone: (101) 555-0131 · Email: a@example.org");
     expect(doc.note).not.toContain("1015550131");
   });
+  test("keeps no English stand-in for a name: a phone request has none, an email-only one its address", () => {
+    const base = { churchId: "c" as Id<"churches">, kind: "rent", need: "Rent", zip: "48201", language: "es" } as const;
+    expect(webCallDoc({ ...base, phone: "1015550131", email: "a@example.org" } as Parameters<typeof webCallDoc>[0], Date.now(), undefined).callerName).toBe("");
+    expect(webCallDoc({ ...base, phone: "", email: "a@example.org" } as Parameters<typeof webCallDoc>[0], Date.now(), undefined).callerName).toBe("a@example.org");
+  });
+  test("the Help line says which calls came from the web, new and older alike", async () => {
+    const { t, ids, as } = await setup();
+    const churchId = ids.detroit.churchId;
+    const [fresh, older] = await t.run(async (ctx) => Promise.all([
+      ctx.db.insert("calls", { churchId, callerName: "", phone: "1015550131", note: "Rent", callback: "needed", fromWeb: true, takenAt: Date.now() }),
+      ctx.db.insert("calls", { churchId, callerName: "Web request", phone: "1015550132", note: "Light", callback: "needed", fromWeb: true, takenAt: Date.now() - 1000 }),
+    ]));
+    const { waiting } = await as(ids.detroit.userId).query(api.assistance.calls, { churchId, at: NOW_HOUR });
+    expect(waiting.find((call) => call.id === fresh)).toMatchObject({ callerName: "", fromWeb: true });
+    expect(waiting.find((call) => call.id === older)).toMatchObject({ callerName: "Web request", fromWeb: true });
+  });
 });
