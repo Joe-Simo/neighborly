@@ -223,6 +223,8 @@ export function LiveWorkspace({
     if (command.type === "invite") setInvitationLink("");
     try {
       const result = await run(command);
+      // An earlier invitation's link is not about this act: the new saved line replaces it, as it replaces the old line.
+      if (command.type !== "invite" && !result?.invitationToken) setInvitationLink("");
       if (result?.delivery) setInvitationDelivery(result.delivery);
       if (result?.invitationToken)
         setInvitationLink(
@@ -910,10 +912,10 @@ export function LiveWorkspace({
               {dialog === "timeOff" ? (
                 <LiveTimeOffForm
                   data={data}
-                  onSaved={() => {
+                  onSaved={(released) => {
                     setDialog(null);
                     setNotice(
-                      words.timeOffForm.saved,
+                      words.timeOffForm.saved(released),
                     );
                   }}
                 />
@@ -992,7 +994,11 @@ export function LiveWorkspace({
             <div className="live-form-actions">
               <Button
                 variant="outline"
-                onClick={() => leaveDialog(() => setConfirmation(null))}
+                onClick={() => leaveDialog(() => {
+                  const back = confirmation?.onBack;
+                  setConfirmation(null);
+                  back?.();
+                })}
                 disabled={held}
               >
                 {sheets.goBack}

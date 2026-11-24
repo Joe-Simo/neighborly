@@ -258,6 +258,12 @@ function PlanFormView({
           (id) => people.find((person) => person.memberId === id),
         );
         if (!who || !first || !second) return;
+        // The same person chosen twice is said under the second visitor, before anything is sent.
+        if (first.memberId === second.memberId) {
+          markWrong(event.currentTarget, "second", text.sameTwice);
+          event.currentTarget.checkValidity();
+          return;
+        }
         onPlan(who, whenOf(data), first, second);
       }}
     >
@@ -430,7 +436,7 @@ export function WriteUpForm({
         <LiveField
           label={text.hours}
           said={{ needed: text.problems.hours, neededCheck: text.problems.hours }}
-          help={fill(text.hoursHelp, { first: firstName(visit.visitors[0]?.name ?? ""), second: firstName(visit.visitors[1]?.name ?? "") })}
+          help={visit.visitors.length > 1 ? fill(text.hoursHelp, { first: firstName(visit.visitors[0].name), second: firstName(visit.visitors[1].name) }) : text.hoursHelpOne}
         >
           <Input
             name="hours"

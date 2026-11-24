@@ -130,7 +130,7 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     savedToDecide: `Petición guardada. Cuando tu ${t.group} se reúna, anota su sí en el registro de {name}.`,
     savedOnRecord: "Petición guardada. Espera una decisión en el registro de {name}.",
     openRecord: "Abrir el registro",
-    draft: "Preparar borrador",
+    draft: "Preparar una petición",
     discarded: "Borrador descartado. No se guardó nada.",
     callMatched: `Llamada guardada y agregada al registro del ${t.neighbor}.`,
     callWaiting: "Llamada guardada. Espera aquí abajo hasta que alguien devuelva la llamada.",
@@ -179,7 +179,7 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     },
   },
   calls: {
-    addNeighbor: "Agregar al registro",
+    addNeighbor: `Agregar como ${t.neighbor}`,
     likely: (name: string) => `Mismo teléfono que el registro de ${name}.`,
     useLikely: "Usar este hogar",
     useLikelyThis: (name: string) => `Usar este hogar: el registro de ${name}, para esta petición`,

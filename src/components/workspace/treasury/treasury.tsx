@@ -372,9 +372,24 @@ export function TreasurySection() {
                 name: kind.name,
                 direction: kind.direction === "income" ? "in" : "out",
               }))}
-              onRetire={(id) => {
+              onRetire={async (id) => {
                 const kind = kinds?.find((row) => row.id === id);
-                if (kind) void retireKind({ churchId, kindId: kind.id });
+                if (!kind) return null;
+                try {
+                  await retireKind({ churchId, kindId: kind.id });
+                  return null;
+                } catch (cause) {
+                  return sayFailure(words.notices, cause, w.refused);
+                }
+              }}
+              onRestore={async (kind) => {
+                // A kind named again comes back under its old id (addKind), so the form can choose it again.
+                try {
+                  await addKind({ churchId, direction: kind.direction === "in" ? "income" : "expense", name: kind.name });
+                  return null;
+                } catch (cause) {
+                  return sayFailure(words.notices, cause, w.refused);
+                }
               }}
               onSubmit={({ name, memo, amount, date, checkNumber, ...what }) =>
                 settle(
@@ -451,6 +466,7 @@ export function TreasurySection() {
             <EntryDetail
               key={view.entry.id}
               entry={view.entry}
+              onCancel={() => setOpen(null)}
               onReverse={(reason) =>
                 settle(
                   () =>

@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { WhenField } from "@/components/workspace/date-field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { LiveField } from "@/components/workspace/primitives";
+import { LiveField, markWrong } from "@/components/workspace/primitives";
+import { refusals } from "@/lib/refusals";
 import { SheetCancel } from "@/components/workspace/live-dialog";
 import { LiveWaiting, LiveFailure, SaveLabel } from "@/components/workspace/states";
 import type { LiveCommand, LiveCommitment } from "@/components/workspace/types";
@@ -52,6 +53,9 @@ export function LiveCommitmentEditor({
     location: item.location,
     preparation: item.preparation,
   }));
+  // Nothing to save is said as such: the sheet never offers to confirm, nor warns of a release, over an unchanged date.
+  const unchanged = !!review && review.title === item.title && review.location === item.location &&
+    review.preparation === item.preparation && review.start === local(item.start) && review.end === local(item.end);
   if (review)
     return (
       <div className="live-form">
@@ -72,7 +76,7 @@ export function LiveCommitmentEditor({
         </dl>
         <p className="live-prep">{review.preparation}</p>
         <div className="live-note">
-          {text.releases}
+          {unchanged ? text.unchanged : text.releases}
         </div>
         {error && <LiveFailure message={error} />}
         {/* With the connection lost the save is held, not failed: one line says so, above the buttons. */}
@@ -85,7 +89,7 @@ export function LiveCommitmentEditor({
           >
             {text.back}
           </Button>
-          <Button disabled={pending} onClick={() => void save(review)}>
+          <Button disabled={pending || unchanged} onClick={() => void save(review)}>
             <SaveLabel saving={saving} idle={text.confirm} busy={text.saving} />
           </Button>
         </div>
@@ -96,7 +100,8 @@ export function LiveCommitmentEditor({
       className="live-form"
       onSubmit={(event) => {
         event.preventDefault();
-        const f = new FormData(event.currentTarget);
+        const form = event.currentTarget;
+        const f = new FormData(form);
         const value = (name: string) => String(f.get(name) ?? "").trim();
         const next = {
           title: value("title"),
@@ -105,6 +110,10 @@ export function LiveCommitmentEditor({
           location: value("location"),
           preparation: value("preparation"),
         };
+        // An end at or before its start is said on the end, here, as the add form says it: never only after review, from the server.
+        if (next.start && next.end && next.end <= next.start)
+          markWrong(form, "end", words.notices.refused[refusals.endAfterStart] ?? refusals.endAfterStart);
+        if (!form.checkValidity()) return;
         setDraft(next);
         setReview({
           type: "reviseCommitment",

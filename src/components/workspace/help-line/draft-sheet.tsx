@@ -24,7 +24,10 @@ type Sheet = {
 
 /** The name the person typed when they took the call leads; a record's name stands in only when none was typed. */
 export const caller = (call: Pick<Call, "neighborName" | "callerName">, words?: Words) =>
-  call.callerName || call.neighborName || (words ?? book()).assistant.sheet.newCaller;
+  // The backend writes "Web request" (in English) where a web form's caller gave no name: a Spanish room says it in Spanish.
+  (call.callerName === "Web request" && (words ?? book()).locale === "es" ? "Petición web" : call.callerName) ||
+  call.neighborName ||
+  (words ?? book()).assistant.sheet.newCaller;
 
 /**
  * The one thing waiting for a yes: what the assistant drafted from a call note. Plum marks its words.

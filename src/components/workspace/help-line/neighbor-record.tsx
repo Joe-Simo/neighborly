@@ -100,12 +100,15 @@ function StillCovered({
   covered,
   kept,
   onPage = false,
+  under = false,
 }: {
   covered: Covered;
   /** The second line: what is still as it was. */
   kept: string;
   /** On the record itself the notice stands clear of what is above it; a dialog spaces its own pieces. */
   onPage?: boolean;
+  /** Said while the saved line stands over the top of the page: brought to the middle, so the line never covers it. */
+  under?: boolean;
 }) {
   const notice = useRef<HTMLDivElement>(null);
   // Before it is first painted, so it is never seen at full height first.
@@ -114,7 +117,9 @@ function StillCovered({
   }, []);
   useEffect(() => {
     notice.current?.focus({ preventScroll: true });
-    notice.current?.scrollIntoView({ block: "nearest" });
+    notice.current?.scrollIntoView({ block: under ? "center" : "nearest" });
+    // Each new try, as the notice is said again.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [covered.tries]);
   return (
     <div
@@ -235,11 +240,13 @@ export function NeighborRecord({
     moveOn();
     setDone(message);
     setBack(back);
-    setUndoRefused("");
+    setUndoRefused(null);
   };
   // The way back from the step just taken, while its line is up; and an undo the server would not take, in plum.
   const [back, setBack] = useState<WayBack>();
-  const [undoRefused, setUndoRefused] = useState("");
+  // A refused undo is said in plum where the person is (it takes focus and comes into view), and the line keeps its
+  // Undo so it can be tried again: nothing was taken back.
+  const [undoRefused, setUndoRefused] = useState<Covered | null>(null);
   const takeBackNote = useMutation(api.neighbors.takeBackNote);
   const undoDecision = useMutation(api.assistance.undoDecision);
   const close = () => {
@@ -319,10 +326,8 @@ export function NeighborRecord({
     );
   return (
     <>
-      {undoRefused && !done && (
-        <div className="live-error" role="alert">
-          <p>{undoRefused}</p>
-        </div>
+      {undoRefused && (
+        <StillCovered covered={undoRefused} kept={text.undoKept} under />
       )}
       {done && (
         <HelpDone
@@ -334,11 +339,10 @@ export function NeighborRecord({
                 try {
                   await back.run();
                   setBack(undefined);
+                  setUndoRefused(null);
                   setDone(back.said);
                 } catch (cause) {
-                  setBack(undefined);
-                  setDone("");
-                  setUndoRefused(sayFailure(words.notices,cause, words.notices.failed));
+                  setUndoRefused((before) => ({ why: sayFailure(words.notices, cause, words.notices.failed), tries: (before?.tries ?? 0) + 1 }));
                 }
               }}
             />
@@ -549,7 +553,10 @@ function happened(event: Record["history"][number], now: number, words: Words) {
         kind: "visit",
         what: text.visit,
         // Each name whole, as it was written; no one went means nothing is said.
-        who: event.who.length ? event.who.reduce((first, second) => fill(text.pair, { first, second })) : "",
+        // Three or more read as a list ("Ana, Luis and Rosa"), never "Ana and Luis and Rosa".
+        who: event.who.length > 1
+          ? fill(text.pair, { first: event.who.slice(0, -1).join(", "), second: event.who.at(-1)! })
+          : (event.who[0] ?? ""),
         found: event.note,
       };
     case "call":
@@ -791,13 +798,24 @@ function NeighborRecordView({
                 </div>
                 <div className="live-row-actions">
                   {request.status === "open" ? (
-                    <Button
-                      variant="outline"
-                      aria-label={text.also.approveThis(requestTitle(request))}
-                      onClick={() => onStep({ kind: "approve", request })}
-                    >
-                      {text.sheet.approve}
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline"
+                        aria-label={text.also.approveThis(requestTitle(request))}
+                        onClick={() => onStep({ kind: "approve", request })}
+                      >
+                        {text.sheet.approve}
+                      </Button>
+                      {/* Each open request can be turned down where it stands, not only the one on the sheet. */}
+                      <Button
+                        variant="link"
+                        className="help-text-action"
+                        aria-label={text.also.declineThis(requestTitle(request))}
+                        onClick={() => onStep({ kind: "decline", request })}
+                      >
+                        {text.also.decline}
+                      </Button>
+                    </>
                   ) : (
                     <span className="live-status">{text.sheet.approved}</span>
                   )}
@@ -838,14 +856,14 @@ function NeighborRecordView({
             >
               {text.history.note}
             </Button>
-            {!first && (
-              <Button
-                variant="outline"
-                onClick={() => onStep({ kind: "request" })}
-              >
-                {text.history.request}
-              </Button>
-            )}
+            {/* A household may ask for more than one thing at a time (rent and food): a request already open never
+                hides the way to add the next one. */}
+            <Button
+              variant="outline"
+              onClick={() => onStep({ kind: "request" })}
+            >
+              {text.history.request}
+            </Button>
           </span>
         </div>
         {record.history.length ? (

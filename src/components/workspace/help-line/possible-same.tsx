@@ -39,6 +39,8 @@ const said = {
     mergeThis: (name: string) => `Merge into this record: ${name}`,
     notSame: "Not the same",
     notSameThis: (name: string) => `Not the same: ${name}`,
+    /** Said on the saved line once "Not the same" is taken: the row leaves the list, and this says why. */
+    dismissed: (name: string) => `${name} is kept as a different household. Both records stay as they were.`,
     sheet: (name: string) => `Merge ${name} into this record`,
     moves: "What moves here",
     movesDetail: "Every call, request, home visit, note and ledger line on the other record. Its phone, email or address fills any that this record leaves empty, and its notes are added under these.",
@@ -64,6 +66,7 @@ const said = {
     mergeThis: (name: string) => `Unir a este registro: ${name}`,
     notSame: "No es el mismo",
     notSameThis: (name: string) => `No es el mismo: ${name}`,
+    dismissed: (name: string) => `${name} queda como otro hogar. Los dos registros siguen como estaban.`,
     sheet: (name: string) => `Unir ${name} a este registro`,
     moves: "Lo que pasa aquí",
     movesDetail: "Cada llamada, petición, visita, nota y línea del libro del otro registro. Su teléfono, correo o dirección llena lo que este registro deja vacío, y sus notas se añaden debajo de estas.",
@@ -144,9 +147,9 @@ function Candidates({ found, w, neighborId, onMerged }: { found: Candidate[]; w:
   const [merging, setMerging] = useState<Shown | null>(null);
   // A "not the same" that does not go through is said under the list, and the pair stays for another try.
   const [refused, setRefused] = useState("");
-  const notSame = (otherId: Id<"neighbors">) => {
+  const notSame = (otherId: Id<"neighbors">, name: string) => {
     setRefused("");
-    dismiss({ churchId, neighborId, otherId }).catch((cause: unknown) => setRefused(sayFailure(words.notices, cause, words.states.notSaved, words.states.offlineSave)));
+    dismiss({ churchId, neighborId, otherId }).then(() => onMerged(w.dismissed(name)), (cause: unknown) => setRefused(sayFailure(words.notices, cause, words.states.notSaved, words.states.offlineSave)));
   };
   return (
     <section className="live-section" aria-labelledby="possible-same">
@@ -175,7 +178,7 @@ function Candidates({ found, w, neighborId, onMerged }: { found: Candidate[]; w:
                 variant="link"
                 className="help-text-action"
                 aria-label={w.notSameThis(sampleSaid(row.name))}
-                onClick={() => notSame(row.id)}
+                onClick={() => notSame(row.id, sampleSaid(row.name))}
               >
                 {w.notSame}
               </Button>

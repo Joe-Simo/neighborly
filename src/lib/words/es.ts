@@ -110,7 +110,7 @@ export function es(set: WordSet): Words {
       },
       people: {
         title: "Todos juntos.",
-        deck: "Todas las personas, con su papel y sus equipos.",
+        deck: "Todas las personas, con su papel y quién está listo para servir.",
       },
       commitments: {
         title: "Compromisos claros.",
@@ -178,11 +178,11 @@ export function es(set: WordSet): Words {
     },
     mine: {
       accepted: "Compromisos aceptados",
-      addToCalendar: "Agrégalos al calendario",
+      addToCalendar: "Agrégalos al calendario de tu teléfono",
       emptyTitle: "Hay lugar para tu primer sí.",
       emptyTitleBeside: "También hay lugar para un\u00a0compromiso.",
       emptyDetail:
-        "Cuando das tu sí a un compromiso, se guarda aquí con lo que hay que preparar.",
+        "Cuando quien coordina te pide cubrir una fecha, tu sí se guarda aquí con lo que hay que preparar. Para que te lo pidan, elige «Recibir peticiones» en Días libres.",
     },
     commitments: {
       weekByTeam: "Esta semana por equipo",
@@ -227,8 +227,8 @@ export function es(set: WordSet): Words {
       readyTitle: "Para llegar con calma",
       noPreparation:
         "Todavía no hay preparación. Pregunta a quien coordina qué necesitas.",
-      change: "Cambiar este compromiso",
-      changeTitle: "Cambiar un compromiso",
+      change: "No puedo ir esa fecha",
+      changeTitle: "¿Dejar esta fecha?",
       released: "Compromiso liberado. Tus otras fechas siguen igual.",
     },
     timeOff: {
@@ -236,7 +236,7 @@ export function es(set: WordSet): Words {
       thisMonth: "Este mes",
       away: "Día libre",
       canHelp: "Puedes ayudar",
-      note: "Los días libres no te sacan de tus equipos. Los compromisos que ya tienes se cambian aparte, para que todos sepan qué está cubierto.",
+      note: "Los días libres no te sacan de tus equipos. Antes de guardar, ves cuáles de tus compromisos caen en esos días; solo esos se liberan, para que los coordinadores sepan qué falta cubrir.",
       remove: "Quitar días libres",
       removeDates: "Quitar estas fechas",
       removed: "Días libres quitados.",
@@ -246,9 +246,9 @@ export function es(set: WordSet): Words {
       availabilityAdded: "Fechas disponibles agregadas.",
       coverStarted: "Ahora los coordinadores pueden pedirte que cubras.",
       coverStopped: "Ya no recibirás peticiones para cubrir.",
-      emptyTitle: "Todos tus días están libres.",
+      emptyTitle: "No tienes días libres anotados.",
       emptyDetail:
-        "Agrega las fechas en que no estarás.",
+        "Usa Planear días libres para anotar las fechas en que no estarás.",
       coverTitle: "Peticiones para cubrir turnos",
       coverDeck:
         "Decide si los coordinadores pueden pedirte que cubras un compromiso libre. Cada petición necesita tu sí.",
@@ -256,10 +256,10 @@ export function es(set: WordSet): Words {
       coverStart: "Recibir peticiones",
       availableTitle: "Cuándo puedes ayudar",
       availableDeck:
-        "Ofrece las fechas en que puedes cubrir un turno. Estar disponible no es aceptar un compromiso.",
+        "Agrega las fechas en que puedes cubrir a alguien. Ofrecer fechas no te apunta a ningún compromiso.",
       firstAvailable: "Primer día disponible",
       lastAvailable: "Último día disponible",
-      addAvailable: "Agregar disponibilidad",
+      addAvailable: "Agregar fechas disponibles",
     },
     timeOffForm: {
       teamSees: "Tu equipo ve los días que estás fuera.",
@@ -284,8 +284,9 @@ export function es(set: WordSet): Words {
       saving: "Guardando…",
       confirm: "Confirmar días libres",
       failed:
-        "No pudimos confirmar estas fechas. No se guardó nada. Vuelve, revisa la lista y confirma otra vez.",
-      saved: "Días libres guardados. Solo se liberaron los compromisos revisados.",
+        "No pudimos confirmar estas fechas. No se guardó nada. Toca Confirmar días libres otra vez; si sigue fallando, vuelve y revisa las fechas.",
+      saved: (released) =>
+        released === 0 ? "Días libres guardados. Ninguno de tus compromisos cambió." : released === 1 ? "Días libres guardados. Se liberó 1 compromiso revisado para que otro lo cubra." : `Días libres guardados. Se liberaron ${esN(released)} compromisos revisados para que otros los cubran.`,
     },
     tasks: {
       nextMeeting: "Próxima reunión",
@@ -309,6 +310,7 @@ export function es(set: WordSet): Words {
       waiting: "Esperando tu respuesta",
       changeReply: "Cambiar respuesta",
       due: (date) => `Para el ${date}`,
+      late: (date) => `Atrasada desde el ${date}`,
       attend: "Asistir",
       decline: "No puedo",
       noMeetingsTitle: "No hay reuniones planeadas.",
@@ -321,7 +323,7 @@ export function es(set: WordSet): Words {
       waiting: "Aún no puede servir",
     },
     teams: {
-      noDescription: "Un equipo donde hay lugar para ayudar.",
+      noDescription: "Este equipo aún no tiene descripción.",
       onTeam: "Ya estás en este equipo.",
       joined: "Te uniste a {team}.",
       declined: "Rechazaste la invitación a {team}.",
@@ -401,7 +403,7 @@ export function es(set: WordSet): Words {
     visits: {
       title: set === "vincentian" ? "Visitas domiciliarias" : "Visitas a casa",
       count: (count) => `${esN(count)} ${count === 1 ? "visita" : "visitas"}, siempre de dos en dos`,
-      notSaved: "No se guardó tu respuesta. Inténtalo de nuevo.",
+      notSaved: "Tu respuesta no se guardó; cada visita sigue mostrando la que diste antes.",
       on: (street) => `Una visita en ${street}`,
       nearby: "una calle cercana",
       partnerOpen: "Quien coordina está buscando un segundo visitador.",
@@ -425,10 +427,13 @@ export function es(set: WordSet): Words {
       share: "Compartir dirección",
       copied: "Copiada",
       copiedStatus: "Dirección copiada.",
+      copyFailed: "Este dispositivo no dejó copiar la dirección. Toca la dirección de arriba para seleccionarla y cópiala tú.",
       privacy: "Esta dirección es solo tuya; quien la tenga puede ver cuándo y dónde sirves, y la preparación escrita para cada compromiso. Una visita muestra la hora y la calle, nunca el nombre ni la necesidad de un vecino. Si llega a manos equivocadas, crea una nueva y la anterior deja de funcionar.",
       makeNew: "Crear una dirección nueva",
       makeNewTitle: "¿Crear una dirección nueva?",
       makeNewDetail: "La dirección anterior deja de funcionar de inmediato. Tendrás que agregar la nueva a tu calendario otra vez.",
+      keep: "Conservar esta dirección",
+      made: "Dirección nueva creada. La anterior dejó de funcionar; agrega esta a tu calendario otra vez.",
       get: "Obtener mi dirección de calendario",
       finding: "Buscando tu calendario",
       failed: "No se pudo crear tu dirección de calendario. No ha cambiado nada; revisa tu conexión e inténtalo de nuevo.",

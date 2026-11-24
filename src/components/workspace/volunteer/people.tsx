@@ -39,7 +39,7 @@ function Address({ email, oneLine }: { email: string; oneLine?: boolean }) {
 /** The second step of removing someone for good: what goes, what stays, and their name typed before the button wakes. */
 function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceData["people"][number]; churchId: LiveWorkspaceData["church"]["id"]; onClose: () => void }) {
   const remove = useMutation(api.people.remove);
-  const { words } = useWorkspace();
+  const { words, offerUndo, focusOutcome } = useWorkspace();
   const text = peopleWords(words).remove;
   const [typed, setTyped] = useState("");
   const [busy, setBusy] = useState(false);
@@ -59,6 +59,9 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
           try {
             await remove({ churchId, personId: person.id, typedName: typed });
             onClose();
+            // Their row is gone with them: the saved line says so, and takes the focus the closed sheet leaves.
+            offerUndo(text.done(person.name));
+            focusOutcome();
           } catch (cause) {
             setFailed(sayFailure(words.notices,cause, text.failed, words.states.offlineSave));
             setBusy(false);
@@ -169,8 +172,10 @@ export function PeopleSection() {
                   disabled={pending}
                   onClick={() =>
                     {
+                    const backTo = managing.id;
                     setManagingId(null);
                     setConfirmation({
+                      onBack: () => setManagingId(backTo),
                       title: managing.approved
                         ? text.manage.markNotReadyTitle(wholeName(managing.name))
                         : text.manage.markReadyTitle(wholeName(managing.name)),
@@ -196,8 +201,10 @@ export function PeopleSection() {
                   disabled={pending}
                   onClick={() =>
                     {
+                    const backTo = managing.id;
                     setManagingId(null);
                     setConfirmation({
+                      onBack: () => setManagingId(backTo),
                       title: managing.active ? text.manage.removeAccessTitle : text.manage.restoreAccessTitle,
                       action: managing.active ? text.manage.removeAccess : text.manage.restoreAccess,
                       body: text.manage.accessBody,
@@ -275,7 +282,25 @@ export function PeopleSection() {
                     </div>
                     <div className="live-row-actions">
                       {expired && (
-                        <Button variant="ghost" size="sm" data-opens="" disabled={pending} onClick={() => openAction("invite")}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          data-opens=""
+                          disabled={pending}
+                          aria-label={text.invitations.sendNewLabel(invite.email)}
+                          onClick={() => {
+                            // The address and role are known: a new link to the same person is one press and a yes, not a form typed again.
+                            if (invite.role !== "member" && invite.role !== "coordinator") return openAction("invite");
+                            setConfirmation({
+                              title: text.invitations.sendNewTitle(invite.email),
+                              body: text.invitations.sendNewBody[invite.role],
+                              action: text.invitations.sendNewAction,
+                              command: { type: "invite", email: invite.email, role: invite.role },
+                              // An invitation says its own line (made, and whether its email went), so this is never shown.
+                              done: sheets.invite.queued,
+                            });
+                          }}
+                        >
                           {text.invitations.sendNew}
                         </Button>
                       )}

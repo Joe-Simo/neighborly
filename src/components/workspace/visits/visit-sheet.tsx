@@ -11,7 +11,7 @@ import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { useWorkspace, type Workspace } from "@/components/workspace/context";
-import { LiveDialog } from "@/components/workspace/live-dialog";
+import { LiveDialog, SheetCancel } from "@/components/workspace/live-dialog";
 import { sayFailure } from "@/components/workspace/failure";
 import { HelpLoading } from "@/components/workspace/help-line/room";
 import { LiveFailure } from "@/components/workspace/states";
@@ -196,6 +196,7 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
           </p>
           {error && <LiveFailure message={error} kept="" />}
           <div className="live-form-actions">
+            <SheetCancel disabled={pending} />
             <Button
               disabled={pending}
               onClick={async () => {
@@ -312,7 +313,7 @@ function VisitSheetView({
           )}
           {onPrintRequest && (
             <Button variant="link" className="visits-quiet-link" onClick={onPrintRequest}>
-              {words.locale === "es" ? "Imprimir petición" : "Print request"}
+              {text.printRequest}
             </Button>
           )}
         </div>

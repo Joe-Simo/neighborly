@@ -25,7 +25,7 @@ const said = {
     help: "Leave it empty for no budget.", wrong: "Write the budget in dollars, such as 2000.", save: "Save budget", cancel: "Cancel",
     cap: (cap: string) => `Each household can have up to ${cap} in 12 months.`, noCap: "No limit per household is set.",
     setCap: "Set a household limit", changeCap: "Change the household limit", capLabel: "Limit per household, per 12 months",
-    capHelp: "Shown before each decision. Leave it empty for no limit.", saveCap: "Save limit",
+    capHelp: "Shown before each decision. Leave it empty for no limit.", capWrong: "Write the limit in whole dollars, such as 500.", saveCap: "Save limit",
   },
   es: {
     line: (approved: string, budget: string) => `${approved} de ${budget} aprobados`,
@@ -36,7 +36,7 @@ const said = {
     help: "Déjalo vacío para no tener presupuesto.", wrong: "Escribe el presupuesto en dólares, como 2000.", save: "Guardar presupuesto", cancel: "Cancelar",
     cap: (cap: string) => `Cada hogar puede recibir hasta ${cap} en 12 meses.`, noCap: "No hay límite por hogar.",
     setCap: "Fijar un límite por hogar", changeCap: "Cambiar el límite por hogar", capLabel: "Límite por hogar, cada 12 meses",
-    capHelp: "Se muestra antes de cada decisión. Déjalo vacío para no tener límite.", saveCap: "Guardar límite",
+    capHelp: "Se muestra antes de cada decisión. Déjalo vacío para no tener límite.", capWrong: "Escribe el límite en dólares enteros, como 500.", saveCap: "Guardar límite",
   },
 } satisfies Record<Language, unknown>;
 
@@ -77,7 +77,7 @@ export default function BudgetLine({ churchId, today }: { churchId: Id<"churches
             const typed = field.value.replace(/[$,\s]/g, "");
             const dollars = typed ? Number(typed) : null;
             if (dollars !== null && !(Number.isInteger(dollars) && dollars > 0)) {
-              field.setCustomValidity(w.wrong);
+              field.setCustomValidity(editing === "cap" ? w.capWrong : w.wrong);
               field.reportValidity();
               return;
             }

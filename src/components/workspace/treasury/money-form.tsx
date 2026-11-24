@@ -7,6 +7,8 @@ import { DateField } from "@/components/workspace/date-field";
 import { NativeSelect } from "@/components/ui/native-select";
 import { useWorkspace } from "@/components/workspace/context";
 import { LiveField, markWrong } from "@/components/workspace/primitives";
+import { UndoAct } from "@/components/workspace/undo";
+import { fill } from "@/lib/words/fill";
 import { parseCents } from "@/components/workspace/treasury/money";
 import {
   FormActions,
@@ -56,6 +58,7 @@ export function MoneyForm({
   payees,
   onOut,
   onRetire,
+  onRestore,
   onSubmit,
   onCancel,
 }: {
@@ -67,7 +70,10 @@ export function MoneyForm({
   payees?: string[];
   /** Tells the sheet whether its title should name money out. */
   onOut: (out: boolean) => void;
-  onRetire: (id: string) => void;
+  /** Takes one of the conference's own kinds off the list; the refusal, if any, is said in the form. */
+  onRetire: (id: string) => Promise<Refusal>;
+  /** Puts a kind just taken off back on the list (its Undo). */
+  onRestore: (kind: OwnKind) => Promise<Refusal>;
   onSubmit: (money: Money) => Promise<Refusal>;
   onCancel: () => void;
 }) {
@@ -86,8 +92,13 @@ export function MoneyForm({
   const [checkNumber, setCheckNumber] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  // The kind just taken off the list, said in the form with its way back until the next change.
+  const [stopped, setStopped] = useState<OwnKind | null>(null);
+  const [stopping, setStopping] = useState(false);
   const out = choice.direction === "out";
   const gift = out && choice.kind === "twinning";
+  // The opening balance comes from no one: it is where the money is held, as of the day it was counted.
+  const opening = !out && choice.kind === "opening";
   return (
     <form
       className="live-form"
@@ -128,6 +139,7 @@ export function MoneyForm({
                 ? { direction: key === "in:new" ? "in" : "out", kind: "new" }
                 : choices.find((candidate) => keyOf(candidate) === key);
             if (chosen) {
+              setStopped(null);
               setChoice(chosen);
               onOut(chosen.direction === "out");
             }
@@ -185,14 +197,37 @@ export function MoneyForm({
           type="button"
           variant="link"
           className="treasury-take-back treasury-retire"
-          onClick={() => {
-            onRetire(choice.id);
+          disabled={stopping}
+          onClick={async () => {
+            const kind = own?.find((one) => one.id === choice.id);
+            if (!kind) return;
+            setError("");
+            setStopping(true);
+            const refusal = await onRetire(kind.id);
+            setStopping(false);
+            if (refusal) return setError(fill(w.stopRefused, { name: sampleSaid(kind.name) }));
+            setStopped(kind);
             setChoice({ direction: "in", kind: start });
             onOut(false);
           }}
         >
           {w.stop}
         </Button>
+      )}
+      {stopped && (
+        <p className="live-detail treasury-stopped" role="status">
+          <span>{fill(w.stopped, { name: sampleSaid(stopped.name) })}</span>{" "}
+          <UndoAct
+            run={async () => {
+              const kind = stopped;
+              const refusal = await onRestore(kind);
+              setStopped(null);
+              if (refusal) return setError(fill(w.restoreRefused, { name: sampleSaid(kind.name) }));
+              setChoice({ direction: kind.direction, kind: "own", id: kind.id });
+              onOut(kind.direction === "out");
+            }}
+          />
+        </p>
       )}
       <div className="live-form-grid treasury-form-grid">
         <LiveField label={w.amount}>
@@ -205,18 +240,18 @@ export function MoneyForm({
             required
           />
         </LiveField>
-        <LiveField label={out ? w.dayPaid : w.dayReceived}>
+        <LiveField label={opening ? w.dayCounted : out ? w.dayPaid : w.dayReceived}>
           <DateField name="date" max={today} value={date} onChange={setDate} required />
         </LiveField>
       </div>
       <LiveField
-        label={gift ? w.toConference : out ? w.paidTo : w.from}
+        label={gift ? w.toConference : out ? w.paidTo : opening ? w.heldIn : w.from}
       >
         <Input
           name="name"
           list={out && !gift && payees?.length ? "treasury-payees" : undefined}
           maxLength={120}
-          placeholder={out ? "" : w.fromExample}
+          placeholder={out ? "" : opening ? w.heldInExample : w.fromExample}
           value={name}
           onChange={(event) => setName(event.target.value)}
           required
@@ -251,7 +286,7 @@ export function MoneyForm({
       </LiveField>
       {error && <FormError message={error} />}
       <FormActions saving={saving} onCancel={onCancel}>
-        {gift ? w.submit.gift : out ? w.submit.out : w.submit.in}
+        {gift ? w.submit.gift : out ? w.submit.out : opening ? w.submit.opening : w.submit.in}
       </FormActions>
     </form>
   );

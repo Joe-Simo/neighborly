@@ -116,7 +116,7 @@ export function en(set: WordSet) {
       },
       people: {
         title: "People, together.",
-        deck: "Everyone here, with their role and their teams.",
+        deck: "Everyone here, with their role and who is ready to serve.",
       },
       commitments: {
         title: "Clear commitments.",
@@ -190,7 +190,7 @@ export function en(set: WordSet) {
       /** Above it the member already has home visits, so a "first" yes would read wrong. */
       emptyTitleBeside: "Room for a\u00a0commitment too.",
       emptyDetail:
-        "Say yes to a commitment and it is kept here, with what to prepare.",
+        "When a coordinator asks you to cover a date, your yes is kept here with what to prepare. To be asked, choose “Receive cover requests” in Time off.",
     },
     commitments: {
       weekByTeam: "This week by team",
@@ -234,8 +234,8 @@ export function en(set: WordSet) {
       readyTitle: "Ready to take part",
       noPreparation:
         "No preparation has been added yet. Ask your coordinator for what you need.",
-      change: "Change this commitment",
-      changeTitle: "Change one commitment",
+      change: "I can’t make this date",
+      changeTitle: "Give up this date?",
       released: "Commitment released. Your other dates are unchanged.",
     },
     timeOff: {
@@ -243,7 +243,7 @@ export function en(set: WordSet) {
       thisMonth: "This month",
       away: "Away",
       canHelp: "Can help",
-      note: "Time off does not remove you from your teams. Existing commitments need a separate change so everyone knows what is covered.",
+      note: "Time off does not remove you from your teams. Before you save, you see which of your commitments fall on those days; only those are released, so coordinators know what needs cover.",
       remove: "Remove time off",
       removeDates: "Remove these dates",
       removed: "Time off removed.",
@@ -255,7 +255,7 @@ export function en(set: WordSet) {
       coverStopped: "Cover requests stopped.",
       emptyTitle: "Every day is open.",
       emptyDetail:
-        "Add the dates you won’t be available.",
+        "Use Plan time off to add the dates you won’t be available.",
       coverTitle: "Cover requests",
       coverDeck:
         "Choose whether coordinators may ask you to cover an open commitment. Every request still needs your acceptance.",
@@ -263,7 +263,7 @@ export function en(set: WordSet) {
       coverStart: "Receive cover requests",
       availableTitle: "When you can help",
       availableDeck:
-        "Volunteer dates when you’re available for cover. Availability is not an accepted commitment.",
+        "Add the dates you’re free to cover for someone. Offering dates does not sign you up for anything.",
       firstAvailable: "First available day",
       lastAvailable: "Last available day",
       addAvailable: "Add available dates",
@@ -289,8 +289,9 @@ export function en(set: WordSet) {
       saving: "Saving…",
       confirm: "Confirm time off",
       failed:
-        "We couldn’t confirm these dates. Nothing was saved. Go back, look over the list, then confirm again.",
-      saved: "Time off saved. Only the reviewed commitments were released.",
+        "We couldn’t confirm these dates. Nothing was saved. Try Confirm time off again; if it keeps failing, go Back and check the dates.",
+      saved: (released: number) =>
+        released === 0 ? "Time off saved. None of your commitments changed." : `Time off saved. ${enN(released)} reviewed ${released === 1 ? "commitment was" : "commitments were"} released for cover.`,
     },
     /** Tasks & meetings, as a member sees them. Planning a meeting and reviewing replies are leaders' tools and stay English. */
     tasks: {
@@ -317,6 +318,8 @@ export function en(set: WordSet) {
       waiting: "Awaiting your reply",
       changeReply: "Change reply",
       due: (date: string) => `Due ${date}`,
+      /** A task not done by its day: said in words, so the date is not the only clue. */
+      late: (date: string) => `Overdue since ${date}`,
       attend: "Attend",
       decline: "Decline",
       noMeetingsTitle: "No meetings planned.",
@@ -331,7 +334,7 @@ export function en(set: WordSet) {
     },
     /** Teams, as a member sees it. Adding and approving members are leaders' tools and stay English. */
     teams: {
-      noDescription: "A team with room to contribute.",
+      noDescription: "No description yet.",
       onTeam: "You’re on this team.",
       joined: "Joined {team}.",
       declined: "Declined the invitation to {team}.",
@@ -406,7 +409,7 @@ export function en(set: WordSet) {
     visits: {
       title: "Home visits",
       count: (count: number) => `${enN(count)} ${count === 1 ? "visit" : "visits"}, always with a partner`,
-      notSaved: "Your answer was not saved. Try again.",
+      notSaved: "Your answer wasn’t saved, so each visit still shows the answer you gave before.",
       on: (street: string) => `A visit on ${street}`,
       nearby: "a street nearby",
       partnerOpen: "Your coordinator is asking a second visitor.",
@@ -433,10 +436,13 @@ export function en(set: WordSet) {
       share: "Share address",
       copied: "Copied",
       copiedStatus: "Address copied.",
+      copyFailed: "This device didn’t let the address be copied. Tap the address above to select it, then copy it yourself.",
       privacy: "This address is yours alone; anyone who has it can see when and where you serve, and the preparation written for each commitment. A home visit shows the time and the street, never a neighbor’s name or need. If it reaches the wrong hands, make a new one and the old one stops working.",
       makeNew: "Make a new address",
       makeNewTitle: "Make a new address?",
       makeNewDetail: "The old address stops working straight away. You will need to add the new one to your calendar again.",
+      keep: "Keep this address",
+      made: "New address made. The old one has stopped working, so add this one to your calendar again.",
       get: "Get my calendar address",
       finding: "Finding your calendar",
       failed: "Your calendar address could not be made. Nothing has changed; check your connection, then try again.",

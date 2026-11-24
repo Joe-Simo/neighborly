@@ -866,7 +866,7 @@ function HelpLineView({
       {!late && <WebRequests />}
       {none ? (
         // The web form section stands above it, so it takes the same rule over its head as "To call back" would.
-        <EmptyLine first={!!late} line={text.noneTitle} />
+        <EmptyLine first={!!late} line={text.noneTitle} detail={text.noneDetail} />
       ) : (
       <section>
         <div className="live-section-head">

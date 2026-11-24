@@ -39,7 +39,8 @@ export const en = (t: Terms, place: string) => ({
     preparation: "Preparation",
     review: "Review changes",
     releases:
-      "Changing the date, time, role, place or preparation frees whoever accepted and withdraws open requests for cover. Someone must accept it again. Saving with nothing changed keeps the yes.",
+      "Changing the date, time, role, place or preparation frees whoever accepted and withdraws open requests for cover. Someone must accept it again.",
+    unchanged: "Nothing has changed yet. Go back to change a detail.",
     back: "Back",
     confirm: "Confirm changes",
     saving: "Saving…",
@@ -58,8 +59,8 @@ export const en = (t: Terms, place: string) => ({
   },
   release: {
     body: "This releases this date only. Your other commitments and your place on the team stay the same. The date will need cover.",
-    keep: "Keep commitment",
-    confirm: "Confirm change",
+    keep: "Keep this date",
+    confirm: "Give up this date",
   },
 });
 
@@ -87,11 +88,11 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       markedNotReady: (name) => `Se marcó que ${name} aún no puede servir.`,
       accessRemoved: (name) => `${name} ya no puede iniciar sesión.`,
       accessRestored: (name) => `${name} ya puede iniciar sesión de nuevo.`,
-      inviteWithdrawn: (email) => `Se anuló la invitación a ${email}.`,
+      inviteWithdrawn: (email) => `Se retiró la invitación a ${email}.`,
     },
     goBack: "Volver",
     edit: {
-      title: "Cambiar el compromiso",
+      title: "Editar el compromiso",
       deck: (zone) => `Horario: ${zone}. Revisarás los cambios antes de guardar.`,
       role: "Título",
       starts: "Empieza",
@@ -100,7 +101,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       preparation: "Preparación",
       review: "Revisar los cambios",
       releases:
-        "Cambiar la fecha, la hora, el rol, el lugar o la preparación libera a quien había aceptado y retira las peticiones abiertas para cubrirlo. Alguien tiene que aceptarlo de nuevo. Si guardas sin cambiar nada, el sí se mantiene.",
+        "Cambiar la fecha, la hora, el rol, el lugar o la preparación libera a quien había aceptado y retira las peticiones abiertas para cubrirlo. Alguien tiene que aceptarlo de nuevo.",
+      unchanged: "Todavía no has cambiado nada. Vuelve para cambiar algún detalle.",
       back: "Atrás",
       confirm: "Confirmar los cambios",
       saving: "Guardando…",
@@ -118,8 +120,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     },
     release: {
       body: "Esto libera solo esta fecha. Tus otros compromisos y tu lugar en el equipo siguen igual. Habrá que buscar quién cubra esa fecha.",
-      keep: "Conservar el compromiso",
-      confirm: "Confirmar el cambio",
+      keep: "Conservar esta fecha",
+      confirm: "Dejar esta fecha",
     },
   };
 };

@@ -13,7 +13,7 @@ import { useWorkspace } from "@/components/workspace/context";
 import { LiveField, LiveLoading } from "@/components/workspace/primitives";
 import { HousingFrame } from "@/components/workspace/reports/housing-providers";
 import { useHour, useQuery } from "@/components/workspace/query";
-import { LiveFailure } from "@/components/workspace/states";
+import { LiveFailure, LiveWaiting, SaveLabel } from "@/components/workspace/states";
 import { councilCsv, councilFileName, figureOrder, isMoney } from "@/components/workspace/reports/council-lines";
 import { councilWords } from "@/components/workspace/reports/council-words";
 import { sayRefused } from "@/lib/refusals";
@@ -109,14 +109,19 @@ function Council({ council, year, money }: { council: CouncilRow; year: number; 
   const [error, setError] = useState("");
   // Taking a conference off is asked once more first: only a new invitation joins the two again.
   const [removing, setRemoving] = useState<string | null>(null);
-  const run = async (work: () => Promise<unknown>, done: string) => {
+  // One change at a time: while it is on its way its button says so, and nothing here can be sent twice.
+  const [busy, setBusy] = useState<"invite" | "remove" | null>(null);
+  const run = async (work: () => Promise<unknown>, done: string, which: "invite" | "remove") => {
     setError("");
     setSaid("");
+    setBusy(which);
     try {
       await work();
       setSaid(done);
     } catch (problem) {
       setError(saying(problem, w.failed));
+    } finally {
+      setBusy(null);
     }
   };
   const counted = council.conferences.some((row) => row.status === "accepted");
@@ -135,8 +140,10 @@ function Council({ council, year, money }: { council: CouncilRow; year: number; 
               {removing === row.id ? (
                 <>
                   <span>{w.removeQuestion}</span>{" "}
-                  <Button variant="outline" onClick={() => void run(() => unlink({ linkId: row.id }), w.removed).then(() => setRemoving(null))}>{w.removeSure}</Button>{" "}
-                  <Button variant="ghost" onClick={() => setRemoving(null)}>{w.stay}</Button>
+                  <Button variant="outline" disabled={busy !== null} onClick={() => void run(() => unlink({ linkId: row.id }), w.removed, "remove").then(() => setRemoving(null))}>
+                    <SaveLabel saving={busy === "remove"} idle={w.removeSure} busy={w.removing} />
+                  </Button>{" "}
+                  <Button variant="ghost" disabled={busy !== null} onClick={() => setRemoving(null)}>{w.stay}</Button>
                 </>
               ) : (
                 <Button variant="ghost" aria-label={`${w.remove}: ${row.name}`} onClick={() => setRemoving(row.id)}>{w.remove}</Button>
@@ -152,13 +159,16 @@ function Council({ council, year, money }: { council: CouncilRow; year: number; 
           void run(async () => {
             await invite({ councilId: council.id, code });
             setCode("");
-          }, w.invited);
+          }, w.invited, "invite");
         }}
       >
         <LiveField label={w.inviteCode}>
           <Input name="code" required maxLength={64} autoComplete="off" value={code} onChange={(event) => setCode(event.target.value)} />
         </LiveField>
-        <Button type="submit" variant="outline">{w.invite}</Button>
+        <LiveWaiting when={busy === "invite"} />
+        <Button type="submit" variant="outline" disabled={busy !== null}>
+          <SaveLabel saving={busy === "invite"} idle={w.invite} busy={w.inviting} />
+        </Button>
       </form>
       {counted && <CouncilYearTable councilId={council.id} year={year} money={money} />}
     </div>

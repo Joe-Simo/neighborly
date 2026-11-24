@@ -73,6 +73,7 @@ const en = (t: Terms, place: string) => ({
       keptInForm: "The numbers on file are still covered, and what you typed is still here.",
       keptOnPage: "The numbers on file are still covered. Nothing on the record was changed.",
     },
+    undoKept: "Nothing was taken back: the record is as it was saved.",
     missing: { title: "We couldn’t find that record.", body: "It may belong to another group, or the link may be incomplete. Nothing was opened." },
     removed: { title: "Record removed.", body: "The year’s totals stay as they were, with no name. Everything that named this household is gone." },
     sheets: {
@@ -139,6 +140,8 @@ const en = (t: Terms, place: string) => ({
       count: (count: number) => (count === 1 ? "1 request" : `${enN(count)} requests`),
       brought: "Brought over from earlier records.",
       approveThis: (request: string) => `Approve request: ${request}`,
+      decline: "Decline",
+      declineThis: (request: string) => `Decline request: ${request}`,
     },
     history: {
       title: "History",
@@ -177,6 +180,11 @@ const en = (t: Terms, place: string) => ({
   atHome: {
     title: "At home",
     change: "Change home details",
+    /** Each line of At home says what its link changes: five links that all said "Change home details" opened five different sheets. */
+    changeReach: "Change details",
+    changeLives: "Change who lives here",
+    changeMonth: "Change the month",
+    changeAccounts: "Change accounts",
     reach: "Reach them",
     noPhone: "No phone on file",
     lives: "Lives here",
@@ -305,6 +313,7 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       keptInForm: "Los números guardados siguen ocultos, y lo que escribiste sigue aquí.",
       keptOnPage: "Los números guardados siguen ocultos. No se cambió nada en el registro.",
     },
+    undoKept: "No se deshizo nada: el registro quedó como se guardó.",
     missing: { title: "No encontramos ese registro.", body: "Puede ser de otro grupo, o el enlace puede estar incompleto. No se abrió nada." },
     removed: { title: "El registro se borró.", body: "Los totales del año quedan como estaban, sin ningún nombre. Todo lo que identificaba a este hogar se borró." },
     sheets: {
@@ -371,6 +380,8 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       count: (count) => (count === 1 ? "1 petición" : `${esN(count)} peticiones`),
       brought: "Traída de registros anteriores.",
       approveThis: (request) => `Aprobar petición: ${request}`,
+      decline: "No aprobar",
+      declineThis: (request) => `No aprobar la petición: ${request}`,
     },
     history: {
       title: "Historial",
@@ -408,6 +419,10 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   atHome: {
     title: "En casa",
     change: "Cambiar los datos de casa",
+    changeReach: "Cambiar los datos",
+    changeLives: "Cambiar quién vive aquí",
+    changeMonth: "Cambiar el mes",
+    changeAccounts: "Cambiar las cuentas",
     reach: "Cómo comunicarse",
     noPhone: "No hay teléfono guardado",
     lives: "Vive aquí",

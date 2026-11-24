@@ -792,7 +792,9 @@ export function NeighborForm({
   const { pending, error, save } = useSave();
   const w = helpLineFormsWords(useWords()).neighbor;
   const [typed, setTyped] = useState({
-    name: neighbor?.name ?? call?.callerName ?? "",
+    // A web request's call carries a stand-in for a name ("Web request", or the sender's email): a person's name is
+    // typed, not taken from it, so the neighbor is never saved under the stand-in.
+    name: neighbor?.name ?? (call && !/^web request$|@/i.test(call.callerName.trim()) ? call.callerName : ""),
     phone: neighbor?.phone ?? call?.phone ?? "",
   });
   const [checked, setChecked] = useState<(typeof typed & { address: string }) | null>(null);
