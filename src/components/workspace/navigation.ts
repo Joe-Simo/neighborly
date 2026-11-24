@@ -17,21 +17,23 @@ import type { LiveArea } from "@/components/workspace/areas";
 import type { ReliefName } from "@/components/workspace/relief";
 
 export const navigation = [
+  // Grouped by the work: the week, then the help-side rooms a conference lives in each day, then its people.
+  // group starts a new cluster in the side menu (a quiet gap, no heading).
   { id: "week", label: "This week", icon: CalendarDays },
-  { id: "team", label: "Teams", icon: Users },
+  // Only for people who lead the group: every function behind these rooms needs a coordinator or owner
+  // (convex/access.ts, neighborAccess). A member's own visits are in My commitments.
+  { id: "help-line", label: "Help line", icon: Phone, leadersOnly: true, group: true },
+  { id: "neighbors", label: "Neighbors", icon: House, leadersOnly: true },
+  { id: "visits", label: "Home visits", icon: Footprints, leadersOnly: true },
+  { id: "treasury", label: "Treasury", icon: Landmark, leadersOnly: true },
+  { id: "reports", label: "Reports", icon: ChartNoAxesColumn, leadersOnly: true },
+  { id: "team", label: "Teams", icon: Users, group: true },
   { id: "people", label: "People", icon: UserRound },
   { id: "commitments", label: "Commitments", icon: HeartHandshake },
   { id: "mine", label: "My commitments", icon: Check },
   { id: "time-off", label: "Time off", icon: Umbrella },
   { id: "tasks", label: "Tasks & meetings", icon: ClipboardList },
-  // Only for people who lead the group: every function behind these rooms needs a coordinator or owner
-  // (convex/access.ts, neighborAccess). A member's own visits are in My commitments.
-  { id: "help-line", label: "Help line", icon: Phone, leadersOnly: true },
-  { id: "neighbors", label: "Neighbors", icon: House, leadersOnly: true },
-  { id: "visits", label: "Home visits", icon: Footprints, leadersOnly: true },
-  { id: "treasury", label: "Treasury", icon: Landmark, leadersOnly: true },
-  { id: "reports", label: "Reports", icon: ChartNoAxesColumn, leadersOnly: true },
-  { id: "tools", label: "Your files", icon: Folder, leadersOnly: true },
+  { id: "tools", label: "Your files", icon: Folder, leadersOnly: true, group: true },
 ] as const;
 
 export type ActionKind =
