@@ -51,19 +51,21 @@ function Councils({ year, money }: { year: number; money: CouncilMoney }) {
   const { words } = useWorkspace();
   const w = councilWords(words.locale);
   const councils = useQuery(api.councils.mine, {});
+  // The form leaves once the council is saved, so the council that takes its place says it was created.
+  const [created, setCreated] = useState(false);
   if (!councils) return <LiveLoading label={w.loading} />;
   return (
     <div className="housing-body">
       <p className="housing-note">{w.deck}</p>
       {councils.map((council) => (
-        <Council key={council.id} council={council} year={year} money={money} />
+        <Council key={council.id} council={council} year={year} money={money} said={created ? w.created : ""} />
       ))}
-      {councils.length === 0 && <CreateCouncil />}
+      {councils.length === 0 && <CreateCouncil onCreated={() => setCreated(true)} />}
     </div>
   );
 }
 
-function CreateCouncil() {
+function CreateCouncil({ onCreated }: { onCreated: () => void }) {
   const { words } = useWorkspace();
   const w = councilWords(words.locale);
   const create = useMutation(api.councils.create);
@@ -77,6 +79,7 @@ function CreateCouncil() {
     setError("");
     try {
       await create({ name, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+      onCreated();
     } catch (problem) {
       setError(saying(problem, w.failed));
     } finally {
@@ -98,14 +101,14 @@ function CreateCouncil() {
 
 type CouncilRow = { id: Id<"councils">; name: string; conferences: { id: Id<"councilLinks">; name: string; status: "pending" | "accepted" }[] };
 
-function Council({ council, year, money }: { council: CouncilRow; year: number; money: CouncilMoney }) {
+function Council({ council, year, money, said: first = "" }: { council: CouncilRow; year: number; money: CouncilMoney; said?: string }) {
   const { words } = useWorkspace();
   const w = councilWords(words.locale);
   const invite = useMutation(api.councils.invite);
   const unlink = useMutation(api.councils.unlink);
   const saying = useSaying();
   const [code, setCode] = useState("");
-  const [said, setSaid] = useState("");
+  const [said, setSaid] = useState(first);
   const [error, setError] = useState("");
   // Taking a conference off is asked once more first: only a new invitation joins the two again.
   const [removing, setRemoving] = useState<string | null>(null);

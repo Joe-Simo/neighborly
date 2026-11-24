@@ -182,10 +182,14 @@ export function FollowingHeading({ children, id }: { children: ReactNode; id?: s
  * Says what is wrong with one named field, on that field: the plum line under it, read out, with the first wrong field in
  * focus (LiveField). The line goes once the person changes the answer. Call `form.checkValidity()` after marking.
  */
-export function markWrong(form: HTMLFormElement, name: string, said: string) {
+export function markWrong(form: HTMLFormElement, name: string, said: string, against?: string) {
   let control = form.elements.namedItem(name);
-  // A day and a time (WhenField) answer under one hidden name; the problem is said on its day.
-  if (control instanceof HTMLInputElement && control.type === "hidden") control = control.parentElement?.querySelector(".live-date-value") ?? null;
+  // A day and a time (WhenField) answer under one hidden name. The problem is said on the part to change: the time
+  // when the day is the same as the one it is measured against, otherwise the day.
+  if (control instanceof HTMLInputElement && control.type === "hidden") {
+    const sameDay = against !== undefined && control.value.slice(0, 10) === against.slice(0, 10);
+    control = control.parentElement?.querySelector(sameDay ? "select" : ".live-date-value") ?? null;
+  }
   if (control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement || control instanceof HTMLSelectElement) control.setCustomValidity(said);
 }
 

@@ -212,7 +212,13 @@ export function LiveWorkspace({
   const churchName = data.church.sample ? data.church.name.replace(/\s*\(sample\)\s*$/i, "") : data.church.name;
   // A second press (or Enter) before the first save has drawn its pending state sends nothing: one announcement, one email.
   const performing = useRef(false);
-  async function perform(command: LiveCommand, success?: string, back?: { command: LiveCommand; said: string; returnTo?: HTMLElement }) {
+  async function perform(
+    command: LiveCommand,
+    success?: string,
+    back?: { command: LiveCommand; said: string; returnTo?: HTMLElement },
+    // What the act was on, when one page holds many of them (a task row): a refusal then names it.
+    about?: string,
+  ) {
     if (performing.current) return false;
     performing.current = true;
     setPending(true);
@@ -248,7 +254,8 @@ export function LiveWorkspace({
       return true;
     } catch (cause) {
       const said = readFailure(cause, words.notices.failed);
-      setError(sayRefused(words.notices, said));
+      const refused = sayRefused(words.notices, said);
+      setError(about ? `${about}: ${refused}` : refused);
       return false;
     } finally {
       performing.current = false;
@@ -976,6 +983,12 @@ export function LiveWorkspace({
                     sheets.edit.done,
                   )
                 }
+                onBack={() => leaveDialog(() => {
+                  const item = editingCommitment;
+                  setEditingCommitment(null);
+                  setError("");
+                  setSelectedCommitment(data.commitments.find((one) => one.id === item.id) ?? item);
+                })}
               />
             )}
         </LiveDialog>

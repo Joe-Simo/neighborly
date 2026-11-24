@@ -96,7 +96,7 @@ export function LiveCreateForm({
     // An end before its start is said on the end, before anything is sent (the server refuses it the same way).
     const [start, end] = [value("start"), value("end")];
     if (start && end && (kind === "timeOff" ? end < start : (kind === "commitment" || kind === "meeting") && end <= start))
-      markWrong(form, "end", kind === "timeOff" ? words.timeOffForm.orderError : (words.notices.refused[refusals.endAfterStart] ?? refusals.endAfterStart));
+      markWrong(form, "end", kind === "timeOff" ? words.timeOffForm.orderError : (words.notices.refused[refusals.endAfterStart] ?? refusals.endAfterStart), start);
     if (!form.checkValidity()) return;
     let command: LiveCommand;
     switch (kind) {

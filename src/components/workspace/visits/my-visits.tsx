@@ -64,7 +64,7 @@ function MyVisitsView({
       <div className="live-section-head">
         <h2 id="my-visits">{words.title}</h2>
         <span className="live-count">
-          {words.count(visits.length)}
+          {words.count(visits.length, visits.filter((visit) => !visit.partner).length)}
         </span>
       </div>
       {error && (
