@@ -28,6 +28,9 @@
 .tools-rota header p { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: var(--caps-track); color: var(--live-muted); }
 .tools-rota header h3 { margin: var(--space-4) 0 var(--space-16); font: 400 26px/1.15 "Newsreader", "Newsreader Fallback", Georgia, serif; color: var(--live-ink); }
 .tools-rota td { vertical-align: top; }
+/* A conference's or a team's name with no space in it breaks inside the sheet instead of pushing the rota, and the
+   Print button above it, past the sheet's edge. */
+.tools-rota :is(header p, header h3, td) { overflow-wrap: anywhere; }
 .tools-rota td:first-child { white-space: nowrap; font-feature-settings: "lnum" 1, "tnum" 1; }
 .tools-rota td small { display: block; color: var(--live-muted); font-size: 15px; }
 .tools-rota .tools-rota-day th { padding-top: var(--space-24); font-family: "Source Sans 3", "Source Sans 3 Fallback", sans-serif; font-weight: 600; font-size: 16px; line-height: 1.3; font-feature-settings: "lnum" 1, "tnum" 1; text-transform: none; letter-spacing: 0; color: var(--live-ink); }
@@ -46,6 +49,7 @@
   .tools-rota td small { display: block; margin-top: 2px; font-weight: 400; font-size: 15px; }
   .tools-rota .tools-rota-day th { display: block; padding-left: 0; }
   .tools-rota .tools-rota-day { display: block; }
+  .tools-rota table, .tools-rota tbody { display: block; }
   .tools-rota .tools-rota-none, .tools-rota .tools-rota-none td { display: block; padding: var(--space-12) 0; border-bottom: 1px solid var(--live-line); }
 }
 /* On paper only the rota is left: black on white, each day kept whole, an open shift a line to write a name on. */
