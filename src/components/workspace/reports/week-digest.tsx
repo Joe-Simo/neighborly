@@ -29,6 +29,7 @@ const said = {
     overdue: (n: number) => (n === 0 ? "No callback is overdue." : n === 1 ? "1 call has waited two days or more for a callback." : `${n} calls have waited two days or more for a callback.`),
     with: (name: string) => `with ${name}`,
     noName: "No name given",
+    web: "Web request",
     more: (n: number) => `and ${n} more`,
     email: "Email me this on Monday mornings",
     kinds: { rent: "Rent", utility: "Utility", food: "Food", voucher: "Voucher", other: "Other" } satisfies Record<Kind, string>,
@@ -45,6 +46,7 @@ const said = {
     overdue: (n: number) => (n === 0 ? "Ninguna llamada espera respuesta con retraso." : n === 1 ? "1 llamada espera respuesta desde hace dos días o más." : `${n} llamadas esperan respuesta desde hace dos días o más.`),
     with: (name: string) => `con ${name}`,
     noName: "Sin nombre",
+    web: "Petición web",
     more: (n: number) => `y ${n} más`,
     email: "Enviármelo por correo los lunes por la mañana",
     kinds: { rent: "Alquiler", utility: "Servicios", food: "Comida", voucher: "Vales", other: "Otra ayuda" } satisfies Record<Kind, string>,
@@ -95,7 +97,7 @@ export default function WeekDigest() {
         <ul>
           {overdue.rows.map((row) => (
             <li key={row.callId}>
-              <Link href="/app/help-line">{row.name || w.noName}</Link>
+              <Link href="/app/help-line">{(row.name === "Web request" || (row.web && !row.name) ? w.web : row.name) || w.noName}</Link>
               <span>{` · ${w.days(row.days)}${row.owner ? ` · ${w.with(row.owner)}` : ""}`}</span>
             </li>
           ))}

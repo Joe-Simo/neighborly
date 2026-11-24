@@ -17,7 +17,7 @@ import type { LiveCommand, LiveWorkspaceData } from "@/components/workspace/type
 import { peopleWords } from "@/lib/words/rooms/people";
 
 export function TeamsSection() {
-  const { data, pending, isOwner, perform, words, sampleSaid } = useWorkspace();
+  const { data, pending, isOwner, perform, confirm, words, sampleSaid } = useWorkspace();
   const t = words.teams;
   const text = peopleWords(words).teams;
   // Each opening of the dialog is its own object, so an answer that comes late can tell whether the person is
@@ -71,7 +71,13 @@ export function TeamsSection() {
                       size="sm"
                       variant="ghost"
                       aria-label={`${t.decline}: ${sampleSaid(team.name)}`}
-                      onClick={() => void perform({ type: "respondTeam", teamId: team.id, accept: false }, fill(t.declined, { team: sampleSaid(team.name) }))}
+                      onClick={() => confirm({
+                        title: t.declineTitle,
+                        body: t.declineBody(sampleSaid(team.name)),
+                        action: t.declineAction,
+                        command: { type: "respondTeam", teamId: team.id, accept: false },
+                        done: fill(t.declined, { team: sampleSaid(team.name) }),
+                      })}
                     >
                       {t.decline}
                     </Button>

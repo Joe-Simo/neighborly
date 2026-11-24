@@ -220,6 +220,9 @@ export function en(set: WordSet) {
       accepted: "Commitment accepted. It’s on your list.",
       acceptedUnder: (place: string) => `Commitment accepted. It’s in ${place}.`,
       declined: "Request declined. Nothing was added to your list.",
+      declineTitle: "Decline this request?",
+      declineAction: "Decline request",
+      declineBody: (what: string) => `${what} won’t be added to your list. Once declined, this request can’t be accepted later.`,
     },
     detail: {
       cancelled:
@@ -261,6 +264,7 @@ export function en(set: WordSet) {
         "Choose whether coordinators may ask you to cover an open commitment. Every request still needs your acceptance.",
       coverStop: "Stop receiving cover requests",
       coverStart: "Receive cover requests",
+      coverNoRecord: "You can turn this on once a coordinator adds you to the people list.",
       availableTitle: "When you can help",
       availableDeck:
         "Add the dates you’re free to cover for someone. Offering dates does not sign you up for anything.",
@@ -338,6 +342,9 @@ export function en(set: WordSet) {
       onTeam: "You’re on this team.",
       joined: "Joined {team}.",
       declined: "Declined the invitation to {team}.",
+      declineTitle: "Decline this invitation?",
+      declineAction: "Decline invitation",
+      declineBody: (team: string) => `You won’t join ${team}. A team leader can invite you again later.`,
       invited: "You’re invited to this team. Joining does not accept a commitment.",
       join: "Join team",
       decline: "Decline",
@@ -607,6 +614,7 @@ export function en(set: WordSet) {
       /** The draft's own sheet, sentence by sentence, so it reads whole in each language. */
       sheet: {
         newCaller: "New caller",
+        webRequest: "Web request",
         noName: "A caller who gave no name",
         calledOn: (day: string) => `called on ${day}`,
         nothingYet: "Nothing to draft from this note yet",

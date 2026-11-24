@@ -19,7 +19,7 @@ const kind = v.union(v.literal("rent"), v.literal("utility"), v.literal("food"),
 const digestValidator = v.object({
   waiting: v.object({ count: v.number(), rows: v.array(v.object({ requestId: v.id("assistanceRequests"), neighborId: v.id("neighbors"), name: v.string(), kind, amount: v.number(), days: v.number(), repeat: v.union(v.literal("recent"), v.literal("sameAmount"), v.null()) })) }),
   month: v.object({ month: v.number(), approved: v.number(), budget: v.union(v.number(), v.null()), lastYear: v.number() }),
-  overdue: v.object({ count: v.number(), rows: v.array(v.object({ callId: v.id("calls"), name: v.string(), days: v.number(), owner: v.string() })) }),
+  overdue: v.object({ count: v.number(), rows: v.array(v.object({ callId: v.id("calls"), name: v.string(), web: v.boolean(), days: v.number(), owner: v.string() })) }),
 });
 
 /**
@@ -57,7 +57,7 @@ async function digestOf(ctx: QueryCtx, churchId: Id<"churches">, at: number) {
   const late = owed.filter(call => at - call.takenAt >= callbackDays * DAY).sort((a, b) => a.takenAt - b.takenAt);
   const overdue = await Promise.all(late.slice(0, listed).map(async call => {
     const owner = call.ownerId ? await ctx.db.get("memberships", call.ownerId) : null;
-    return { callId: call._id, name: call.callerName, days: Math.floor((at - call.takenAt) / DAY), owner: owner?.removedAt ? "" : owner?.name ?? "" };
+    return { callId: call._id, name: call.callerName, web: call.fromWeb === true, days: Math.floor((at - call.takenAt) / DAY), owner: owner?.removedAt ? "" : owner?.name ?? "" };
   }));
   return {
     waiting: { count: open.length, rows },

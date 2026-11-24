@@ -248,7 +248,9 @@ export function webCallDoc(request: Pick<Doc<"webRequests">, "churchId" | "kind"
   ].filter(Boolean).join(" ");
   const note = `${request.need || kinds}\n\nFrom the web form (${kinds}; zip ${request.zip}; ${LANGUAGE_NOTE[request.language]}${request.referredBy ? `; referred by ${request.referredBy}` : ""}). ${contact}${flags ? `\n${flags}` : ""}`;
   return {
-    churchId: request.churchId, callerName: request.phone ? "Web request" : request.email, phone: request.phone, note: note.slice(0, 2000),
+    // No name was given: a phone request keeps none (the screens say "Web request" in the reader's language); an
+    // email-only one keeps its address, so the row still has something to call it by.
+    churchId: request.churchId, callerName: request.phone ? "" : request.email, phone: request.phone, note: note.slice(0, 2000),
     callback: "needed" as const, fromWeb: true, takenAt: now, ownerId,
     ...(request.language === "es" ? { spanish: true } : {}), ...(request.urgent ? { urgent: { reasons: ["marked"], by: "rules" as const } } : {}),
   };

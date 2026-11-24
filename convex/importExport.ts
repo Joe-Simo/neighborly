@@ -467,7 +467,7 @@ export const exportPage = query({
     if (file === "calls") {
       const result = await ctx.db.query("calls").withIndex("by_church", (q) => q.eq("churchId", churchId)).paginate(page);
       const callBack = { none: "Not needed", needed: "Still needed", done: "Returned" } as const;
-      return finish(result, await Promise.all(result.page.map(async (row) => [day(row.takenAt), clock(row.takenAt), row.callerName || ((await neighborName(row.neighborId)) === REMOVED ? REMOVED : ""), row.phone, await neighborName(row.neighborId), row.note, callBack[row.callback],
+      return finish(result, await Promise.all(result.page.map(async (row) => [day(row.takenAt), clock(row.takenAt), row.callerName || (row.fromWeb && row.phone ? "Web request" : (await neighborName(row.neighborId)) === REMOVED ? REMOVED : ""), row.phone, await neighborName(row.neighborId), row.note, callBack[row.callback],
         await memberName(row.takenBy), await memberName(row.returnedBy), day(row.returnedAt), row.outcome ?? "", row.urgent ? row.urgent.reasons.map((reason) => urgentWords[reason] ?? plainWords(reason)).join("; ") || "Yes" : ""])));
     }
     if (file === "deposits") {

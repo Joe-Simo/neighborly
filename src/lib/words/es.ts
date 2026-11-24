@@ -213,6 +213,9 @@ export function es(set: WordSet): Words {
       accepted: "Compromiso aceptado. Ya está en tu lista.",
       acceptedUnder: (place: string) => `Compromiso aceptado. Está en ${place}.`,
       declined: "Petición rechazada. No se agregó nada a tu lista.",
+      declineTitle: "¿Rechazar esta petición?",
+      declineAction: "Rechazar petición",
+      declineBody: (what: string) => `${what} no se agregará a tu lista. Una vez rechazada, esta petición no se puede aceptar después.`,
     },
     detail: {
       cancelled:
@@ -254,6 +257,7 @@ export function es(set: WordSet): Words {
         "Decide si los coordinadores pueden pedirte que cubras un compromiso libre. Cada petición necesita tu sí.",
       coverStop: "Dejar de recibir peticiones",
       coverStart: "Recibir peticiones",
+      coverNoRecord: "Podrás activarlo cuando quien coordina te agregue a la lista de personas.",
       availableTitle: "Cuándo puedes ayudar",
       availableDeck:
         "Agrega las fechas en que puedes cubrir a alguien. Ofrecer fechas no te apunta a ningún compromiso.",
@@ -327,6 +331,9 @@ export function es(set: WordSet): Words {
       onTeam: "Ya estás en este equipo.",
       joined: "Te uniste a {team}.",
       declined: "Rechazaste la invitación a {team}.",
+      declineTitle: "¿Rechazar esta invitación?",
+      declineAction: "Rechazar invitación",
+      declineBody: (team: string) => `No te unirás a ${team}. Quien dirige el equipo puede volver a invitarte.`,
       invited: "Te invitaron a este equipo. Unirte no acepta ningún compromiso.",
       join: "Unirme al equipo",
       decline: "No, gracias",
@@ -586,6 +593,7 @@ export function es(set: WordSet): Words {
       approved: `Petición guardada. Tu ${t.group} decide después.`,
       sheet: {
         newCaller: "Persona nueva",
+        webRequest: "Petición web",
         noName: "Alguien que no dio su nombre",
         calledOn: (day) => `llamó el ${day}`,
         nothingYet: "Todavía no hay nada que anotar de esta nota",
