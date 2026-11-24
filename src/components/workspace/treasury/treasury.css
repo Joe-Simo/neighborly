@@ -827,3 +827,12 @@
 @media (min-width: 851px) {
   .live-app .help-figures.treasury-figures .count-up { display: block; min-height: var(--type-figure-l); }
 }
+
+/* A kind just taken off the list: said in the form, with its Undo on the same line. */
+.treasury-dialog .treasury-stopped {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0.75rem;
+  margin: 0;
+}
