@@ -23,7 +23,7 @@ export const en = (t: Terms, place: string) => ({
     meetingPlanned: (title: string) => `Meeting planned. ${title}`,
     commitmentCanceled: (title: string) => `Commitment canceled. ${title}`,
     markedReady: (name: string) => `${name} is marked ready to serve.`,
-    markedNotReady: (name: string) => `${name} is marked not ready.`,
+    markedNotReady: (name: string) => `${name} is marked not yet ready to serve.`,
     accessRemoved: (name: string) => `${name} can no longer sign in.`,
     accessRestored: (name: string) => `${name} can sign in again.`,
     inviteWithdrawn: (email: string) => `Invitation to ${email} withdrawn.`,
