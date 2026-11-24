@@ -128,6 +128,8 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
   .tools-leaves { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .tools-leaf { grid-column: span 3; }
   .tools-leaf[data-open], .tools-leaf-wide { grid-column: 1 / -1; }
+  /* A half leaf left on its own after a wide one (the councils, with doubles found or no council leaf) takes the row, not half of it beside empty floor. */
+  .tools-leaf-wide + .tools-leaf:last-child { grid-column: 1 / -1; }
   .tools-leaves:has(.tools-leaf[data-open]:not(.tools-leaf-wide)) .tools-leaf:not([data-open], .tools-leaf-wide) { grid-column: 1 / -1; }
 }
 @media (max-width: 700px) {
