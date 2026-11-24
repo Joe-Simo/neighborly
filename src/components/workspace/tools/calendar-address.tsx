@@ -84,6 +84,7 @@ function CalendarAddressView({ address, busy, error, onCreate, titled = true }: 
           {replacing && (
             <LiveDialog title={text.makeNewTitle} description={text.makeNewDetail} onClose={() => setReplacing(false)}>
               <div className="live-form-actions">
+                <Button variant="outline" onClick={() => setReplacing(false)}>{text.keep}</Button>
                 <Button disabled={busy} onClick={() => { setReplacing(false); setCopied(false); onCreate(); }}>{text.makeNew}</Button>
               </div>
             </LiveDialog>

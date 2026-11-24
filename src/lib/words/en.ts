@@ -437,6 +437,7 @@ export function en(set: WordSet) {
       makeNew: "Make a new address",
       makeNewTitle: "Make a new address?",
       makeNewDetail: "The old address stops working straight away. You will need to add the new one to your calendar again.",
+      keep: "Keep this address",
       get: "Get my calendar address",
       finding: "Finding your calendar",
       failed: "Your calendar address could not be made. Nothing has changed; check your connection, then try again.",
