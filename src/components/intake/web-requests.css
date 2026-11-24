@@ -76,3 +76,7 @@
 .web-requests .web-area:has(> p:only-child) + .live-list { margin-top: var(--space-16, 16px); }
 /* Limits and holidays opens under the area's buttons with a breath, so its first label never sits on them. */
 .web-requests .web-area + .web-more { margin-top: var(--space-24, 24px); }
+/* Pass on opens a breath below the request's buttons, and its "Pass to" is named in the same bold label as "In one line, why". */
+.web-requests .web-row .web-pass { margin-top: var(--space-24, 24px); }
+.web-requests .web-pass fieldset { border: 0; padding: 0; margin: 0; }
+.web-requests .web-pass legend { margin-bottom: 4px; font-size: 15px; font-weight: 600; line-height: 1.5; }
