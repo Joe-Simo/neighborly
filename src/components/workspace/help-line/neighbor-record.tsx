@@ -798,13 +798,24 @@ function NeighborRecordView({
                 </div>
                 <div className="live-row-actions">
                   {request.status === "open" ? (
-                    <Button
-                      variant="outline"
-                      aria-label={text.also.approveThis(requestTitle(request))}
-                      onClick={() => onStep({ kind: "approve", request })}
-                    >
-                      {text.sheet.approve}
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline"
+                        aria-label={text.also.approveThis(requestTitle(request))}
+                        onClick={() => onStep({ kind: "approve", request })}
+                      >
+                        {text.sheet.approve}
+                      </Button>
+                      {/* Each open request can be turned down where it stands, not only the one on the sheet. */}
+                      <Button
+                        variant="link"
+                        className="help-text-action"
+                        aria-label={text.also.declineThis(requestTitle(request))}
+                        onClick={() => onStep({ kind: "decline", request })}
+                      >
+                        {text.also.decline}
+                      </Button>
+                    </>
                   ) : (
                     <span className="live-status">{text.sheet.approved}</span>
                   )}

@@ -140,6 +140,8 @@ const en = (t: Terms, place: string) => ({
       count: (count: number) => (count === 1 ? "1 request" : `${enN(count)} requests`),
       brought: "Brought over from earlier records.",
       approveThis: (request: string) => `Approve request: ${request}`,
+      decline: "Decline",
+      declineThis: (request: string) => `Decline request: ${request}`,
     },
     history: {
       title: "History",
@@ -378,6 +380,8 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       count: (count) => (count === 1 ? "1 petición" : `${esN(count)} peticiones`),
       brought: "Traída de registros anteriores.",
       approveThis: (request) => `Aprobar petición: ${request}`,
+      decline: "No aprobar",
+      declineThis: (request) => `No aprobar la petición: ${request}`,
     },
     history: {
       title: "Historial",
