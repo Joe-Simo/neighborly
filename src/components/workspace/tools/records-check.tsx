@@ -75,7 +75,7 @@ export function RecordsCheck() {
     </Button>
   );
   return (
-    <section className={`tools-leaf paper-corner${count ? " tools-leaf-wide" : ""}`} aria-labelledby="records-check-name">
+    <section className={`tools-leaf paper-corner${count ? " tools-leaf-wide" : " tools-leaf-list"}`} aria-labelledby="records-check-name">
       <h2 id="records-check-name" ref={name} tabIndex={-1}>{w.title}</h2>
       <p className="tools-leaf-deck">{w.deck}</p>
       <p className="sr-only" role="status">{!found ? "" : count ? w.found(count) : w.none}</p>

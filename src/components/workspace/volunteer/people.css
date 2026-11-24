@@ -83,7 +83,15 @@
        name and address keep more than they need. */
     @media (min-width: 900px) {
       .live-app .people-row:not(.people-invited) { grid-template-columns: minmax(0, 1fr) 110px 180px 24px; }
-      .live-app .people-invited { grid-template-columns: minmax(0, 1fr) 110px 180px 150px; }
+      /* An invitation keeps the people's columns, so its wait starts on the same line as a person's down the list;
+         its acts have no 150px column to stand in, so they go under the wait, in its column. */
+      @container people-list (max-width: 819px) {
+        .live-app .people-invited { grid-template-columns: minmax(0, 1fr) 110px 180px 24px; }
+        .live-app .people-invited:has(> .live-row-actions:not(:empty)) { row-gap: var(--space-8); }
+        .live-app .people-invited:has(> .live-row-actions:not(:empty)) .live-person { grid-row: 1 / span 2; }
+        .live-app .people-invitations .people-invited.live-row .live-row-actions { grid-column: 3 / -1; grid-row: 2; justify-self: start; justify-content: flex-start; width: auto; margin: 0; }
+        .live-app .people-invitations .people-invited.live-row .live-row-actions:empty { display: none; }
+      }
     }
     /* Just under a desk's width the name has room to spare, so the wait column holds "Not yet ready to serve" /
        "Esperando a que se una" on one line. Narrower (an iPad held upright) the address keeps that room. */

@@ -258,6 +258,8 @@
 .live-dialog:has(.volunteer-commitment-facts) :is(h2, .live-kicker, p, dd) { overflow-wrap: anywhere; }
 /* Time off with none planned: the list already draws its top rule, so the empty state does not lay a second one on it. */
 .live-app .live-list > .live-empty:only-child { border-top: 0; }
+/* ...but it closes on a hairline, as a list of planned days does, so Cover requests opens a section of its own in both states. */
+.live-app .live-list:has(> .live-empty:only-child):has(+ .volunteer-cover-section) { padding-bottom: var(--space-40); border-bottom: 1px solid var(--live-line); }
 
 /* My commitments: from 1700px with no side column the head's picture stops at the room's column edge (paper.css), and
    this room's painting (the hand, the plum ground) runs off its right side, so it ended on a hard vertical cut. It
