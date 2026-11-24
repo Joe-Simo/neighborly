@@ -237,7 +237,7 @@ export function LiveCreateForm({
       )}
       {kind === "invite" && (
         <>
-          <LiveField label={text.invite.email}>
+          <LiveField label={text.invite.email} said={{ neededCheck: text.invite.emailCheck }}>
             <Input type="email" name="email" required maxLength={254} />
           </LiveField>
           <LiveField label={text.invite.role}>

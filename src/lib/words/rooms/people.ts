@@ -102,6 +102,8 @@ const en = (t: Terms, place: string) => ({
     },
     invite: {
       email: "Email",
+      /** Under the address when the browser will not take it as one. */
+      emailCheck: "Enter their whole email address, like name@example.org.",
       role: "Role",
       member: "Member",
       coordinator: "Coordinator",
@@ -269,6 +271,7 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => {
       },
       invite: {
         email: "Correo electrónico",
+        emailCheck: "Escribe su correo electrónico completo, como nombre@ejemplo.org.",
         role: "Rol",
         member: "Miembro",
         coordinator: "Coordinador",
