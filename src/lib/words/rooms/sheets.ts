@@ -87,7 +87,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       markedNotReady: (name) => `Se marcó que ${name} aún no puede servir.`,
       accessRemoved: (name) => `${name} ya no puede iniciar sesión.`,
       accessRestored: (name) => `${name} ya puede iniciar sesión de nuevo.`,
-      inviteWithdrawn: (email) => `Se anuló la invitación a ${email}.`,
+      inviteWithdrawn: (email) => `Se retiró la invitación a ${email}.`,
     },
     goBack: "Volver",
     edit: {
