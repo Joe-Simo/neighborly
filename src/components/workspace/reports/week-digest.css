@@ -9,3 +9,5 @@
 /* When the Monday-email press turns on a phone (Spanish runs longer) its words split evenly, never leaving
    "mañana" alone on the second line. */
 .week-digest [data-slot="toggle"] { text-wrap: balance; }
+/* With no list closing the week, the Monday-email press keeps the same breath above it as after a list. */
+.week-digest p + [data-slot="toggle"] { margin-top: var(--space-8); }
