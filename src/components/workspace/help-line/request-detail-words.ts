@@ -52,7 +52,7 @@ const en = {
 };
 
 const es: typeof en = {
-  print: "Imprimir petición",
+  print: "Imprimir la petición",
   printNow: "Imprimir",
   opening: "Abriendo la petición…",
   label: (name) => `Petición de ayuda de ${name}`,

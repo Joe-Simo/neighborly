@@ -727,7 +727,7 @@ function NeighborRecordView({
               </p>
               {onPrint && (
                 <Button variant="link" className="help-text-action help-sheet-print" onClick={() => onPrint(first.id)}>
-                  {words.locale === "es" ? "Imprimir petición" : "Print request"}
+                  {words.locale === "es" ? "Imprimir la petición" : "Print request"}
                 </Button>
               )}
             </div>
