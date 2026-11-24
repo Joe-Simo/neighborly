@@ -147,9 +147,15 @@ function Candidates({ found, w, neighborId, onMerged }: { found: Candidate[]; w:
   const [merging, setMerging] = useState<Shown | null>(null);
   // A "not the same" that does not go through is said under the list, and the pair stays for another try.
   const [refused, setRefused] = useState("");
+  // One "not the same" at a time: a second press while the first is on its way sends nothing.
+  const [dismissing, setDismissing] = useState(false);
   const notSame = (otherId: Id<"neighbors">, name: string) => {
+    if (dismissing) return;
     setRefused("");
-    dismiss({ churchId, neighborId, otherId }).then(() => onMerged(w.dismissed(name)), (cause: unknown) => setRefused(sayFailure(words.notices, cause, words.states.notSaved, words.states.offlineSave)));
+    setDismissing(true);
+    dismiss({ churchId, neighborId, otherId })
+      .then(() => onMerged(w.dismissed(name)), (cause: unknown) => setRefused(sayFailure(words.notices, cause, words.states.notSaved, words.states.offlineSave)))
+      .finally(() => setDismissing(false));
   };
   return (
     <section className="live-section" aria-labelledby="possible-same">
@@ -177,6 +183,7 @@ function Candidates({ found, w, neighborId, onMerged }: { found: Candidate[]; w:
               <Button
                 variant="link"
                 className="help-text-action"
+                disabled={dismissing}
                 aria-label={w.notSameThis(sampleSaid(row.name))}
                 onClick={() => notSame(row.id, sampleSaid(row.name))}
               >

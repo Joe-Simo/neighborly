@@ -213,7 +213,8 @@ function WebRow({ row, churchId, sample }: { row: Row; churchId: Id<"churches">;
           </div>
         </div>
       )}
-      {error && <LiveFailure message={error} />}
+      {/* Only Return it and Pass on have words typed into them; Keep it, Close, Block and Not genuine are one press. */}
+      {error && <LiveFailure message={error} kept={open === "back" || open === "pass" ? undefined : ""} />}
     </article>
   );
 }
@@ -305,6 +306,8 @@ function Partners({ churchId }: { churchId: Id<"churches"> }) {
   const relink = useAction(api.intakeActions.newPartnerLink);
   const revoke = useMutation(api.intakePartners.revoke);
   const { save, error, pending } = useSave();
+  // New link and Remove are one press with nothing typed, so their failure is said apart from the add form's.
+  const rowSave = useSave();
   const [link, setLink] = useState("");
   const show = (token: string) => setLink(`${window.location.origin}${words.locale === "es" ? "/ayuda" : "/help"}?p=${token}`);
   return (
@@ -314,10 +317,11 @@ function Partners({ churchId }: { churchId: Id<"churches"> }) {
       {partners?.map((partner) => (
         <div key={partner.id} className="web-partner">
           <span>{partner.name} · {partner.email} · {partner.language === "es" ? "Español" : "English"}{partner.active ? "" : ` · ${w.revoked}`}</span>
-          <Button type="button" variant="ghost" disabled={pending} onClick={() => void save(() => relink({ churchId, partnerId: partner.id })).then((done) => done.saved && show(done.result))}>{w.newLink}</Button>
-          {partner.active && <Button type="button" variant="ghost" disabled={pending} onClick={() => void save(() => revoke({ churchId, partnerId: partner.id }))}>{w.revoke}</Button>}
+          <Button type="button" variant="ghost" disabled={pending || rowSave.pending} onClick={() => void rowSave.save(() => relink({ churchId, partnerId: partner.id })).then((done) => done.saved && show(done.result))}>{w.newLink}</Button>
+          {partner.active && <Button type="button" variant="ghost" disabled={pending || rowSave.pending} onClick={() => void rowSave.save(() => revoke({ churchId, partnerId: partner.id }))}>{w.revoke}</Button>}
         </div>
       ))}
+      {rowSave.error && <LiveFailure message={rowSave.error} kept="" />}
       {link && <p className="web-link">{w.linkOnce} <code>{link}</code></p>}
       <form className="live-form" onSubmit={(event) => {
         event.preventDefault();

@@ -371,7 +371,7 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       brought: "Traída de registros anteriores; se pidió el {date}.",
       approvedBy: "Aprobada por {name} por {amount}. La tesorería le paga directamente a {payee}.",
       close: "Cerrar esta petición",
-      approve: "Aprobar petición",
+      approve: "Aprobar la petición",
       decline: "No aprobar la petición",
       change: "Cambiar la petición",
     },
