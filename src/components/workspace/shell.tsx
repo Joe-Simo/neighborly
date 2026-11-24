@@ -1011,8 +1011,9 @@ export function LiveWorkspace({
           open={!!release}
           onClose={() => leaveDialog(() => setRelease(null))}
           title={words.detail.changeTitle}
-          /* The date and hours are held on one line: a phone never leaves "7:00 a.m." alone under a dangling dash. */
-          description={<>{release && <>{sampleSaid(release.title)} · <span className="whitespace-nowrap">{when(release.start, release.end)}</span></>}</>}
+          /* The title and the date each keep a line of their own: a phone never leaves a "·" hanging at a line's end,
+             and the date and hours are held together, so "7:00 a.m." is never alone under a dangling dash. */
+          description={<>{release && <><span className="block">{sampleSaid(release.title)}</span><span className="block whitespace-nowrap">{when(release.start, release.end)}</span></>}</>}
         >
             <p>{sheets.release.body}</p>
             {saveFrom === "release" && error && (

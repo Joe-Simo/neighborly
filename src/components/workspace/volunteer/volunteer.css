@@ -304,3 +304,7 @@
 
 /* In the calendar sheet the dialog's own gap already stands between its title and the deck; the deck's top margin doubled it. */
 .mine-calendar-dialog .live-deck:first-child { margin-top: 0; }
+
+/* Cover requests ends on a hairline, as the list of days above it does, so "When you can help" opens a section of its own
+   instead of running on under the cover button. */
+.live-app .live-section.volunteer-cover-section { padding-bottom: var(--space-40); border-bottom: 1px solid var(--live-line); }

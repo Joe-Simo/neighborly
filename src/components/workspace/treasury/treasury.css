@@ -418,13 +418,17 @@
 }
 .treasury-gift-total {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
+  column-gap: 16px;
+  row-gap: 4px;
   align-items: baseline;
   margin: 0;
   font-size: 16px;
   color: #68715f;
 }
 .treasury-gift-total strong {
+  margin-inline-start: auto;
   font-family: "Newsreader", "Newsreader Fallback", Georgia, serif;
   font-weight: 400;
   font-size: 30px;

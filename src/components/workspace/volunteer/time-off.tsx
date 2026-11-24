@@ -57,7 +57,7 @@ export function TimeOffSection() {
           </LiveEmpty>
         )}
       </div>
-      <section className="live-section">
+      <section className="live-section volunteer-cover-section">
         <h2>{words.timeOff.coverTitle}</h2>
         <p className="live-deck">
           {words.timeOff.coverDeck}

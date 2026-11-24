@@ -159,7 +159,7 @@ function WebRow({ row, churchId, sample }: { row: Row; churchId: Id<"churches">;
         </div>
       )}
       {open === "back" && (
-        <form className="live-form" onSubmit={(event) => {
+        <form className="live-form web-back" onSubmit={(event) => {
           event.preventDefault();
           const reason = String(new FormData(event.currentTarget).get("reason") ?? "");
           void save(() => giveBack({ churchId, requestId: row.id, reason }));
