@@ -1917,6 +1917,3 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
   .live-app .live-page-head[data-work] .live-deck { min-height: 0; }
   .live-app .live-main .live-page-head[data-work] .live-kicker { margin-bottom: var(--space-8); }
 }
-@media (max-width: 699px) {
-  .live-app .live-page-head[data-work] .live-head-art { height: 96px; }
-}
