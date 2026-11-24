@@ -396,13 +396,16 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
       drawn = true;
     };
     const step = frameStep(read, tick);
+    let pause: (() => void) | undefined;
+    const settled = () => new Promise<void>(resolve => { pause = whenScrollStill(() => { pause = undefined; resolve(); }, { settle: 150, notBefore: 0, latest: Infinity }); });
 
     Promise.all([load("courtyard-plane-0-v1", true), load("courtyard-plane-1-v1", true), load("courtyard-plane-2-v1", true), load("courtyard-plane-3-v1", true), load("courtyard-plate-depth-v1", false), load("courtyard-plate-normal-v1", false), load("courtyard-figures-v1", true), load("courtyard-poses-idle-v1", true), load("courtyard-poses-answer-v1", true)]).then(async textures => {
       if (disposed) { textures.forEach(texture => texture.dispose()); return; }
       [uniforms.uMap.value, uniforms.uPlane1.value, uniforms.uPlane2.value, uniforms.uPlane3.value, uniforms.uDepth.value, uniforms.uNormal.value, uniforms.uFigures.value, uniforms.uIdle.value, uniforms.uAnswer.value] = textures;
       resize();
-      // Each painting is handed to the graphics card on its own frame, and the shader is prepared in the background, so arriving in the courtyard costs nothing.
-      for (const texture of textures) { await new Promise(requestAnimationFrame); if (disposed) return; renderer.initTexture(texture); if (texture.image instanceof ImageBitmap) texture.image.close(); }
+      // Each painting is handed to the graphics card on its own frame, and only while the page is still: one upload (and its mipmaps) mid-scroll
+      // held a phone's frame for 167ms. The shader is prepared in the background, so arriving in the courtyard costs nothing.
+      for (const texture of textures) { await settled(); if (disposed) return; renderer.initTexture(texture); if (texture.image instanceof ImageBitmap) texture.image.close(); }
       await renderer.compileAsync(scene, camera);
       if (disposed) return;
       // One frame is drawn before the layers are shown, so the program's first use and the textures' first sampling happen now, not on the walk.
@@ -418,6 +421,7 @@ function live(frame: HTMLDivElement, host: HTMLElement, paintingSelector: string
     return () => {
       disposed = true;
       step.drop();
+      pause?.();
       observer.disconnect();
       removeEventListener("pointermove", onPointer);
       removeEventListener("deviceorientation", onTilt);
