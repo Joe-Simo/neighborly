@@ -74,8 +74,8 @@ export function CommitmentRows({
                 <span className="live-commitment-time">{when(item.start, item.end)}</span>
               </div>
               <h3>{keepNames(sampleSaid(item.title))}</h3>
-              {/* Named only when this reader may see the person; never a bare role in their place. A row with nothing to say here keeps no empty line. */}
-              {((line) => line && <p>{line}</p>)([own ? "" : item.assigneeId ? (data.people.some((person) => person.id === item.assigneeId) ? personName(item.assigneeId) : "") : item.status === "cancelled" ? "" : words.commitments.placeOpen, item.location ? sampleSaid(item.location) : ""].filter(Boolean).join(" · "))}
+              {/* Named only when this reader may see the person; never a bare role in their place. A row with nothing to say here keeps no empty line. Each part keeps whole; on a phone each takes a line, so a wrap never strands the dot between them. */}
+              {((parts) => parts.length > 0 && <p className="live-commitment-who">{parts.map((part, index) => <span key={index}>{part}</span>)}</p>)([own ? "" : item.assigneeId ? (data.people.some((person) => person.id === item.assigneeId) ? personName(item.assigneeId) : "") : item.status === "cancelled" ? "" : words.commitments.placeOpen, item.location ? sampleSaid(item.location) : ""].filter(Boolean))}
             </div>
             <div className="live-row-actions">
               {/* An open place is said once, in the row's line; the status names anything else. */}

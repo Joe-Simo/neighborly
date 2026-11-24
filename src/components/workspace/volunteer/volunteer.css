@@ -161,9 +161,14 @@
 /* A span of dates breaks as two even lines, never leaving a year alone on the second. */
 .live-app .live-row > .volunteer-days { display: block; text-wrap: balance; }
 
-/* On a phone the date leaf stands at the top of its row, level with the name, not floating in the row's middle. */
-@media (max-width: 599px) {
-  .live-app .live-row.live-commitment-row > .live-date-leaf { align-self: start; margin-top: var(--space-8); }
+/* At every width the date leaf stands at the top of its row, level with the name, not floating in the row's middle:
+   a title that wraps to two lines would otherwise drop its date below the name. */
+.live-app .live-row.live-commitment-row > .live-date-leaf { align-self: start; margin-top: var(--space-8); }
+/* Who goes and where: one line joined by a dot; on a phone each takes a line of its own, so no dot is left at a line's end. */
+.live-app .live-commitment-who > span + span::before { content: " · " / ", "; }
+@media (max-width: 560px) {
+  .live-app .live-commitment-who { display: grid; gap: 2px; }
+  .live-app .live-commitment-who > span + span::before { content: "" / ", "; }
 }
 /* Where each week begins in the Commitments list: plain words before its first row, no rule, no colour. */
 .live-app .live-list > .live-week-label { margin: 0; padding: var(--space-24) 0 var(--space-8); font-size: 13px; font-weight: 600; line-height: 1.2; letter-spacing: 0.08em; text-transform: uppercase; color: var(--live-muted); }
