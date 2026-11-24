@@ -80,3 +80,6 @@
 .web-requests .web-row .web-pass { margin-top: var(--space-24, 24px); }
 .web-requests .web-pass fieldset { border: 0; padding: 0; margin: 0; }
 .web-requests .web-pass legend { margin-bottom: 4px; font-size: 15px; font-weight: 600; line-height: 1.5; }
+/* Return it opens a breath below Keep it / Return it, and the row's other buttons stand clear of its Cancel. */
+.web-requests .web-row .web-back { margin-top: var(--space-24, 24px); }
+.web-requests .web-row .web-back + .live-row-actions { margin-top: var(--space-24, 24px); }
