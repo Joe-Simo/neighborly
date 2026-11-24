@@ -549,7 +549,10 @@ function happened(event: Record["history"][number], now: number, words: Words) {
         kind: "visit",
         what: text.visit,
         // Each name whole, as it was written; no one went means nothing is said.
-        who: event.who.length ? event.who.reduce((first, second) => fill(text.pair, { first, second })) : "",
+        // Three or more read as a list ("Ana, Luis and Rosa"), never "Ana and Luis and Rosa".
+        who: event.who.length > 1
+          ? fill(text.pair, { first: event.who.slice(0, -1).join(", "), second: event.who.at(-1)! })
+          : (event.who[0] ?? ""),
         found: event.note,
       };
     case "call":
