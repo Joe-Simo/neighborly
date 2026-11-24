@@ -21,6 +21,7 @@ export function LiveCommitmentEditor({
   saving,
   error,
   save,
+  onBack,
 }: {
   item: LiveCommitment;
   timeZone: string;
@@ -32,6 +33,8 @@ export function LiveCommitmentEditor({
   save: (
     command: Extract<LiveCommand, { type: "reviseCommitment" }>,
   ) => Promise<void>;
+  /** Cancel returns to the sheet the editor was opened from, when there is one, rather than to the page. */
+  onBack?: () => void;
 }) {
   const { words } = useWorkspace();
   const text = words.rooms.sheets.edit;
@@ -157,7 +160,13 @@ export function LiveCommitmentEditor({
       </LiveField>
       {/* The sheet's own footer, as every other sheet in the room ends: a way out, then the one step forward. */}
       <div className="live-form-actions">
-        <SheetCancel disabled={pending} />
+        {onBack ? (
+          <Button type="button" variant="ghost" disabled={pending} onClick={onBack}>
+            {words.shell.cancel}
+          </Button>
+        ) : (
+          <SheetCancel disabled={pending} />
+        )}
         <Button type="submit" disabled={pending}>{text.review}</Button>
       </div>
     </form>

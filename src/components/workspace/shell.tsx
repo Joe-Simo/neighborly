@@ -983,6 +983,12 @@ export function LiveWorkspace({
                     sheets.edit.done,
                   )
                 }
+                onBack={() => leaveDialog(() => {
+                  const item = editingCommitment;
+                  setEditingCommitment(null);
+                  setError("");
+                  setSelectedCommitment(data.commitments.find((one) => one.id === item.id) ?? item);
+                })}
               />
             )}
         </LiveDialog>
