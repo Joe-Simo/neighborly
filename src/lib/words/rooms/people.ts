@@ -44,6 +44,8 @@ const en = (t: Terms, place: string) => ({
     kept: "Nothing was removed.",
     removing: "Removing…",
     confirm: "Remove this person",
+    /** The saved line once they are gone. */
+    done: (name: string) => `${name} was removed for good.`,
   },
   /** Under the count on its slip: the people who can be asked to serve, the figure standing apart. */
   readyCount: (count: number): string => (count === 1 ? "ready to serve" : "ready to serve"),
@@ -210,6 +212,7 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => {
       kept: "No se quitó nada.",
       removing: "Quitando…",
       confirm: "Quitar a esta persona",
+      done: (name) => `Se quitó a ${name} para siempre.`,
     },
     readyCount: (count) => (count === 1 ? "puede servir" : "pueden servir"),
     invitations: {

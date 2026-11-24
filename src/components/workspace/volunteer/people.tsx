@@ -39,7 +39,7 @@ function Address({ email, oneLine }: { email: string; oneLine?: boolean }) {
 /** The second step of removing someone for good: what goes, what stays, and their name typed before the button wakes. */
 function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceData["people"][number]; churchId: LiveWorkspaceData["church"]["id"]; onClose: () => void }) {
   const remove = useMutation(api.people.remove);
-  const { words } = useWorkspace();
+  const { words, offerUndo, focusOutcome } = useWorkspace();
   const text = peopleWords(words).remove;
   const [typed, setTyped] = useState("");
   const [busy, setBusy] = useState(false);
@@ -59,6 +59,9 @@ function RemoveForGood({ person, churchId, onClose }: { person: LiveWorkspaceDat
           try {
             await remove({ churchId, personId: person.id, typedName: typed });
             onClose();
+            // Their row is gone with them: the saved line says so, and takes the focus the closed sheet leaves.
+            offerUndo(text.done(person.name));
+            focusOutcome();
           } catch (cause) {
             setFailed(sayFailure(words.notices,cause, text.failed, words.states.offlineSave));
             setBusy(false);

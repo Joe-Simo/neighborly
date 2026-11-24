@@ -44,8 +44,9 @@ export type Workspace = {
   /**
    * Lays the workspace's saved line with a way back on it, for an act a room took itself and then left (a visit
    * called off from its own page). The line stays ten seconds, and as long as a hand or the focus is on it.
+   * With no `back`, the line only says what was done: for an act that cannot be taken back.
    */
-  offerUndo: (said: string, back: WayBack) => void;
+  offerUndo: (said: string, back?: WayBack) => void;
   openAction: (kind: ActionKind) => void;
   showCommitment: (item: LiveCommitment, trigger: HTMLButtonElement) => void;
   confirm: (confirmation: LiveConfirmation) => void;
