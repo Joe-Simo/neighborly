@@ -100,12 +100,15 @@ function StillCovered({
   covered,
   kept,
   onPage = false,
+  under = false,
 }: {
   covered: Covered;
   /** The second line: what is still as it was. */
   kept: string;
   /** On the record itself the notice stands clear of what is above it; a dialog spaces its own pieces. */
   onPage?: boolean;
+  /** Said while the saved line stands over the top of the page: brought to the middle, so the line never covers it. */
+  under?: boolean;
 }) {
   const notice = useRef<HTMLDivElement>(null);
   // Before it is first painted, so it is never seen at full height first.
@@ -114,7 +117,9 @@ function StillCovered({
   }, []);
   useEffect(() => {
     notice.current?.focus({ preventScroll: true });
-    notice.current?.scrollIntoView({ block: "nearest" });
+    notice.current?.scrollIntoView({ block: under ? "center" : "nearest" });
+    // Each new try, as the notice is said again.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [covered.tries]);
   return (
     <div
@@ -322,7 +327,7 @@ export function NeighborRecord({
   return (
     <>
       {undoRefused && (
-        <StillCovered covered={undoRefused} kept={text.undoKept} />
+        <StillCovered covered={undoRefused} kept={text.undoKept} under />
       )}
       {done && (
         <HelpDone
