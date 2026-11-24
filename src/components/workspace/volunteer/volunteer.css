@@ -301,3 +301,6 @@
 @media (max-width: 699px) {
   .live-app .live-main:has(.volunteer-tasks-list) > .live-success.help-done { margin-bottom: var(--space-24); }
 }
+
+/* In the calendar sheet the dialog's own gap already stands between its title and the deck; the deck's top margin doubled it. */
+.mine-calendar-dialog .live-deck:first-child { margin-top: 0; }

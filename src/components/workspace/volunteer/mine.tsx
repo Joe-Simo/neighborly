@@ -41,7 +41,7 @@ export function MineSection() {
         </p>}
       </section>
       {calendar && (
-        <LiveDialog title={words.mine.addToCalendar} onClose={() => setCalendar(false)}>
+        <LiveDialog className="mine-calendar-dialog" title={words.mine.addToCalendar} onClose={() => setCalendar(false)}>
           <CalendarAddress titled={false} />
         </LiveDialog>
       )}
