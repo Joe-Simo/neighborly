@@ -87,3 +87,6 @@
 .web-requests .web-more > [data-slot="button"] { justify-self: start; align-self: flex-start; width: fit-content; }
 .web-requests .web-days { display: grid; gap: var(--space-8, 8px); margin: 0; padding: 0; list-style: none; }
 .web-requests .web-days > li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-8, 8px) var(--space-16, 16px); }
+/* A new partner link stands as one more line of the list, with the list's hairline and room above and below. */
+.web-requests .web-link { margin: 0; padding: 12px 0; border-top: 1px solid var(--live-line, #ddd6c6); line-height: 1.5; }
+.web-requests .web-link code { font-size: 0.9em; }
