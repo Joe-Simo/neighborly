@@ -111,7 +111,7 @@ const en = (t: Terms, place: string) => ({
     },
     meetingNote: `Everyone in the ${t.group} will be invited. Each person chooses whether to attend.`,
     timeOff: { note: "Note (optional)", noteHelp: "Only include what your coordinators need to know." },
-    task: { due: "Due (optional)", owner: "Owner", unassigned: "Unassigned" },
+    task: { due: "Due (optional)", owner: "Who does it", unassigned: "Unassigned" },
   },
   /** The commitment sheet, as its team's coordinator sees it. */
   commitment: {
