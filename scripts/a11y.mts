@@ -1,4 +1,4 @@
-// `bun run a11y`: axe (WCAG 2.1 A and AA, and best practice) on the sign-in page and every room of the sample
+// `bun run a11y`: axe (WCAG 2.2 A and AA, and best practice) on the sign-in page and every room of the sample
 // conference, at 1440 wide, at 390 wide (a phone), and at 1440 with the page zoomed to 200%. Each room is also
 // walked with Tab: every stop must have a name. It runs against a dev server you have started (`bun run dev`, with
 // your own .env.local); it reads no keys itself and prints none. It enters the sample through its own door, as a
@@ -26,7 +26,7 @@ declare const axe: { run: (scope: Document, options: object) => Promise<{ violat
 async function check(page: Page, where: string) {
   await page.addScriptTag({ content: axeSource });
   const violations = await page.evaluate(async () =>
-    (await axe.run(document, { runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"] } })).violations.map(
+    (await axe.run(document, { runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"] } })).violations.map(
       (found) => `${found.id} (${found.impact}): ${found.nodes.slice(0, 3).map((node) => node.target.join(" ")).join(", ")}`,
     ),
   );

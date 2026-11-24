@@ -10,7 +10,7 @@ const esN = counter("es");
  * places (`{name}`) filled by `fill` (../fill.ts). Nothing is joined from pieces on the screen.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- every room's table is given the place; this room names the group instead
-export const en = (t: Terms, place: string) => ({
+const en = (t: Terms, place: string) => ({
   /** The room's own name for its first screen: the way back from the bank and the shelf. */
   ledgerName: "Ledger",
   record: "Record money",
@@ -294,7 +294,7 @@ export const en = (t: Terms, place: string) => ({
 
 /** Spanish. Written without a native speaker's review; one is still owed. */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- every room's table is given the place; this room names the group instead
-export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
+const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   ledgerName: "Libro",
   record: "Anotar dinero",
   cancel: "Cancelar",

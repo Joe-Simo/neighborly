@@ -12,7 +12,7 @@ const esN = counter("es");
  * are in every language.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- every room's table is given the place; this room does not name it
-export const en = (t: Terms, place: string) => ({
+const en = (t: Terms, place: string) => ({
   /** What every spreadsheet coming in says: the chooser, the sheet that waits for a yes, the lines left out. */
   sheet: {
     chooseFile: "Choose a CSV file",
@@ -202,7 +202,7 @@ export const en = (t: Terms, place: string) => ({
 
 /** Spanish. Written without a native speaker's review; one is still owed. */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- every room's table is given the place; this room does not name it
-export const es = (t: Terms, place: string): ReturnType<typeof en> => {
+const es = (t: Terms, place: string): ReturnType<typeof en> => {
   return {
     sheet: {
       chooseFile: "Elegir un archivo CSV",

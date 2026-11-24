@@ -7,7 +7,7 @@ import type { Terms } from "../sets";
  * places (`{name}`) filled by `fill` (../fill.ts). Nothing is joined from pieces on the screen.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- every room's table is given the place; this room does not name it
-export const en = (t: Terms, place: string) => ({
+const en = (t: Terms, place: string) => ({
   /** The owner's sheet for one person: ready to serve, access, and removing them for good. */
   manage: {
     open: (name: string) => `Manage ${name}`,
@@ -156,7 +156,7 @@ export const en = (t: Terms, place: string) => ({
 
 /** Spanish. Written without a native speaker's review; one is still owed. */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- every room's table is given the place; this room does not name it
-export const es = (t: Terms, place: string): ReturnType<typeof en> => {
+const es = (t: Terms, place: string): ReturnType<typeof en> => {
   // The group's word has its own gender, so the words around it are chosen with it: "esta conferencia", "este grupo".
   const feminine = t.group.endsWith("a");
   const thisGroup = feminine ? `esta ${t.group}` : `este ${t.group}`;

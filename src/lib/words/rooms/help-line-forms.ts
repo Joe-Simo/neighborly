@@ -10,7 +10,7 @@ const esN = counter("es");
  * places (`{name}`) filled by `fill` (../fill.ts). Nothing is joined from pieces on the screen.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- every room's table is given the place; no line here names it
-export const en = (t: Terms, place: string) => ({
+const en = (t: Terms, place: string) => ({
   /** Logging a call, and saying what came of calling back. */
   call: {
     name: "Name",
@@ -147,7 +147,7 @@ export const en = (t: Terms, place: string) => ({
 
 /** Spanish. Written without a native speaker's review; one is still owed. */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- as above
-export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
+const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   call: {
     name: "Nombre",
     phone: "Teléfono",
