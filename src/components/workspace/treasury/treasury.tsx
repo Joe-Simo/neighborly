@@ -436,7 +436,7 @@ export function TreasurySection() {
                           memo,
                         });
                   },
-                  fill(what.direction === "out" ? w.done.moneyOut : w.done.moneyIn, { amount: formatFigure(amount), name: name.trim() }),
+                  fill(what.direction === "out" ? w.done.moneyOut : what.kind === "opening" ? w.done.opening : w.done.moneyIn, { amount: formatFigure(amount), name: name.trim() }),
                   date,
                   takeBack(amount),
                 )

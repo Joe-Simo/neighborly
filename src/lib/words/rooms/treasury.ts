@@ -59,6 +59,8 @@ const en = (t: Terms, place: string) => ({
     /** {name} stays exactly as the treasurer typed it. */
     moneyOut: "{amount} to {name} recorded. The balance is up to date.",
     moneyIn: "{amount} from {name} recorded. The balance is up to date.",
+    /** The opening balance comes from no one: {name} is where the money is held. */
+    opening: "Opening balance of {amount} in {name} recorded. The ledger starts from it.",
     deposit: (amount: string) => `A deposit of ${amount} is recorded. It will wait in Match the bank until the statement shows it.`,
     reversed: (amount: string) => `${amount} is taken back with a new entry dated today. The first entry stays in the ledger.`,
     /** The reason written on the entry that takes back one undone right after it was recorded. */
@@ -340,6 +342,7 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     // Said the same for $1 and $25: "anotado" agrees with the amount as one sum, not with the number of dollars.
     moneyOut: "Anotado: {amount} para {name}. El saldo está al día.",
     moneyIn: "Anotado: {amount} de {name}. El saldo está al día.",
+    opening: "Anotado el saldo inicial: {amount} en {name}. El libro empieza desde aquí.",
     deposit: (amount) => `Quedó anotado un depósito de ${amount}. Esperará en Comparar con el banco hasta que el estado de cuenta lo muestre.`,
     reversed: (amount) => `${amount} se anulan con un movimiento nuevo con fecha de hoy. El primer movimiento se queda en el libro.`,
     undoneReason: "Deshecho justo después de anotarse.",
