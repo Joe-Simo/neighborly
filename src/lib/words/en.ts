@@ -255,7 +255,7 @@ export function en(set: WordSet) {
       coverStopped: "Cover requests stopped.",
       emptyTitle: "Every day is open.",
       emptyDetail:
-        "Add the dates you won’t be available.",
+        "Use Plan time off to add the dates you won’t be available.",
       coverTitle: "Cover requests",
       coverDeck:
         "Choose whether coordinators may ask you to cover an open commitment. Every request still needs your acceptance.",

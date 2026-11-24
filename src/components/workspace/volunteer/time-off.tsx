@@ -51,7 +51,7 @@ export function TimeOffSection() {
               </div>
             ))
         ) : (
-          // The head carries "Plan time off": the empty state does not ask twice.
+          // The head carries "Plan time off": the empty state names it rather than adding a second button.
           <LiveEmpty title={words.timeOff.emptyTitle}>
             {words.timeOff.emptyDetail}
           </LiveEmpty>

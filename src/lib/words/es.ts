@@ -246,9 +246,9 @@ export function es(set: WordSet): Words {
       availabilityAdded: "Fechas disponibles agregadas.",
       coverStarted: "Ahora los coordinadores pueden pedirte que cubras.",
       coverStopped: "Ya no recibirás peticiones para cubrir.",
-      emptyTitle: "Todos tus días están libres.",
+      emptyTitle: "No tienes días libres anotados.",
       emptyDetail:
-        "Agrega las fechas en que no estarás.",
+        "Usa Planear días libres para anotar las fechas en que no estarás.",
       coverTitle: "Peticiones para cubrir turnos",
       coverDeck:
         "Decide si los coordinadores pueden pedirte que cubras un compromiso libre. Cada petición necesita tu sí.",
