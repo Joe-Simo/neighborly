@@ -313,7 +313,7 @@ function VisitSheetView({
           )}
           {onPrintRequest && (
             <Button variant="link" className="visits-quiet-link" onClick={onPrintRequest}>
-              {words.locale === "es" ? "Imprimir petición" : "Print request"}
+              {text.printRequest}
             </Button>
           )}
         </div>
