@@ -1098,11 +1098,16 @@ export function createPaintedWorld(stage: PaintedStage, options: PaintedWorldOpt
     };
     const pictures = new Set<T.Texture>();
     for (const surface of openingMaterials.keys()) for (const value of Object.values(surface)) if (value instanceof T.Texture && value.image) pictures.add(value);
+    // On this page's own thread a picture goes up only while the page is still: one upload mid-scroll held a phone's frame for 167ms.
+    // In a worker the page's scroll is never held, so each goes up on the next turn.
+    const settled = () => typeof window === "undefined"
+      ? new Promise<void>((next) => setTimeout(next))
+      : import("./scroll-still").then(({ whenScrollStill }) => new Promise<void>((next) => { whenScrollStill(next, { settle: 150, notBefore: 0, latest: Infinity }); }));
     void (async () => {
       for (const picture of pictures) {
+        await settled();
         if (disposed || revision !== openingLoadRevision) return;
         renderer.initTexture(picture);
-        await new Promise<void>((next) => setTimeout(next));
       }
       await renderer.compileAsync(model, camera, scene);
     })().then(show, show);
