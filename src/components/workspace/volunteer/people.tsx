@@ -278,7 +278,25 @@ export function PeopleSection() {
                     </div>
                     <div className="live-row-actions">
                       {expired && (
-                        <Button variant="ghost" size="sm" data-opens="" disabled={pending} onClick={() => openAction("invite")}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          data-opens=""
+                          disabled={pending}
+                          aria-label={text.invitations.sendNewLabel(invite.email)}
+                          onClick={() => {
+                            // The address and role are known: a new link to the same person is one press and a yes, not a form typed again.
+                            if (invite.role !== "member" && invite.role !== "coordinator") return openAction("invite");
+                            setConfirmation({
+                              title: text.invitations.sendNewTitle(invite.email),
+                              body: text.invitations.sendNewBody[invite.role],
+                              action: text.invitations.sendNewAction,
+                              command: { type: "invite", email: invite.email, role: invite.role },
+                              // An invitation says its own line (made, and whether its email went), so this is never shown.
+                              done: sheets.invite.queued,
+                            });
+                          }}
+                        >
                           {text.invitations.sendNew}
                         </Button>
                       )}
