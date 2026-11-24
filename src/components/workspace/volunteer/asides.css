@@ -32,7 +32,8 @@
 .live-aside-sheet .volunteer-key li { display: inline-flex; align-items: center; gap: var(--space-8) 8px; }
 .live-aside-sheet i[data-mark] { display: inline-block; flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; }
 .live-aside-sheet i[data-mark="away"], .live-aside-sheet i[data-mark="covered"] { background: var(--live-ink); }
-.live-aside-sheet i[data-mark="offered"] { width: 18px; height: 10px; border-radius: 5px; background: #e9eddf; box-shadow: inset 0 0 0 1px #c9d2b8; }
+/* The key draws the band as the calendar draws it: an outline here read as a different mark from the borderless band. */
+.live-aside-sheet i[data-mark="offered"] { width: 18px; height: 10px; border-radius: 5px; background: #e9eddf; }
 .live-aside-sheet i[data-mark="today"] { border: 1px solid var(--live-ink); }
 .live-aside-sheet i[data-mark="open"] { border: 2px solid #a8791f; }
 

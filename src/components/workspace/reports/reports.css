@@ -238,6 +238,11 @@
   .report-year > div:not(:first-child) dd { grid-row: 3; padding: var(--space-32) 6px 0; justify-content: center; }
   .report-year > div:not(:first-child) dt { grid-row: 4; padding: var(--space-8) 4px 0; text-align: center; justify-self: center; }
 }
+/* Beside its three slips the figure has the room less the slips' ~430px: a long year sets smaller there, so its pile
+   never runs under the first slip (each figure is about half an em wide). */
+@container (min-width: 901px) {
+  .report-year-paid > .report-year-pile { font-size: min(124px, 20.5vw, (100cqi - 430px) / (0.5 * var(--figure-length, 7))); }
+}
 @media (prefers-reduced-motion: reduce) { .report-year-figure, .report-stack i, .report-year dd b { animation: none; } .report-stack i { transition: none; } }
 @media print { .report .report-year { display: none; } }
 
@@ -760,7 +765,7 @@
 
 /* Room for the longest small line ("21 vouchers given, worth $810 · 78 people") on one line, in every bar row alike. */
 @media screen and (min-width: 1100px) {
-  .report .help-bars li { grid-template-columns: 330px minmax(0, 1fr) 120px; }
+  .report .help-bars li { grid-template-columns: 330px minmax(0, 1fr) minmax(120px, auto); }
 }
 
 /* A count-only row draws no bar: a count is not on the dollar scale. */
@@ -1067,6 +1072,8 @@
 .council-form > :is(h3, p, [role="alert"]) { flex: 1 0 100%; }
 .council-form > h3 + p { margin-top: calc(var(--space-8) * -1); }
 .council-form .live-field { margin: 0; }
+/* The button beside the code field stands as tall as the field, so their tops and bottoms meet. */
+.council-form > [data-slot="button"] { height: 46px; }
 .council-list { list-style: none; margin: var(--space-8) 0; padding: 0; }
 .council-list li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-8); padding: var(--space-8) 0; border-bottom: 1px solid var(--live-line); color: var(--live-ink); }
 .council-list small { color: var(--live-muted); }
