@@ -109,7 +109,7 @@ p.tools-quiet { margin: var(--space-16) 0 0; }
 
 /* Your files, in paper: each thing to bring in is a leaf of paper; the one in use opens across the page. */
 .tools-leaves { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-24) 22px; margin-top: var(--space-40); }
-/* A leaf that keeps a list (the agencies, the conference's files) is as tall as what it holds: set beside a longer one
+/* A leaf that keeps a list (the agencies, the conference’s files), or the doubles check with nothing found, is as tall as what it holds: set beside a longer one
    it ends under its own last line, not stretched to its neighbour's height as empty paper. */
 .tools-leaf-list { align-self: start; }
 .tools-leaf { display: flex; flex-direction: column; min-width: 0; padding: var(--space-32) 30px var(--space-24); background: var(--relief-paper); border: 1px solid var(--relief-edge); border-radius: 3px; box-shadow: var(--relief-card); }
