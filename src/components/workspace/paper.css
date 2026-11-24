@@ -1904,3 +1904,19 @@ html:not([data-live-keys]) :is(.live-app, .live-dialog, .live-mobile-menu) :is(i
 /* A calendar opened in place on the page sits inside the room, whose tables pad and rule every cell: the
    calendar's own days take none of that, so on a phone its seven columns fit the screen and no rule runs between weeks. */
 .live-app .live-date-sheet .rdp-month_grid :is(td, th) { padding: 0; border: 0; }
+
+/* The side menu in three clusters (navigation.ts group): the week, the help-side work, the conference's people. */
+.live-nav a[data-group] { margin-top: var(--space-16); }
+
+/* Work rooms (help line, neighbors, visits, treasury, reports, files) are returned to many times a day: the head keeps
+   its picture, type and paper, at a height that leaves the queue or the year's totals in the first window. */
+.live-app .live-page-head[data-work] { margin-bottom: var(--space-24); padding-bottom: var(--space-24); }
+@media (min-width: 700px) {
+  .live-app .live-main .live-page-head[data-work] { min-height: clamp(176px, 13vw, 216px); }
+  .live-app .live-page-head[data-work] h1 { --head-size: clamp(36px, 3.4vw, 52px); }
+  .live-app .live-page-head[data-work] .live-deck { min-height: 0; }
+  .live-app .live-main .live-page-head[data-work] .live-kicker { margin-bottom: var(--space-8); }
+}
+@media (max-width: 699px) {
+  .live-app .live-page-head[data-work] .live-head-art { height: 96px; }
+}

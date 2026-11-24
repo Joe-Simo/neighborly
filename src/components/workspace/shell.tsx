@@ -714,9 +714,10 @@ export function LiveWorkspace({
           <span className="live-nav-marker" aria-hidden="true" />
           <p className="live-church-name" data-sample={data.church.sample ? "" : undefined}>{churchName}</p>
           {data.church.sample && <NavSampleMark text={words.shell.sampleMark} />}
-          {menuItems.map(({ id, label, icon: Icon }) => (
+          {menuItems.map(({ id, label, icon: Icon, ...line }, index) => (
             <Link
               key={id}
+              data-group={index > 0 && "group" in line ? "" : undefined}
               href={`/app/${id}`}
               scroll={false}
               aria-current={menuArea === id ? "page" : undefined}
@@ -752,7 +753,7 @@ export function LiveWorkspace({
               <span className="text-balance">{words.states.opening}</span>
             </p>
           )}
-          <div className="live-page-head" data-rested={rested ? "" : undefined} data-plain={heading.art ? undefined : ""}>
+          <div className="live-page-head" data-work={navigation.some((item) => item.id === area && "leadersOnly" in item) ? "" : undefined} data-rested={rested ? "" : undefined} data-plain={heading.art ? undefined : ""}>
             {heading.art && (
               <div className="live-head-art" data-area={area} data-ready={pictured === area ? "" : undefined}>
                 <ArrivingRelief key={heading.art.picture} name={heading.art.picture} focus={heading.art.focus} band={heading.art.band} onReady={picturedNow} />

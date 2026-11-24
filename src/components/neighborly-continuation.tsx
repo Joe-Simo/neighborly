@@ -95,7 +95,12 @@ export function NeighborlyContinuation() {
       {/* Whose it is, and where it lives: plain facts, each backed in claims-audit.md. Still paper, no picture. */}
       <div className="neighborly-trust" role="region" aria-labelledby="trust-title">
         <h2 id="trust-title">Whose it is, and where it lives.</h2>
-        <p>Kind Helps is independent and free, and it is not affiliated with the Society of St. Vincent de Paul. Only people invited into a conference can see its work, and a neighbor’s record opens only to the owner and coordinators. A neighbor’s name, phone and address are taken out before anything reaches the assistant, and no request is saved without a person’s yes. The owner can download all of the conference’s records at any time.</p>
+        <dl>
+          <div><dt>Independent and free</dt><dd>Not affiliated with the Society of St. Vincent de Paul.</dd></div>
+          <div><dt>Only your conference</dt><dd>Only people invited in see its work. A neighbor’s record opens only to the owner and coordinators.</dd></div>
+          <div><dt>Names stay out of the assistant</dt><dd>A neighbor’s name, phone and address are taken out first, and no request is saved without a person’s yes.</dd></div>
+          <div><dt>Yours to take</dt><dd>The owner can download all of the conference’s records at any time.</dd></div>
+        </dl>
         <Link href="/privacy">Privacy</Link>
       </div>
       <ClosingBand />

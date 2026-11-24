@@ -263,7 +263,7 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
           <p className={heroOnly ? "painted-world-description painted-world-slogan" : "painted-world-description"}>{chapter.copy}</p>
           </div>
           {/* On the first frame it says what Kind Helps is, with a quiet way into the sample. */}
-          {heroOnly && <p className="painted-world-description painted-world-what">A free app for St. Vincent de Paul conferences: the help line, home visits in pairs, the ledger and the yearly report. <SampleLink className="painted-world-sample" prefetch={false}>Try the sample week</SampleLink></p>}
+          {heroOnly && <p className="painted-world-description painted-world-what">A free app for St. Vincent de Paul conferences: the help line, home visits in pairs, the ledger and the yearly report. <SampleLink className="painted-world-sample" prefetch={false}>Look around a sample conference</SampleLink></p>}
           {heroOnly && <nav className="painted-world-opening-actions" aria-label="Explore Kind Helps">
             <a className="painted-world-primary-invitation" href="#neighborly-courtyard" onClick={event => { if (passed && onContinue) { event.preventDefault(); onContinue(); } else if (!passed && onPass) { event.preventDefault(); onPass(); } }}>{passed || !onPass ? "Go through the doors" : "Pass the card"}</a>
             <Link href="/app?intent=start">Start your conference <ArrowUpRight size={15} aria-hidden="true" /></Link>

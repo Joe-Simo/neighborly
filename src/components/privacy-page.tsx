@@ -12,7 +12,6 @@ import { privacyWords, type PublicWords } from "@/lib/privacy-words";
 import { accessibilityWords } from "@/lib/accessibility-words";
 import { languages, type Language } from "@/lib/words";
 import "@/components/public-page.css";
-import { CutHead } from "@/components/cut-heads";
 
 /** The browser's own bar takes the colour of the desk the page opens on, so no lighter band stands over it. */
 export const privacyViewport: Viewport = { colorScheme: "light", themeColor: "#e6decb", viewportFit: "cover" };
@@ -46,13 +45,13 @@ export function PrivacyPage({ language, book = privacyWords }: { language: Langu
       {said.translated && <p className="public-words-note">{said.translated[0]}<Link href={book.en.path} hrefLang="en">{said.translated[1]}</Link>{said.translated[2]}</p>}
       <div className="public-words-relief" aria-hidden="true" />
       {said.sections.map(({ title, blocks }) => <section key={title}>
-        <CutHead>{title}</CutHead>
+        <h2>{title}</h2>
         <div>{blocks.map((block) => typeof block === "string"
           ? <p key={block}>{block}</p>
           : <ul key={block[0][0]}>{block.map(([lead, rest]) => <li key={lead}><strong>{lead}</strong> {rest}</li>)}</ul>)}</div>
       </section>)}
       <section>
-        <CutHead>{said.questions.title}</CutHead>
+        <h2>{said.questions.title}</h2>
         <div>
           <p>{said.questions.before}<a className="public-words-address" href="https://github.com/Joe-Simo/neighborly" target="_blank" rel="noopener noreferrer">github.com/Joe-Simo/neighborly<span className="sr-only"> {said.questions.newTab}</span></a>{said.questions.after}</p>
           <p className="public-words-last">{said.questions.independent}</p>
