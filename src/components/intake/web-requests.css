@@ -74,3 +74,5 @@
 .web-requests .web-partners > .live-form { margin-top: 0; padding-top: var(--space-16, 16px); border-top: 1px solid var(--live-line, #ddd6c6); }
 /* The sample's lead line stands clear of the list's top rule, as a section head does: the rule never hugs the words. */
 .web-requests .web-area:has(> p:only-child) + .live-list { margin-top: var(--space-16, 16px); }
+/* Limits and holidays opens under the area's buttons with a breath, so its first label never sits on them. */
+.web-requests .web-area + .web-more { margin-top: var(--space-24, 24px); }
