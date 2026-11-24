@@ -243,7 +243,7 @@ export function en(set: WordSet) {
       thisMonth: "This month",
       away: "Away",
       canHelp: "Can help",
-      note: "Time off does not remove you from your teams. Existing commitments need a separate change so everyone knows what is covered.",
+      note: "Time off does not remove you from your teams. Before you save, you see which of your commitments fall on those days; only those are released, so coordinators know what needs cover.",
       remove: "Remove time off",
       removeDates: "Remove these dates",
       removed: "Time off removed.",

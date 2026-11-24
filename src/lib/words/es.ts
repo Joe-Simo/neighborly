@@ -236,7 +236,7 @@ export function es(set: WordSet): Words {
       thisMonth: "Este mes",
       away: "Día libre",
       canHelp: "Puedes ayudar",
-      note: "Los días libres no te sacan de tus equipos. Los compromisos que ya tienes se cambian aparte, para que todos sepan qué está cubierto.",
+      note: "Los días libres no te sacan de tus equipos. Antes de guardar, ves cuáles de tus compromisos caen en esos días; solo esos se liberan, para que los coordinadores sepan qué falta cubrir.",
       remove: "Quitar días libres",
       removeDates: "Quitar estas fechas",
       removed: "Días libres quitados.",
