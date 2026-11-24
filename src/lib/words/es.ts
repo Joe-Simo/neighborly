@@ -213,6 +213,9 @@ export function es(set: WordSet): Words {
       accepted: "Compromiso aceptado. Ya está en tu lista.",
       acceptedUnder: (place: string) => `Compromiso aceptado. Está en ${place}.`,
       declined: "Petición rechazada. No se agregó nada a tu lista.",
+      declineTitle: "¿Rechazar esta petición?",
+      declineAction: "Rechazar petición",
+      declineBody: (what: string) => `${what} no se agregará a tu lista. Una vez rechazada, esta petición no se puede aceptar después.`,
     },
     detail: {
       cancelled:

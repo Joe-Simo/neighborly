@@ -228,6 +228,7 @@ export function IncomingRequests({
     perform,
     when,
     showCommitment,
+    confirm,
     words,
     sampleSaid,
     keepNames,
@@ -247,18 +248,16 @@ export function IncomingRequests({
       ? [given, ...incoming]
       : incoming;
   const statuses: Partial<Record<string, string>> = words.commitments.status;
-  const respond = async (request: CoverRequest, accept: boolean, pressed: HTMLButtonElement) => {
+  const accept = async (request: CoverRequest, pressed: HTMLButtonElement) => {
     // Nothing here is green yet. The request and its commitment are only held where they are, so that when the
     // save lands (the data changes a moment before `perform` answers) the row does not leave the sheet or show up
     // in the list below ahead of the beat. Offline the save is only queued and `perform` does not answer: the
     // buttons stay, asleep, and the row says it is waiting.
-    if (accept) {
-      setGiven(request);
-      onGiven?.(request.commitmentId);
-    }
+    setGiven(request);
+    onGiven?.(request.commitmentId);
     setSent(request.id);
     setSaid(undefined);
-    const done = await perform({ type: "respondCover", requestId: request.id, accept });
+    const done = await perform({ type: "respondCover", requestId: request.id, accept: true });
     setSent(undefined);
     if (!done) {
       setGiven(undefined);
@@ -267,7 +266,6 @@ export function IncomingRequests({
       focusOnceAwake(pressed);
       return;
     }
-    if (!accept) return setSaid({ words: words.requests.declined, of: request.id });
     // Saved: now the corner folds green and the word reads accepted, and the beat starts from this moment.
     setSaved(request.id);
     await new Promise((settle) => setTimeout(settle, FOLD_HOLD));
@@ -292,6 +290,15 @@ export function IncomingRequests({
     await foldLeaves();
     flushSync(() => setGiven(undefined));
   };
+  // A no cannot be taken back (the request can't be accepted after), so it is asked once more first.
+  const decline = (request: CoverRequest, item: { title: string } | undefined) =>
+    confirm({
+      title: words.requests.declineTitle,
+      body: words.requests.declineBody(item ? sampleSaid(item.title) : words.requests.fallbackTitle),
+      action: words.requests.declineAction,
+      command: { type: "respondCover", requestId: request.id, accept: false },
+      done: words.requests.declined,
+    });
   const line = said && <Said key={said.of} of={said.of}>{said.words}</Said>;
   const waiting = shown.filter((request) => request.id !== taken?.id).length;
   return shown.length ? (
@@ -334,7 +341,7 @@ export function IncomingRequests({
                     <Button
                       disabled={pending || !item}
                       aria-label={`${words.requests.accept}: ${item ? sampleSaid(item.title) : words.requests.fallbackTitle}`}
-                      onClick={(event) => void respond(request, true, event.currentTarget)}
+                      onClick={(event) => void accept(request, event.currentTarget)}
                     >
                       {words.requests.accept}
                     </Button>
@@ -342,7 +349,7 @@ export function IncomingRequests({
                       disabled={pending}
                       variant="outline"
                       aria-label={`${words.requests.decline}: ${item ? sampleSaid(item.title) : words.requests.fallbackTitle}`}
-                      onClick={(event) => void respond(request, false, event.currentTarget)}
+                      onClick={() => decline(request, item)}
                     >
                       {words.requests.decline}
                     </Button>

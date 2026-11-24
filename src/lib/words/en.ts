@@ -220,6 +220,9 @@ export function en(set: WordSet) {
       accepted: "Commitment accepted. It’s on your list.",
       acceptedUnder: (place: string) => `Commitment accepted. It’s in ${place}.`,
       declined: "Request declined. Nothing was added to your list.",
+      declineTitle: "Decline this request?",
+      declineAction: "Decline request",
+      declineBody: (what: string) => `${what} won’t be added to your list. Once declined, this request can’t be accepted later.`,
     },
     detail: {
       cancelled:
