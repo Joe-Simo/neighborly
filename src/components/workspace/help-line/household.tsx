@@ -168,6 +168,7 @@ export function AtHome({
 /** A short list a person adds to and takes from, one line each. */
 function Lines<Line>({
   legend,
+  legendShown = true,
   shape,
   lines,
   blank,
@@ -177,6 +178,8 @@ function Lines<Line>({
   children,
 }: {
   legend: string;
+  /** False where the sheet's own title already says the legend's word: it is kept for a screen reader, not shown twice. */
+  legendShown?: boolean;
   /** What the button that takes a line away is called, by the line's number. */
   remove: (line: number) => string;
   /** How a line is laid out: two boxes side by side, three, or four in two rows. */
@@ -189,7 +192,7 @@ function Lines<Line>({
 }) {
   return (
     <fieldset className="help-lines" data-shape={shape}>
-      <legend>{legend}</legend>
+      <legend className={legendShown ? undefined : "sr-only"}>{legend}</legend>
       {lines.map((line, index) => (
         <div className="help-line-row" key={index}>
           {children(
@@ -483,6 +486,7 @@ export function AccountsForm({
     >
       <Lines
         legend={text.legend}
+        legendShown={false}
         shape="four"
         lines={lines}
         blank={blank}
