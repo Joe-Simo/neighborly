@@ -120,6 +120,8 @@ const en = (t: Terms, place: string) => ({
     neighbor: "Neighbor",
     chooseNeighbor: `Choose the ${t.neighbor}.`,
     noOne: "No one by that name",
+    /** With nothing typed and no records at all. */
+    noneYet: "No neighbors on file yet. Add one in Neighbors.",
     looking: "Looking…",
     first: "First visitor",
     chooseFirst: "Choose the first visitor.",
@@ -313,6 +315,7 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => {
       neighbor: Neighbor,
       chooseNeighbor: `Elige al ${t.neighbor}.`,
       noOne: "Nadie con ese nombre",
+      noneYet: "Todavía no hay vecinos registrados. Agrega uno en Vecinos.",
       looking: "Buscando…",
       first: "Primer visitador",
       chooseFirst: "Elige al primer visitador.",

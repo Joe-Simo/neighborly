@@ -159,6 +159,7 @@ export function PlanForm({
       requestId={requestId}
       people={people}
       neighbors={neighbors?.rows}
+      searched={search.trim() !== ""}
       onSearch={setSearch}
       pending={pending}
       error={error}
@@ -197,6 +198,7 @@ function PlanFormView({
   requestId,
   people,
   neighbors,
+  searched = true,
   onSearch,
   pending,
   error,
@@ -208,6 +210,8 @@ function PlanFormView({
   /** Neighbors matching the search, for a visit with no request. */
   neighbors:
     { id: Id<"neighbors">; name: string; address: string }[] | undefined;
+  /** Whether a name has been typed: with none, an empty list means no one is on file yet, not a missed name. */
+  searched?: boolean;
   onSearch: (text: string) => void;
   pending: boolean;
   error: string;
@@ -318,7 +322,7 @@ function PlanFormView({
                 ))
               ) : (
                 <NativeSelectOption value="" disabled>
-                  {neighbors ? text.noOne : text.looking}
+                  {neighbors ? (searched ? text.noOne : text.noneYet) : text.looking}
                 </NativeSelectOption>
               )}
             </NativeSelect>
