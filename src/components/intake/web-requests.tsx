@@ -213,7 +213,8 @@ function WebRow({ row, churchId, sample }: { row: Row; churchId: Id<"churches">;
           </div>
         </div>
       )}
-      {error && <LiveFailure message={error} />}
+      {/* Only Return it and Pass on have words typed into them; Keep it, Close, Block and Not genuine are one press. */}
+      {error && <LiveFailure message={error} kept={open === "back" || open === "pass" ? undefined : ""} />}
     </article>
   );
 }
