@@ -92,7 +92,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     },
     goBack: "Volver",
     edit: {
-      title: "Cambiar el compromiso",
+      title: "Editar el compromiso",
       deck: (zone) => `Horario: ${zone}. Revisarás los cambios antes de guardar.`,
       role: "Título",
       starts: "Empieza",
