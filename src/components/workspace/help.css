@@ -365,3 +365,14 @@ td.help-money[data-balance] { color: var(--live-muted); }
     mask-image: linear-gradient(90deg, transparent, #000 22%, #000 84%, transparent);
   }
 }
+
+/* Neighbors on a tablet held tall: the head's place is narrower than the picture, which ran on past the place's left
+   side and was cut there in a straight vertical line instead of its torn edge. As in Treasury and Reports (paper.css),
+   it fills the place instead, keeping its right and top, so the tear is the edge you see. */
+@media (min-width: 700px) {
+  .live-head-art[data-area="neighbors"] { container-type: size; }
+  @container (max-aspect-ratio: 3 / 2) {
+    .live-head-art[data-area="neighbors"] > .relief { inset: 0; width: 100%; aspect-ratio: auto; }
+    .live-head-art[data-area="neighbors"] > .relief img { object-fit: cover; object-position: right top; }
+  }
+}
