@@ -313,6 +313,10 @@
 @media (min-width: 721px) {
   @container (min-width: 680px) and (max-width: 859.98px) {
     .live-app .live-list > .live-commitment-row .live-meta > .live-commitment-time::before { content: none; }
+    /* In that band the words' column is narrow: the person and the place each take a line too, as on a phone,
+       so a long place never breaks mid-address after the person's name. */
+    .live-app .live-list > .live-commitment-row .live-commitment-who { display: grid; gap: 2px; }
+    .live-app .live-list > .live-commitment-row .live-commitment-who > span + span::before { content: "" / ", "; }
   }
 }
 

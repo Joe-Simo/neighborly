@@ -327,7 +327,7 @@ function Pair({
           {names.length > 1 && before}
           {names.map((name, index) => (
             <Fragment key={name}>
-              {index > 0 && between}
+              {index > 0 && (index === names.length - 1 ? between : ", ")}
               <span className="visits-name">{sampleSaid(name)}</span>
             </Fragment>
           ))}
