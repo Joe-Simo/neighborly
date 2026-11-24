@@ -321,7 +321,7 @@ export function es(set: WordSet): Words {
       waiting: "Aún no puede servir",
     },
     teams: {
-      noDescription: "Un equipo donde hay lugar para ayudar.",
+      noDescription: "Este equipo aún no tiene descripción.",
       onTeam: "Ya estás en este equipo.",
       joined: "Te uniste a {team}.",
       declined: "Rechazaste la invitación a {team}.",

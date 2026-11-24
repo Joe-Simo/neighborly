@@ -331,7 +331,7 @@ export function en(set: WordSet) {
     },
     /** Teams, as a member sees it. Adding and approving members are leaders' tools and stay English. */
     teams: {
-      noDescription: "A team with room to contribute.",
+      noDescription: "No description yet.",
       onTeam: "You’re on this team.",
       joined: "Joined {team}.",
       declined: "Declined the invitation to {team}.",
