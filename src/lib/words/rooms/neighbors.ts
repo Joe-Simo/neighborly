@@ -73,6 +73,7 @@ const en = (t: Terms, place: string) => ({
       keptInForm: "The numbers on file are still covered, and what you typed is still here.",
       keptOnPage: "The numbers on file are still covered. Nothing on the record was changed.",
     },
+    undoKept: "Nothing was taken back: the record is as it was saved.",
     missing: { title: "We couldn’t find that record.", body: "It may belong to another group, or the link may be incomplete. Nothing was opened." },
     removed: { title: "Record removed.", body: "The year’s totals stay as they were, with no name. Everything that named this household is gone." },
     sheets: {
@@ -310,6 +311,7 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => ({
       keptInForm: "Los números guardados siguen ocultos, y lo que escribiste sigue aquí.",
       keptOnPage: "Los números guardados siguen ocultos. No se cambió nada en el registro.",
     },
+    undoKept: "No se deshizo nada: el registro quedó como se guardó.",
     missing: { title: "No encontramos ese registro.", body: "Puede ser de otro grupo, o el enlace puede estar incompleto. No se abrió nada." },
     removed: { title: "El registro se borró.", body: "Los totales del año quedan como estaban, sin ningún nombre. Todo lo que identificaba a este hogar se borró." },
     sheets: {

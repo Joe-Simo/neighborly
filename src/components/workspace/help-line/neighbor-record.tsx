@@ -235,11 +235,13 @@ export function NeighborRecord({
     moveOn();
     setDone(message);
     setBack(back);
-    setUndoRefused("");
+    setUndoRefused(null);
   };
   // The way back from the step just taken, while its line is up; and an undo the server would not take, in plum.
   const [back, setBack] = useState<WayBack>();
-  const [undoRefused, setUndoRefused] = useState("");
+  // A refused undo is said in plum where the person is (it takes focus and comes into view), and the line keeps its
+  // Undo so it can be tried again: nothing was taken back.
+  const [undoRefused, setUndoRefused] = useState<Covered | null>(null);
   const takeBackNote = useMutation(api.neighbors.takeBackNote);
   const undoDecision = useMutation(api.assistance.undoDecision);
   const close = () => {
@@ -319,10 +321,8 @@ export function NeighborRecord({
     );
   return (
     <>
-      {undoRefused && !done && (
-        <div className="live-error" role="alert">
-          <p>{undoRefused}</p>
-        </div>
+      {undoRefused && (
+        <StillCovered covered={undoRefused} kept={text.undoKept} />
       )}
       {done && (
         <HelpDone
@@ -334,11 +334,10 @@ export function NeighborRecord({
                 try {
                   await back.run();
                   setBack(undefined);
+                  setUndoRefused(null);
                   setDone(back.said);
                 } catch (cause) {
-                  setBack(undefined);
-                  setDone("");
-                  setUndoRefused(sayFailure(words.notices,cause, words.notices.failed));
+                  setUndoRefused((before) => ({ why: sayFailure(words.notices, cause, words.notices.failed), tries: (before?.tries ?? 0) + 1 }));
                 }
               }}
             />
