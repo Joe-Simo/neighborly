@@ -323,13 +323,13 @@ export const en = (t: Terms, place: string) => ({
   },
   /** "Close this conference for good": the quiet link in Your files and its sheet. */
   closing: {
-    open: "Close this conference for good",
+    open: `Close this ${t.group} for good`,
     owners: "Owners only",
     // "for good" stays together, so the title breaks as "Close this conference / for good".
-    title: "Close this conference for good",
+    title: `Close this ${t.group} for good`,
     deck: (name: string) => `${name}, and everything in it.`,
     goes: "What goes",
-    goesAll: "Every record, call, visit, request, ledger line and file of this conference, and every member’s place and invitation.",
+    goesAll: `Every record, call, visit, request, ledger line and file of this ${t.group}, and every member’s place and invitation.`,
     stays: "What stays",
     staysNothing: "Nothing.",
     first: "First, if you may need any of it:",
@@ -337,7 +337,7 @@ export const en = (t: Terms, place: string) => ({
     type: (name: string) => `Type ${name} to close it`,
     final: "This cannot be undone.",
     kept: "Nothing was closed.",
-    close: "Close this conference",
+    close: `Close this ${t.group}`,
   },
 });
 
