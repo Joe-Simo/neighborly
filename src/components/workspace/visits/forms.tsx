@@ -258,6 +258,12 @@ function PlanFormView({
           (id) => people.find((person) => person.memberId === id),
         );
         if (!who || !first || !second) return;
+        // The same person chosen twice is said under the second visitor, before anything is sent.
+        if (first.memberId === second.memberId) {
+          markWrong(event.currentTarget, "second", text.sameTwice);
+          event.currentTarget.checkValidity();
+          return;
+        }
         onPlan(who, whenOf(data), first, second);
       }}
     >
