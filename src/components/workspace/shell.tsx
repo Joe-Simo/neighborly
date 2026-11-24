@@ -910,10 +910,10 @@ export function LiveWorkspace({
               {dialog === "timeOff" ? (
                 <LiveTimeOffForm
                   data={data}
-                  onSaved={() => {
+                  onSaved={(released) => {
                     setDialog(null);
                     setNotice(
-                      words.timeOffForm.saved,
+                      words.timeOffForm.saved(released),
                     );
                   }}
                 />

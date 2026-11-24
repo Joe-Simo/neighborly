@@ -22,7 +22,7 @@ export function LiveTimeOffForm({
   onSaved,
 }: {
   data: LiveWorkspaceData;
-  onSaved: () => void;
+  onSaved: (released: number) => void;
 }) {
   const { words } = useWorkspace();
   const [draft, setDraft] = useState({ start: "", end: "", note: "" });
@@ -114,7 +114,7 @@ function TimeOffConfirmation({
   review: { start: string; end: string; note: string };
   initial: FunctionReturnType<typeof api.workspace.previewTimeOff>;
   onBack: () => void;
-  onSaved: () => void;
+  onSaved: (released: number) => void;
 }) {
   const { words, sampleSaid, keepNames } = useWorkspace();
   const [snapshot] = useState(initial);
@@ -163,7 +163,7 @@ function TimeOffConfirmation({
                 ...review,
                 reviewed: snapshot.map(({ id, version }) => ({ id, version })),
               });
-              onSaved();
+              onSaved(snapshot.length);
             } catch {
               setError(
                 words.timeOffForm.failed,

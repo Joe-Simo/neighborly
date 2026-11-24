@@ -290,7 +290,8 @@ export function en(set: WordSet) {
       confirm: "Confirm time off",
       failed:
         "We couldn’t confirm these dates. Nothing was saved. Go back, look over the list, then confirm again.",
-      saved: "Time off saved. Only the reviewed commitments were released.",
+      saved: (released: number) =>
+        released === 0 ? "Time off saved. None of your commitments changed." : `Time off saved. ${enN(released)} reviewed ${released === 1 ? "commitment was" : "commitments were"} released for cover.`,
     },
     /** Tasks & meetings, as a member sees them. Planning a meeting and reviewing replies are leaders' tools and stay English. */
     tasks: {
