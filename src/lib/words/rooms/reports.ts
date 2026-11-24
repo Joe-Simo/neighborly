@@ -14,7 +14,7 @@ const cap = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 /* eslint-disable @typescript-eslint/no-unused-vars -- every room's table is given the terms and the place, and every
    counted line its count; English reads the same for one and many where Spanish must agree in number */
-export const en = (t: Terms, place: string) => ({
+const en = (t: Terms, place: string) => ({
   opening: "Opening the reports",
   saved: (name: string) => `${name} saved to your downloads. It opens in Excel, Numbers or Google Sheets.`,
   failed: {
@@ -342,7 +342,7 @@ export const en = (t: Terms, place: string) => ({
 });
 
 /** Spanish. Written without a native speaker's review; one is still owed. */
-export const es = (t: Terms, place: string): ReturnType<typeof en> => {
+const es = (t: Terms, place: string): ReturnType<typeof en> => {
   // A conference is "esta conferencia"; a group or a workspace is "este grupo".
   const she = t.group === "conferencia";
   const thisGroup = she ? `esta ${t.group}` : `este ${t.group}`;

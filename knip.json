@@ -7,7 +7,8 @@
   ],
   "ignore": [
     "apple/**",
-    "src/components/ui/**"
+    "src/components/ui/**",
+    "scripts/viewport-fallback.cjs"
   ],
   "ignoreDependencies": [
     "@tailwindcss/turbopack",
@@ -15,6 +16,8 @@
     "axe-core",
     "@gltf-transform/core",
     "@gltf-transform/extensions",
-    "@gltf-transform/functions"
+    "@gltf-transform/functions",
+    "postcss",
+    "postcss-loader"
   ]
 }

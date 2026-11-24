@@ -10,7 +10,7 @@ const esN = counter("es");
  * places (`{name}`) filled by `fill` (../fill.ts). Nothing is joined from pieces on the screen.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- every room's table is given the place; only the Spanish names it here
-export const en = (t: Terms, place: string) => ({
+const en = (t: Terms, place: string) => ({
   /** The room's own name, as the menu has it: the way back from a visit sheet. */
   name: "Home visits",
   opening: "Opening home visits",
@@ -205,7 +205,7 @@ export const en = (t: Terms, place: string) => ({
 });
 
 /** Spanish. Written without a native speaker's review; one is still owed. */
-export const es = (t: Terms, place: string): ReturnType<typeof en> => {
+const es = (t: Terms, place: string): ReturnType<typeof en> => {
   // The room is named as the menu names it (../es.ts).
   const room = place === "conferencia" ? "Visitas domiciliarias" : "Visitas a casa";
   const Visit = t.visit.charAt(0).toUpperCase() + t.visit.slice(1);

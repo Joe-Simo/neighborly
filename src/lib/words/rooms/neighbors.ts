@@ -10,7 +10,7 @@ const esN = counter("es");
  * places (`{name}`) filled by `fill` (../fill.ts). Nothing is joined from pieces on the screen.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- every room's table takes the same two; this one has no line that names the place
-export const en = (t: Terms, place: string) => ({
+const en = (t: Terms, place: string) => ({
   add: `Add a ${t.neighbor}`,
   all: `All ${t.neighbors}`,
   /** Lines the list and the record both say. */
@@ -248,7 +248,7 @@ export const en = (t: Terms, place: string) => ({
 
 /** Spanish. Written without a native speaker's review; one is still owed. */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- as above
-export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
+const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   add: `Agregar un ${t.neighbor}`,
   all: `Todos los ${t.neighbors}`,
   home: {
