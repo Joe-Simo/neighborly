@@ -178,7 +178,7 @@ export function es(set: WordSet): Words {
     },
     mine: {
       accepted: "Compromisos aceptados",
-      addToCalendar: "Agrégalos al calendario",
+      addToCalendar: "Agrégalos al calendario de tu teléfono",
       emptyTitle: "Hay lugar para tu primer sí.",
       emptyTitleBeside: "También hay lugar para un\u00a0compromiso.",
       emptyDetail:
