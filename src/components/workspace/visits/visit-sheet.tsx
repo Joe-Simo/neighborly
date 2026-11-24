@@ -37,13 +37,15 @@ export function VisitSheet({ visitId }: { visitId: Id<"visits"> }) {
   const churchId = data.church.id;
   // One neighbor's details: a plain head, with no painting.
   const { title, deck, didNotOpen } = text;
+  // The way back from the printed request names the place it returns to, not the sheet's tagline.
+  const backLabel = visitsWords(words).coming.sheet;
   const notices = words.notices;
   // The request this visit answers, laid out to print in place of the sheet; the way back returns to the sheet.
   const [printing, setPrinting] = useState(false);
   useLayoutEffect(() => {
-    setHeading(printing ? { title, deck, back: { label: title, run: () => setPrinting(false) } } : { title, deck });
+    setHeading(printing ? { title, deck, back: { label: backLabel, run: () => setPrinting(false) } } : { title, deck });
     return () => setHeading(null);
-  }, [setHeading, title, deck, printing]);
+  }, [setHeading, title, deck, backLabel, printing]);
   const router = useRouter();
   const openSheet = useMutation(api.visits.openSheet);
   const cancel = useMutation(api.visits.cancel);
