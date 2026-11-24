@@ -228,6 +228,8 @@
 /* A household reads in one calm line or two, so fifty of them are a list and not a scroll. */
 .live-app .help-neighbor { grid-template-columns: 44px minmax(0, 1fr) auto; column-gap: 20px; padding-block: var(--space-16); align-items: center; min-height: 72px; }
 .live-app .help-neighbor .help-avatar { width: 44px; height: 44px; font-size: 16px; }
+/* When the facts wrap, the picture stays with the name it stands for, not halfway down the address. */
+.live-app .help-neighbor > .help-avatar { align-self: start; margin-top: 2px; }
 .live-app .help-neighbor h3 { font-size: 22px; margin-bottom: 2px; }
 .live-app .help-neighbor p { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .live-app .help-neighbor > :nth-child(3) { grid-column: auto; }
