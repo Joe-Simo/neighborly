@@ -94,7 +94,7 @@ export function WebRequests() {
           </div>
         </div>
       )}
-      {!sample && error && !editing && <LiveFailure message={error} />}
+      {!sample && error && !editing && <LiveFailure message={error} kept="" />}
       {!sample && settings && more && <AreaMore churchId={churchId} settings={settings} onDone={() => setMore(false)} />}
       {!sample && settings && (
         <label className="web-choice web-notify">
@@ -291,7 +291,7 @@ function Review({ churchId }: { churchId: Id<"churches"> }) {
           {actions((genuine) => decideShared({ churchId, flagId: row.id, genuine }))}
         </div>
       ))}
-      {error && <LiveFailure message={error} />}
+      {error && <LiveFailure message={error} kept="" />}
     </div>
   );
 }
