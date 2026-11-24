@@ -77,7 +77,7 @@ const en = (t: Terms, place: string) => ({
     /** A web request whose phone one household on file already gives. */
     likely: (name: string) => `Same phone as ${name}, already on file.`,
     useLikely: "Use this household",
-    useLikelyThis: (name: string) => `Use ${name}’s record for this request`,
+    useLikelyThis: (name: string) => `Use this household: ${name}’s record, for this request`,
   },
   /** While the assistant reads a call note. */
   reading: {
@@ -182,7 +182,7 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     addNeighbor: "Agregar al registro",
     likely: (name: string) => `Mismo teléfono que el registro de ${name}.`,
     useLikely: "Usar este hogar",
-    useLikelyThis: (name: string) => `Usar el registro de ${name} para esta petición`,
+    useLikelyThis: (name: string) => `Usar este hogar: el registro de ${name}, para esta petición`,
   },
   reading: {
     label: "El asistente",
