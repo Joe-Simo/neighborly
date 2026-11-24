@@ -78,13 +78,13 @@ const en = {
   download: "Download the council report",
   fileTitle: (council: string, year: number) => `${council}, council report, fiscal year ${year}`,
   lines: enLines,
-  // The conference's side, in Your files.
+  // The conference's side, in Your files: named with the group's own word (a conference, or a plain group).
   joinTitle: "Councils",
   joinDeck: "A district or particular council can add your year’s counts to its report. Only counts and money totals go to it, never a neighbor, a call or a note.",
-  code: "Your conference’s code",
+  code: (group: string) => `Your ${group}’s code`,
   codeDeck: "Give this code to the council that asks for it.",
-  invitedBy: (council: string) => `${council} asks to count your conference.`,
-  countedBy: (council: string) => `${council} counts your conference.`,
+  invitedBy: (council: string, group: string) => `${council} asks to count your ${group}.`,
+  countedBy: (council: string, group: string) => `${council} counts your ${group}.`,
   accept: "Accept",
   decline: "Decline",
   leave: "Leave the council",
@@ -92,7 +92,7 @@ const en = {
   leaveSure: "Yes, leave it",
   stay: "Stay",
   accepted: "Accepted. The council now counts your year.",
-  left: "Done. The council no longer counts your conference.",
+  left: (group: string) => `Done. The council no longer counts your ${group}.`,
   failed: "That could not be saved. Nothing changed; try again.",
 };
 
@@ -127,10 +127,10 @@ const es: typeof en = {
   lines: esLines,
   joinTitle: "Consejos",
   joinDeck: "Un consejo de distrito o particular puede sumar los conteos de tu año a su informe. Solo le llegan conteos y totales de dinero, nunca un vecino, una llamada ni una nota.",
-  code: "El código de tu conferencia",
+  code: (group) => `El código de tu ${group}`,
   codeDeck: "Da este código al consejo que te lo pida.",
-  invitedBy: (council) => `${council} pide contar a tu conferencia.`,
-  countedBy: (council) => `${council} cuenta a tu conferencia.`,
+  invitedBy: (council, group) => `${council} pide contar a tu ${group}.`,
+  countedBy: (council, group) => `${council} cuenta a tu ${group}.`,
   accept: "Aceptar",
   decline: "Rechazar",
   leave: "Salir del consejo",
@@ -138,7 +138,7 @@ const es: typeof en = {
   leaveSure: "Sí, salir",
   stay: "Quedarse",
   accepted: "Aceptado. El consejo ya cuenta tu año.",
-  left: "Listo. El consejo ya no cuenta a tu conferencia.",
+  left: (group) => `Listo. El consejo ya no cuenta a tu ${group}.`,
   failed: "No se pudo guardar. No cambió nada; inténtalo de nuevo.",
 };
 

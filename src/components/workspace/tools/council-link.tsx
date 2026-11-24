@@ -54,23 +54,23 @@ function CouncilLinkLeaf() {
       ) : (
         <>
           <p className="tools-small">
-            {w.code}: <code className="council-code">{seen.code}</code>
+            {w.code(words.terms.group)}: <code className="council-code">{seen.code}</code>
             <br />
             {w.codeDeck}
           </p>
           <ul className="council-list">
             {seen.councils.map((row) => (
               <li key={row.id}>
-                <span>{row.status === "accepted" ? w.countedBy(row.name) : w.invitedBy(row.name)}</span>{" "}
+                <span>{row.status === "accepted" ? w.countedBy(row.name, words.terms.group) : w.invitedBy(row.name, words.terms.group)}</span>{" "}
                 {row.status === "pending" && <Button onClick={() => void run(() => accept({ linkId: row.id }), w.accepted)}>{w.accept}</Button>}{" "}
                 {leaving === row.id ? (
                   <>
                     <span className="tools-small">{w.leaveQuestion}</span>{" "}
-                    <Button variant="outline" onClick={() => void run(() => unlink({ linkId: row.id }), w.left).then(() => setLeaving(null))}>{w.leaveSure}</Button>{" "}
+                    <Button variant="outline" onClick={() => void run(() => unlink({ linkId: row.id }), w.left(words.terms.group)).then(() => setLeaving(null))}>{w.leaveSure}</Button>{" "}
                     <Button variant="ghost" onClick={() => setLeaving(null)}>{w.stay}</Button>
                   </>
                 ) : (
-                  <Button variant="outline" onClick={() => (row.status === "accepted" ? setLeaving(row.id) : void run(() => unlink({ linkId: row.id }), w.left))}>
+                  <Button variant="outline" onClick={() => (row.status === "accepted" ? setLeaving(row.id) : void run(() => unlink({ linkId: row.id }), w.left(words.terms.group)))}>
                     {row.status === "accepted" ? w.leave : w.decline}
                   </Button>
                 )}
