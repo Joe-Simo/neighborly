@@ -299,12 +299,11 @@ function Review({ churchId }: { churchId: Id<"churches"> }) {
 
 /** The team's partners: add one (its link is shown once), give a new link, or revoke. */
 function Partners({ churchId }: { churchId: Id<"churches"> }) {
-  const { words } = useWorkspace();
+  const { words, confirm, pending: sending } = useWorkspace();
   const w = webWords(words.locale);
   const partners = useQuery(api.intakePartners.list, { churchId });
   const create = useAction(api.intakeActions.createPartner);
   const relink = useAction(api.intakeActions.newPartnerLink);
-  const revoke = useMutation(api.intakePartners.revoke);
   const { save, error, pending } = useSave();
   // New link and Remove are one press with nothing typed, so their failure is said apart from the add form's.
   const rowSave = useSave();
@@ -318,7 +317,14 @@ function Partners({ churchId }: { churchId: Id<"churches"> }) {
         <div key={partner.id} className="web-partner">
           <span>{partner.name} · {partner.email} · {partner.language === "es" ? "Español" : "English"}{partner.active ? "" : ` · ${w.revoked}`}</span>
           <Button type="button" variant="ghost" disabled={pending || rowSave.pending} onClick={() => void rowSave.save(() => relink({ churchId, partnerId: partner.id })).then((done) => done.saved && show(done.result))}>{w.newLink}</Button>
-          {partner.active && <Button type="button" variant="ghost" disabled={pending || rowSave.pending} onClick={() => void rowSave.save(() => revoke({ churchId, partnerId: partner.id }))}>{w.revoke}</Button>}
+          {/* Their link stops working at once, and only a new link brings them back: asked once more first. */}
+          {partner.active && <Button type="button" variant="ghost" disabled={pending || rowSave.pending || sending} onClick={() => confirm({
+            title: w.revokeTitle(partner.name),
+            body: w.revokeBody,
+            action: w.revoke,
+            command: { type: "revokePartner", partnerId: partner.id },
+            done: w.revokedDone(partner.name),
+          })}>{w.revoke}</Button>}
         </div>
       ))}
       {rowSave.error && <LiveFailure message={rowSave.error} kept="" />}

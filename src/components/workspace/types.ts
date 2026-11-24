@@ -9,7 +9,8 @@ export type LiveCommitment = LiveWorkspaceData["commitments"][number];
 export type LiveCommand =
   | FunctionArgs<typeof api.workspace.execute>["command"]
   | { type: "revokeInvitation"; invitationId: Id<"invitations"> }
-  | { type: "retryMeetingFanout"; meetingId: Id<"meetings"> };
+  | { type: "retryMeetingFanout"; meetingId: Id<"meetings"> }
+  | { type: "revokePartner"; partnerId: Id<"webPartners"> };
 export type LiveConfirmation = {
   title: string;
   body: string;

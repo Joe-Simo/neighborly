@@ -236,6 +236,7 @@ function LiveRooms({
   const invite = useAction(api.invitations.create);
   const revokeInvitation = useMutation(api.invitations.revoke);
   const retryMeetingFanout = useMutation(api.workspace.retryMeetingFanout);
+  const revokePartner = useMutation(api.intakePartners.revoke);
   const invitationRequest = useRef<{ key: string; id: string } | null>(null);
   const execute = useMutation(api.workspace.execute);
   const [invitationConsumed, setInvitationConsumed] = useState(false);
@@ -689,6 +690,10 @@ function LiveRooms({
         }
         if (command.type === "revokeInvitation") {
           await revokeInvitation({ invitationId: command.invitationId });
+          return null;
+        }
+        if (command.type === "revokePartner") {
+          await revokePartner({ churchId, partnerId: command.partnerId });
           return null;
         }
         if (command.type === "retryMeetingFanout") {
