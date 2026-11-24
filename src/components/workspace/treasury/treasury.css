@@ -821,3 +821,9 @@
 .help-ledger :is(td, th[scope="row"]).help-what {
   text-wrap: pretty;
 }
+
+/* Matching the bank: "Cleared the bank" stands taller than the two figures beside it, so the two beside it keep
+   a figure line as tall as its own and the lines under the figures start on one line across. */
+@media (min-width: 851px) {
+  .live-app .help-figures.treasury-figures .count-up { display: block; min-height: var(--type-figure-l); }
+}
