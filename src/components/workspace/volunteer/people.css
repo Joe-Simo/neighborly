@@ -126,6 +126,15 @@
   .people-row-go { display: none; }
 }
 
+/* Where a person's row stacks between a phone and a desk, its role and wait start on the name's edge: People's
+   avatar is 44px, so the shared rows' 57px step would set them 3px left of the name and address. */
+@media (min-width: 701px) and (max-width: 899px) {
+  :root .live-app .people-row .live-meta > span { padding-left: 60px; }
+}
+@media (min-width: 701px) and (max-width: 1100px) {
+  :root[data-native-sidebar] .live-app .people-row .live-meta > span { padding-left: 60px; }
+}
+
 /* ── Teams ────────────────────────────────────────────────────────────── */
 /* A team's name or note written without spaces turns at the card's edge instead of running out of it. */
 .team-card { min-width: 0; }
