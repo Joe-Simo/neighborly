@@ -18,4 +18,6 @@ export type LiveConfirmation = {
   command: LiveCommand;
   /** The line said once it is done, naming who or what changed. */
   done: string;
+  /** "Go back" returns here (the sheet the step was taken from) rather than closing everything. */
+  onBack?: () => void;
 };

@@ -172,8 +172,10 @@ export function PeopleSection() {
                   disabled={pending}
                   onClick={() =>
                     {
+                    const backTo = managing.id;
                     setManagingId(null);
                     setConfirmation({
+                      onBack: () => setManagingId(backTo),
                       title: managing.approved
                         ? text.manage.markNotReadyTitle(wholeName(managing.name))
                         : text.manage.markReadyTitle(wholeName(managing.name)),
@@ -199,8 +201,10 @@ export function PeopleSection() {
                   disabled={pending}
                   onClick={() =>
                     {
+                    const backTo = managing.id;
                     setManagingId(null);
                     setConfirmation({
+                      onBack: () => setManagingId(backTo),
                       title: managing.active ? text.manage.removeAccessTitle : text.manage.restoreAccessTitle,
                       action: managing.active ? text.manage.removeAccess : text.manage.restoreAccess,
                       body: text.manage.accessBody,

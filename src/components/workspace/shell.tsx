@@ -992,7 +992,11 @@ export function LiveWorkspace({
             <div className="live-form-actions">
               <Button
                 variant="outline"
-                onClick={() => leaveDialog(() => setConfirmation(null))}
+                onClick={() => leaveDialog(() => {
+                  const back = confirmation?.onBack;
+                  setConfirmation(null);
+                  back?.();
+                })}
                 disabled={held}
               >
                 {sheets.goBack}
