@@ -406,7 +406,7 @@ export function en(set: WordSet) {
     visits: {
       title: "Home visits",
       count: (count: number) => `${enN(count)} ${count === 1 ? "visit" : "visits"}, always with a partner`,
-      notSaved: "Your answer was not saved. Try again.",
+      notSaved: "Your answer wasn’t saved, so each visit still shows the answer you gave before.",
       on: (street: string) => `A visit on ${street}`,
       nearby: "a street nearby",
       partnerOpen: "Your coordinator is asking a second visitor.",

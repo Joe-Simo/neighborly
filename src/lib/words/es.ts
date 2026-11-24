@@ -401,7 +401,7 @@ export function es(set: WordSet): Words {
     visits: {
       title: set === "vincentian" ? "Visitas domiciliarias" : "Visitas a casa",
       count: (count) => `${esN(count)} ${count === 1 ? "visita" : "visitas"}, siempre de dos en dos`,
-      notSaved: "No se guardó tu respuesta. Inténtalo de nuevo.",
+      notSaved: "Tu respuesta no se guardó; cada visita sigue mostrando la que diste antes.",
       on: (street) => `Una visita en ${street}`,
       nearby: "una calle cercana",
       partnerOpen: "Quien coordina está buscando un segundo visitador.",
