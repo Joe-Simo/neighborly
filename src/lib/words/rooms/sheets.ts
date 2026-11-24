@@ -59,7 +59,7 @@ export const en = (t: Terms, place: string) => ({
   },
   release: {
     body: "This releases this date only. Your other commitments and your place on the team stay the same. The date will need cover.",
-    keep: "Keep commitment",
+    keep: "Keep this date",
     confirm: "Give up this date",
   },
 });
@@ -120,7 +120,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
     },
     release: {
       body: "Esto libera solo esta fecha. Tus otros compromisos y tu lugar en el equipo siguen igual. Habrá que buscar quién cubra esa fecha.",
-      keep: "Conservar el compromiso",
+      keep: "Conservar esta fecha",
       confirm: "Dejar esta fecha",
     },
   };
