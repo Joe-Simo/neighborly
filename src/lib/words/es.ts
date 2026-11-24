@@ -257,6 +257,7 @@ export function es(set: WordSet): Words {
         "Decide si los coordinadores pueden pedirte que cubras un compromiso libre. Cada petición necesita tu sí.",
       coverStop: "Dejar de recibir peticiones",
       coverStart: "Recibir peticiones",
+      coverNoRecord: "Podrás activarlo cuando quien coordina te agregue a la lista de personas.",
       availableTitle: "Cuándo puedes ayudar",
       availableDeck:
         "Agrega las fechas en que puedes cubrir a alguien. Ofrecer fechas no te apunta a ningún compromiso.",

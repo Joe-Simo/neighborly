@@ -66,6 +66,7 @@ export function TimeOffSection() {
           style={{ marginTop: 20 }}
           variant="outline"
           disabled={pending || !ownPerson}
+          aria-describedby={ownPerson ? undefined : "cover-no-record"}
           onClick={() =>
             void perform(
               { type: "setCoverOptIn", optedIn: !ownPerson?.coverOptIn },
@@ -78,6 +79,8 @@ export function TimeOffSection() {
             ? words.timeOff.coverStop
             : words.timeOff.coverStart}
         </Button>
+        {/* With no record of their own there is nothing to turn on yet: the button says why it sleeps. */}
+        {!ownPerson && <p className="live-deck" style={{ marginTop: 8 }} id="cover-no-record">{words.timeOff.coverNoRecord}</p>}
       </section>
       <LiveAvailability data={data} run={perform} />
     </>

@@ -264,6 +264,7 @@ export function en(set: WordSet) {
         "Choose whether coordinators may ask you to cover an open commitment. Every request still needs your acceptance.",
       coverStop: "Stop receiving cover requests",
       coverStart: "Receive cover requests",
+      coverNoRecord: "You can turn this on once a coordinator adds you to the people list.",
       availableTitle: "When you can help",
       availableDeck:
         "Add the dates you’re free to cover for someone. Offering dates does not sign you up for anything.",
