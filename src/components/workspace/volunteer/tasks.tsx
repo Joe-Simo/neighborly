@@ -55,6 +55,8 @@ export function TasksSection() {
   // The meeting just replied to, yes or no: its reply takes the place of the buttons, and focus with it.
   const [replied, setReplied] = useState<string>();
   const [changing, setChanging] = useState<string>();
+  // The moment the room opened: a task still open past its day says it is overdue.
+  const [now] = useState(() => Date.now());
   return (
     <>
       <NextMeeting />
@@ -87,7 +89,12 @@ export function TasksSection() {
                     <h3><span>{keepNames(sampleSaid(task.title))}</span></h3>
                     <p>
                       <span className="volunteer-who">{personName(task.assigneeId)}</span>
-                      {task.dueAt && <span className="volunteer-due"> · {words.tasks.due(format(task.dueAt))}</span>}
+                      {task.dueAt && (
+                        <span className="volunteer-due" data-late={(!task.complete && task.dueAt < now) || undefined}>
+                          {" · "}
+                          {!task.complete && task.dueAt < now ? words.tasks.late(format(task.dueAt)) : words.tasks.due(format(task.dueAt))}
+                        </span>
+                      )}
                     </p>
                   </div>
                   {mine ? (

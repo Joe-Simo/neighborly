@@ -310,6 +310,7 @@ export function es(set: WordSet): Words {
       waiting: "Esperando tu respuesta",
       changeReply: "Cambiar respuesta",
       due: (date) => `Para el ${date}`,
+      late: (date) => `Atrasada desde el ${date}`,
       attend: "Asistir",
       decline: "No puedo",
       noMeetingsTitle: "No hay reuniones planeadas.",

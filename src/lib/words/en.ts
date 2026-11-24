@@ -318,6 +318,8 @@ export function en(set: WordSet) {
       waiting: "Awaiting your reply",
       changeReply: "Change reply",
       due: (date: string) => `Due ${date}`,
+      /** A task not done by its day: said in words, so the date is not the only clue. */
+      late: (date: string) => `Overdue since ${date}`,
       attend: "Attend",
       decline: "Decline",
       noMeetingsTitle: "No meetings planned.",
