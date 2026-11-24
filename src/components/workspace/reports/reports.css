@@ -558,6 +558,21 @@
   .report-months { container-type: inline-size; }
   .report-months:not([data-months="3"]) p.help-amount { font-size: clamp(15px, calc(100cqi / 38 - 4px), 22px); }
 }
+/* Where the report is too narrow for twelve months to hold "15 visits" on one line (a tablet beside the menu), the
+   year is two rows of six, as on a phone, with the bars and figures kept at their full size. */
+@container (max-width: 760px) {
+  @media screen and (min-width: 851px) {
+    .report-months:not([data-months="3"]) { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .report-months:not([data-months="3"]) li:nth-child(n + 7) { border-top: 1px solid var(--live-line); }
+    .report-months:not([data-months="3"]) p.help-amount { font-size: 19px; }
+  }
+}
+/* Twelve across in a narrower report: the visits line takes the phone's 13px and holds on one line ("15 visitas"). */
+@container (min-width: 761px) and (max-width: 980px) {
+  @media screen and (min-width: 851px) {
+    .report-months:not([data-months="3"]) p:not(.help-amount) { font-size: 13px; white-space: nowrap; }
+  }
+}
 @media (max-width: 850px) {
   .report-period { align-items: flex-start; flex-direction: column; }
   /* The whole key stays: it wraps under the heading. */
