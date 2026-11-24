@@ -38,6 +38,10 @@ export function MonthAway() {
     ...Array.from({ length: lead }, () => null),
     ...Array.from({ length: first.daysInMonth ?? 30 }, (_, index) => first.plus({ days: index })),
   ];
+  const marks = new Set(cells.map((day) => {
+    const key = day?.toFormat("yyyy-MM-dd");
+    return key === undefined ? undefined : within(key, away) ? "away" : within(key, offered) ? "offered" : undefined;
+  }));
   const weeks = Array.from({ length: Math.ceil(cells.length / 7) }, (_, week) => cells.slice(week * 7, week * 7 + 7));
   return (
     <RoomAside title={text.thisMonth}>
@@ -68,9 +72,9 @@ export function MonthAway() {
         </tbody>
       </table>
       {/* A key only for marks that are on the calendar. */}
-      {(away.length > 0 || offered.length > 0) && <ul className="volunteer-key">
-        {away.length > 0 && <li><i data-mark="away" aria-hidden="true" />{text.away}</li>}
-        {offered.length > 0 && <li><i data-mark="offered" aria-hidden="true" />{text.canHelp}</li>}
+      {(marks.has("away") || marks.has("offered")) && <ul className="volunteer-key">
+        {marks.has("away") && <li><i data-mark="away" aria-hidden="true" />{text.away}</li>}
+        {marks.has("offered") && <li><i data-mark="offered" aria-hidden="true" />{text.canHelp}</li>}
       </ul>}
     </RoomAside>
   );
