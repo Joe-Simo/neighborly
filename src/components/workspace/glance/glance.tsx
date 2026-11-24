@@ -149,13 +149,13 @@ export function Glance({ quiet = false }: { quiet?: boolean }) {
       {showMine && (
         <section aria-labelledby="glance-yours">
           <h2 id="glance-yours">{w.yours}</h2>
-          <nav className="glance-tiles">{mine.map((tile) => <TileLink key={tile.label} tile={tile} />)}</nav>
+          <nav className="glance-tiles" aria-labelledby="glance-yours">{mine.map((tile) => <TileLink key={tile.label} tile={tile} />)}</nav>
         </section>
       )}
       {conference && (
         <section aria-labelledby="glance-whole">
           <h2 id="glance-whole">{w.whole}</h2>
-          <nav className="glance-tiles">{conferenceTiles(conference, w, money).map((tile) => <TileLink key={tile.label} tile={tile} />)}</nav>
+          <nav className="glance-tiles" aria-labelledby="glance-whole">{conferenceTiles(conference, w, money).map((tile) => <TileLink key={tile.label} tile={tile} />)}</nav>
         </section>
       )}
       {/* A council's owner may hold no leader's seat here: their council stands on its own. */}

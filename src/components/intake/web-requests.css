@@ -7,7 +7,7 @@
 .web-row .web-passed { margin: 0 0 6px; font-weight: 600; }
 /* A late request carries the ochre bar, and its words and presses stand 16px in from it, as in every other barred note. */
 .live-app .web-requests .web-row.web-late { box-shadow: inset 3px 0 0 var(--paper-ochre, #c8962e); padding-inline-start: 16px; }
-.web-row .web-late-note { color: color-mix(in srgb, var(--paper-ochre, #c8962e) 70%, #283c32); }
+.web-row .web-late-note { color: color-mix(in srgb, var(--paper-ochre, #c8962e) 45%, #283c32); }
 .web-row .web-choice { display: flex; gap: 8px; align-items: center; min-height: 44px; }
 .web-requests .web-notify { display: flex; gap: 8px; align-items: center; min-height: 44px; margin-top: 12px; }
 .web-requests .web-traces h3 { font-size: 13px; margin: 16px 0 4px; }
