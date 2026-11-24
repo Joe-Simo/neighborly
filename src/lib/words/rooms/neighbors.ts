@@ -177,6 +177,11 @@ const en = (t: Terms, place: string) => ({
   atHome: {
     title: "At home",
     change: "Change home details",
+    /** Each line of At home says what its link changes: five links that all said "Change home details" opened five different sheets. */
+    changeReach: "Change details",
+    changeLives: "Change who lives here",
+    changeMonth: "Change the month",
+    changeAccounts: "Change accounts",
     reach: "Reach them",
     noPhone: "No phone on file",
     lives: "Lives here",
@@ -408,6 +413,10 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   atHome: {
     title: "En casa",
     change: "Cambiar los datos de casa",
+    changeReach: "Cambiar los datos",
+    changeLives: "Cambiar quién vive aquí",
+    changeMonth: "Cambiar el mes",
+    changeAccounts: "Cambiar las cuentas",
     reach: "Cómo comunicarse",
     noPhone: "No hay teléfono guardado",
     lives: "Vive aquí",

@@ -56,14 +56,14 @@ export function AtHome({
   const text = neighborsWords(words);
   const at = text.atHome;
   const { household, money, accounts } = record;
-  const change = (step: HomeStep, empty: boolean, add: string) => (
+  const change = (step: HomeStep, empty: boolean, add: string, changing: string) => (
     <Button
       type="button"
       variant="link"
       className="help-text-action"
       onClick={() => onStep(step)}
     >
-      {empty ? add : at.change}
+      {empty ? add : changing}
     </Button>
   );
   const left = money ? total(money.income) - total(money.expenses) : 0;
@@ -80,7 +80,7 @@ export function AtHome({
             <span className="help-tel">{record.neighbor.phone || at.noPhone}</span>
             {record.neighbor.email && <small>{record.neighbor.email}</small>}
           </dd>
-          {change("details", false, "")}
+          {change("details", false, "", at.changeReach)}
         </div>
         <div>
           <dt>{at.lives}</dt>
@@ -94,11 +94,11 @@ export function AtHome({
                   })
                 : text.home.adults(record.neighbor.adults)}
           </dd>
-          {change("people", !household.length, at.sayWho)}
+          {change("people", !household.length, at.sayWho, at.changeLives)}
         </div>
         {household.some((person) => person.work) && (
           <Suspense fallback={null}>
-            <WorkRow household={household} change={change("people", false, "")} />
+            <WorkRow household={household} change={change("people", false, "", at.changeLives)} />
           </Suspense>
         )}
         <div>
@@ -117,7 +117,7 @@ export function AtHome({
           ) : (
             <dd>{at.noMonth}</dd>
           )}
-          {change("money", !money, at.addMonth)}
+          {change("money", !money, at.addMonth, at.changeMonth)}
         </div>
         <div>
           <dt>{at.accounts}</dt>
@@ -142,7 +142,7 @@ export function AtHome({
             <dd>{at.noAccounts}</dd>
           )}
           <span className="help-home-actions">
-            {change("accounts", !accounts.length, at.addAccount)}
+            {change("accounts", !accounts.length, at.addAccount, at.changeAccounts)}
             {!numbers && accounts.some((account) => account.ending) && (
               <Button
                 type="button"
