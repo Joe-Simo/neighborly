@@ -223,6 +223,8 @@ export function LiveWorkspace({
     if (command.type === "invite") setInvitationLink("");
     try {
       const result = await run(command);
+      // An earlier invitation's link is not about this act: the new saved line replaces it, as it replaces the old line.
+      if (command.type !== "invite" && !result?.invitationToken) setInvitationLink("");
       if (result?.delivery) setInvitationDelivery(result.delivery);
       if (result?.invitationToken)
         setInvitationLink(
