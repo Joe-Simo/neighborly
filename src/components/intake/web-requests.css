@@ -43,7 +43,7 @@
 .web-requests .web-row .web-ask p { margin: 0; }
 /* The partner form's language choice: each radio by its own word, with room between the two. */
 .web-requests .web-language { display: flex; flex-wrap: wrap; gap: 4px 24px; border: 0; padding: 0; margin: 0; }
-.web-requests .web-language legend { width: 100%; margin-bottom: 4px; }
+.web-requests .web-language legend { width: 100%; margin-bottom: 4px; font-size: 15px; font-weight: 600; line-height: 1.5; }
 .web-requests .web-language .web-choice { display: flex; gap: 8px; align-items: center; min-height: 44px; }
 .web-requests .web-partners .live-form input:not([type="radio"]) { max-width: 420px; }
 .web-requests .web-partners .live-form > [data-slot="button"] { justify-self: start; align-self: flex-start; width: auto; }
