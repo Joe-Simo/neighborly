@@ -995,8 +995,12 @@
 
 .report-hours-lines { margin: 0; padding: 0; list-style: none; border-top: 1px solid #cfc9b8; }
 .report-hours-lines li {
-  display: grid; grid-template-columns: minmax(0, 230px) minmax(0, 1fr) auto; align-items: center; gap: var(--space-8) clamp(16px, 3vw, 40px);
+  display: grid; grid-template-columns: minmax(0, 230px) minmax(0, 1fr) auto; align-items: center; gap: var(--space-8) 26px;
   padding: var(--space-20) 0; border-bottom: 1px solid #e0dccb;
+}
+/* The hours' bars start where the kinds of help's bars start above them, so a team's name has the same room. */
+@media screen and (min-width: 1100px) {
+  .report-hours-lines li { grid-template-columns: 330px minmax(0, 1fr) minmax(120px, auto); }
 }
 .report-hours-lines h3 { margin: 0; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 22px; line-height: 1.15; overflow-wrap: anywhere; }
 .report-hours-lines p { margin: var(--space-4) 0 0; font-size: 13px; color: var(--live-muted); }
