@@ -1301,6 +1301,9 @@ nav.week-figures a > span:nth-child(2):has(+ small:empty) { grid-row: 1 / span 2
    40px at different sizes, so This week's head is given the band's own gap, and the two can never come apart. */
 .live-app .live-main:has(.week-quilt) { --head-gap: 36px; }
 .live-app .live-main:has(.week-quilt) > .live-page-head { margin-bottom: var(--head-gap); }
+/* A note or error said under the head (lists cut short, a refusal) stands between the rule and the band: the band
+   then keeps its own place under that note instead of lifting into its box. */
+.live-app .live-main:has(> .live-page-head + :is(.live-note, .live-error)) .week-quilt { margin-top: calc(var(--head-gap) - 8px); }
 .week-quilt-band {
   display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); column-gap: 6px; min-height: calc(var(--size) + 10px); align-items: start; padding-top: var(--space-4);
   /* One day's width, for the overlap below. */
