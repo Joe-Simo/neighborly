@@ -115,7 +115,7 @@ export function LiveCommitmentEditor({
         };
         // An end at or before its start is said on the end, here, as the add form says it: never only after review, from the server.
         if (next.start && next.end && next.end <= next.start)
-          markWrong(form, "end", words.notices.refused[refusals.endAfterStart] ?? refusals.endAfterStart);
+          markWrong(form, "end", words.notices.refused[refusals.endAfterStart] ?? refusals.endAfterStart, next.start);
         if (!form.checkValidity()) return;
         setDraft(next);
         setReview({
