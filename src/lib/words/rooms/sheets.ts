@@ -39,7 +39,8 @@ export const en = (t: Terms, place: string) => ({
     preparation: "Preparation",
     review: "Review changes",
     releases:
-      "Changing the date, time, role, place or preparation frees whoever accepted and withdraws open requests for cover. Someone must accept it again. Saving with nothing changed keeps the yes.",
+      "Changing the date, time, role, place or preparation frees whoever accepted and withdraws open requests for cover. Someone must accept it again.",
+    unchanged: "Nothing has changed yet. Go back to change a detail.",
     back: "Back",
     confirm: "Confirm changes",
     saving: "Saving…",
@@ -100,7 +101,8 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => {
       preparation: "Preparación",
       review: "Revisar los cambios",
       releases:
-        "Cambiar la fecha, la hora, el rol, el lugar o la preparación libera a quien había aceptado y retira las peticiones abiertas para cubrirlo. Alguien tiene que aceptarlo de nuevo. Si guardas sin cambiar nada, el sí se mantiene.",
+        "Cambiar la fecha, la hora, el rol, el lugar o la preparación libera a quien había aceptado y retira las peticiones abiertas para cubrirlo. Alguien tiene que aceptarlo de nuevo.",
+      unchanged: "Todavía no has cambiado nada. Vuelve para cambiar algún detalle.",
       back: "Atrás",
       confirm: "Confirmar los cambios",
       saving: "Guardando…",

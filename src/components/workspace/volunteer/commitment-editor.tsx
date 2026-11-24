@@ -53,6 +53,9 @@ export function LiveCommitmentEditor({
     location: item.location,
     preparation: item.preparation,
   }));
+  // Nothing to save is said as such: the sheet never offers to confirm, nor warns of a release, over an unchanged date.
+  const unchanged = !!review && review.title === item.title && review.location === item.location &&
+    review.preparation === item.preparation && review.start === local(item.start) && review.end === local(item.end);
   if (review)
     return (
       <div className="live-form">
@@ -73,7 +76,7 @@ export function LiveCommitmentEditor({
         </dl>
         <p className="live-prep">{review.preparation}</p>
         <div className="live-note">
-          {text.releases}
+          {unchanged ? text.unchanged : text.releases}
         </div>
         {error && <LiveFailure message={error} />}
         {/* With the connection lost the save is held, not failed: one line says so, above the buttons. */}
@@ -86,7 +89,7 @@ export function LiveCommitmentEditor({
           >
             {text.back}
           </Button>
-          <Button disabled={pending} onClick={() => void save(review)}>
+          <Button disabled={pending || unchanged} onClick={() => void save(review)}>
             <SaveLabel saving={saving} idle={text.confirm} busy={text.saving} />
           </Button>
         </div>
