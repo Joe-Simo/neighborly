@@ -1081,6 +1081,8 @@
   /* A column head wider than its column (a conference's name in the council table) turns between its words inside
      the column, never running over the next head. */
   .housing-table thead th:not(:first-child) { white-space: normal; vertical-align: bottom; }
+  /* The landlord head sits on the same bottom line as the month heads beside it, not halfway up a tall head row. */
+  .housing-table thead th:first-child { vertical-align: bottom; }
 }
 @media print { .housing-section { display: none; } .housing-frame::after { display: none; } }
 .council-one { margin-top: var(--space-24); border-top: 1px solid var(--live-line); padding-top: var(--space-16); }
