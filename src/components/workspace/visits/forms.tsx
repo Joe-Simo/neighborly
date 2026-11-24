@@ -436,7 +436,7 @@ export function WriteUpForm({
         <LiveField
           label={text.hours}
           said={{ needed: text.problems.hours, neededCheck: text.problems.hours }}
-          help={fill(text.hoursHelp, { first: firstName(visit.visitors[0]?.name ?? ""), second: firstName(visit.visitors[1]?.name ?? "") })}
+          help={visit.visitors.length > 1 ? fill(text.hoursHelp, { first: firstName(visit.visitors[0].name), second: firstName(visit.visitors[1].name) }) : text.hoursHelpOne}
         >
           <Input
             name="hours"
