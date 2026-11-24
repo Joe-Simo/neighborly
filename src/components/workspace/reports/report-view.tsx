@@ -558,7 +558,7 @@ export function ReportView({
               {serving
                 .filter((line) => line.hours > 0)
                 .map((line) => `${line.name} ${count(line.hours)}`.replaceAll(" ", "\u00a0")) // each line holds together: the summary wraps between lines, never inside one
-                .join(" · ") || w.time.noHours}
+                .join("\u00a0· ") || w.time.noHours /* the dot ends a line, never starts the next */}
             </figcaption>
           </figure>
           <dl className="report-hours-slips">

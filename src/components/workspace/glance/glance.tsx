@@ -20,7 +20,7 @@ const said = {
     whole: "The conference at a glance",
     visits: "Next 7 days",
     visitsLine: (next: string) => (next ? `Next ${next}` : "Nothing of yours in the next 7\u00a0days"),
-    asks: (n: number) => (n ? `${n} home visit${n === 1 ? "" : "s"} waiting for your answer` : ""),
+    asks: (n: number) => (n ? `${n}\u00a0home visit${n === 1 ? "" : "s"} waiting for your answer` : ""),
     tasks: "Your tasks",
     tasksLine: (late: number) => (late ? `${late} past due` : "None past due"),
     callbacks: "Callbacks two days late",
@@ -50,7 +50,7 @@ const said = {
     whole: "La conferencia de un vistazo",
     visits: "Próximos 7 días",
     visitsLine: (next: string) => (next ? `Lo próximo: ${next}` : "Nada tuyo en los próximos 7\u00a0días"),
-    asks: (n: number) => (n ? (n === 1 ? "1 visita espera tu respuesta" : `${n} visitas esperan tu respuesta`) : ""),
+    asks: (n: number) => (n ? (n === 1 ? "1\u00a0visita espera tu respuesta" : `${n}\u00a0visitas esperan tu respuesta`) : ""),
     tasks: "Tus tareas",
     tasksLine: (late: number) => (late ? `${late} con la fecha pasada` : "Ninguna con la fecha pasada"),
     callbacks: "Llamadas con dos días de retraso",
@@ -136,7 +136,8 @@ export function Glance({ quiet = false }: { quiet?: boolean }) {
   // Coming up's own list (comingUp), this person's rows only, so the tile always agrees with the rows under it.
   const week = comingUp(data, now).filter((item) => item.assigneeId === data.user.id);
   const next = week[0];
-  const when = next ? formatDate(locale, next.start, { timeZone: data.church.timeZone, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
+  // The date breaks only after its commas, never inside "25 nov" or "4:00 a.m.".
+  const when = next ? formatDate(locale, next.start, { timeZone: data.church.timeZone, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).replace(/([^,])\s/g, "$1\u00a0") : "";
   const mine: Tile[] = [
     { href: "/app/mine", label: w.visits, figure: `${week.length}`, line: [w.visitsLine(when), w.asks(own.visitAsks)].filter(Boolean).join("\u00a0· "), waits: own.visitAsks > 0 },
     { href: "/app/tasks", label: w.tasks, figure: `${own.tasks}`, line: w.tasksLine(own.tasksLate), waits: own.tasksLate > 0 },

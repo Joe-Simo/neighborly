@@ -558,6 +558,21 @@
   .report-months { container-type: inline-size; }
   .report-months:not([data-months="3"]) p.help-amount { font-size: clamp(15px, calc(100cqi / 38 - 4px), 22px); }
 }
+/* Where the report is too narrow for twelve months to hold "15 visits" on one line (a tablet beside the menu), the
+   year is two rows of six, as on a phone, with the bars and figures kept at their full size. */
+@container (max-width: 760px) {
+  @media screen and (min-width: 851px) {
+    .report-months:not([data-months="3"]) { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .report-months:not([data-months="3"]) li:nth-child(n + 7) { border-top: 1px solid var(--live-line); }
+    .report-months:not([data-months="3"]) p.help-amount { font-size: 19px; }
+  }
+}
+/* Twelve across in a narrower report: the visits line takes the phone's 13px and holds on one line ("15 visitas"). */
+@container (min-width: 761px) and (max-width: 980px) {
+  @media screen and (min-width: 851px) {
+    .report-months:not([data-months="3"]) p:not(.help-amount) { font-size: 13px; white-space: nowrap; }
+  }
+}
 @media (max-width: 850px) {
   .report-period { align-items: flex-start; flex-direction: column; }
   /* The whole key stays: it wraps under the heading. */
@@ -995,8 +1010,12 @@
 
 .report-hours-lines { margin: 0; padding: 0; list-style: none; border-top: 1px solid #cfc9b8; }
 .report-hours-lines li {
-  display: grid; grid-template-columns: minmax(0, 230px) minmax(0, 1fr) auto; align-items: center; gap: var(--space-8) clamp(16px, 3vw, 40px);
+  display: grid; grid-template-columns: minmax(0, 230px) minmax(0, 1fr) auto; align-items: center; gap: var(--space-8) 26px;
   padding: var(--space-20) 0; border-bottom: 1px solid #e0dccb;
+}
+/* The hours' bars start where the kinds of help's bars start above them, so a team's name has the same room. */
+@media screen and (min-width: 1100px) {
+  .report-hours-lines li { grid-template-columns: 330px minmax(0, 1fr) minmax(120px, auto); }
 }
 .report-hours-lines h3 { margin: 0; font-family: "Newsreader", "Newsreader Fallback", Georgia, serif; font-weight: 400; font-size: 22px; line-height: 1.15; overflow-wrap: anywhere; }
 .report-hours-lines p { margin: var(--space-4) 0 0; font-size: 13px; color: var(--live-muted); }
