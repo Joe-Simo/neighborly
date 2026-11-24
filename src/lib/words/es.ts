@@ -110,7 +110,7 @@ export function es(set: WordSet): Words {
       },
       people: {
         title: "Todos juntos.",
-        deck: "Todas las personas, con su papel y sus equipos.",
+        deck: "Todas las personas, con su papel y quién está listo para servir.",
       },
       commitments: {
         title: "Compromisos claros.",

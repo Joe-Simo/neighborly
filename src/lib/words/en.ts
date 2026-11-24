@@ -116,7 +116,7 @@ export function en(set: WordSet) {
       },
       people: {
         title: "People, together.",
-        deck: "Everyone here, with their role and their teams.",
+        deck: "Everyone here, with their role and who is ready to serve.",
       },
       commitments: {
         title: "Clear commitments.",
