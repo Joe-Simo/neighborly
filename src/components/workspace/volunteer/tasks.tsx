@@ -117,6 +117,7 @@ export function TasksSection() {
                             task.complete
                               ? undefined
                               : { command: { type: "setTaskComplete", taskId: task.id, complete: false }, said: words.tasks.openAgain(sampleSaid(task.title)), returnTo: pressed },
+                            sampleSaid(task.title),
                           );
                           if (saved) setTicked(task.complete ? undefined : task.id);
                           if (saved) keepFocus(pressed, !task.complete);
