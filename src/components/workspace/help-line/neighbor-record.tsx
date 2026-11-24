@@ -838,14 +838,14 @@ function NeighborRecordView({
             >
               {text.history.note}
             </Button>
-            {!first && (
-              <Button
-                variant="outline"
-                onClick={() => onStep({ kind: "request" })}
-              >
-                {text.history.request}
-              </Button>
-            )}
+            {/* A household may ask for more than one thing at a time (rent and food): a request already open never
+                hides the way to add the next one. */}
+            <Button
+              variant="outline"
+              onClick={() => onStep({ kind: "request" })}
+            >
+              {text.history.request}
+            </Button>
           </span>
         </div>
         {record.history.length ? (
