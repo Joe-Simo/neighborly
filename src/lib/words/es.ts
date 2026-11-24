@@ -284,7 +284,7 @@ export function es(set: WordSet): Words {
       saving: "Guardando…",
       confirm: "Confirmar días libres",
       failed:
-        "No pudimos confirmar estas fechas. No se guardó nada. Vuelve, revisa la lista y confirma otra vez.",
+        "No pudimos confirmar estas fechas. No se guardó nada. Toca Confirmar días libres otra vez; si sigue fallando, vuelve y revisa las fechas.",
       saved: (released) =>
         released === 0 ? "Días libres guardados. Ninguno de tus compromisos cambió." : released === 1 ? "Días libres guardados. Se liberó 1 compromiso revisado para que otro lo cubra." : `Días libres guardados. Se liberaron ${esN(released)} compromisos revisados para que otros los cubran.`,
     },

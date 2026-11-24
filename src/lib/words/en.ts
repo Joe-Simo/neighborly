@@ -289,7 +289,7 @@ export function en(set: WordSet) {
       saving: "Saving…",
       confirm: "Confirm time off",
       failed:
-        "We couldn’t confirm these dates. Nothing was saved. Go back, look over the list, then confirm again.",
+        "We couldn’t confirm these dates. Nothing was saved. Try Confirm time off again; if it keeps failing, go Back and check the dates.",
       saved: (released: number) =>
         released === 0 ? "Time off saved. None of your commitments changed." : `Time off saved. ${enN(released)} reviewed ${released === 1 ? "commitment was" : "commitments were"} released for cover.`,
     },
