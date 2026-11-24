@@ -97,6 +97,8 @@ export function MoneyForm({
   const [stopping, setStopping] = useState(false);
   const out = choice.direction === "out";
   const gift = out && choice.kind === "twinning";
+  // The opening balance comes from no one: it is where the money is held, as of the day it was counted.
+  const opening = !out && choice.kind === "opening";
   return (
     <form
       className="live-form"
@@ -238,18 +240,18 @@ export function MoneyForm({
             required
           />
         </LiveField>
-        <LiveField label={out ? w.dayPaid : w.dayReceived}>
+        <LiveField label={opening ? w.dayCounted : out ? w.dayPaid : w.dayReceived}>
           <DateField name="date" max={today} value={date} onChange={setDate} required />
         </LiveField>
       </div>
       <LiveField
-        label={gift ? w.toConference : out ? w.paidTo : w.from}
+        label={gift ? w.toConference : out ? w.paidTo : opening ? w.heldIn : w.from}
       >
         <Input
           name="name"
           list={out && !gift && payees?.length ? "treasury-payees" : undefined}
           maxLength={120}
-          placeholder={out ? "" : w.fromExample}
+          placeholder={out ? "" : opening ? w.heldInExample : w.fromExample}
           value={name}
           onChange={(event) => setName(event.target.value)}
           required
@@ -284,7 +286,7 @@ export function MoneyForm({
       </LiveField>
       {error && <FormError message={error} />}
       <FormActions saving={saving} onCancel={onCancel}>
-        {gift ? w.submit.gift : out ? w.submit.out : w.submit.in}
+        {gift ? w.submit.gift : out ? w.submit.out : opening ? w.submit.opening : w.submit.in}
       </FormActions>
     </form>
   );

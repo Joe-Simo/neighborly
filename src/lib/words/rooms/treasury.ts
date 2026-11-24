@@ -158,7 +158,11 @@ const en = (t: Terms, place: string) => ({
     fromExample: "The parish, the Walk, an anonymous gift",
     check: "Check number (optional)",
     note: "Note (optional)",
-    submit: { gift: "Record gift", out: "Record money out", in: "Record money in" },
+    submit: { gift: "Record gift", out: "Record money out", in: "Record money in", opening: "Record opening balance" },
+    /** For the opening balance, which comes from no one: where the money is held, and the day it was counted. */
+    heldIn: "Where it is held",
+    heldInExample: "Checking account at the parish credit union",
+    dayCounted: "As of",
   },
   payment: {
     amountWrong: "Enter the amount in dollars and cents, like 214.60.",
@@ -430,7 +434,10 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     fromExample: "La parroquia, la Caminata, un anónimo",
     check: "Número de cheque (opcional)",
     note: "Nota (opcional)",
-    submit: { gift: "Anotar el donativo", out: "Anotar dinero que sale", in: "Anotar dinero que entra" },
+    submit: { gift: "Anotar el donativo", out: "Anotar dinero que sale", in: "Anotar dinero que entra", opening: "Anotar el saldo inicial" },
+    heldIn: "Dónde está guardado",
+    heldInExample: "Cuenta de cheques en la cooperativa de la parroquia",
+    dayCounted: "Al día",
   },
   payment: {
     amountWrong: "Escribe el monto en dólares y centavos, como 214.60.",
