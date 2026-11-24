@@ -573,7 +573,10 @@ function VisitsView({
         </RoomAside>
       )}
       {nothing ? (
-        <EmptyLine first line={text.empty.title} />
+        <>
+          <EmptyLine first line={text.empty.title} />
+          <p className="visits-quiet">{text.empty.next}</p>
+        </>
       ) : (
         <section>
           <div className="live-section-head">

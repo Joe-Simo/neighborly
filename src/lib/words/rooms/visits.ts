@@ -66,6 +66,7 @@ const en = (t: Terms, place: string) => ({
   aside: "Going out this week",
   empty: {
     title: "No one is waiting on a visit.",
+    next: "When a request on the Help line needs a visit, it comes here with a pair to ask. To visit someone without a request, use Plan a visit.",
   },
   coming: {
     title: "Coming up",
@@ -261,6 +262,7 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => {
     aside: "Salen esta semana",
     empty: {
       title: "Nadie está esperando una visita.",
+      next: "Cuando una petición de la Línea de ayuda necesite una visita, aparecerá aquí con una pareja para pedírsela. Para visitar a alguien sin petición, usa Planear una visita.",
     },
     coming: {
       title: "Próximas visitas",
