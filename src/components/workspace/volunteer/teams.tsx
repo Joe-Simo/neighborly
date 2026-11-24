@@ -301,6 +301,9 @@ function LiveTeamRoster({
               </div>
             ))}
           </div>
+          {roster.status === "Exhausted" && roster.results.length === 0 && (
+            <p className="live-meta team-roster-empty">{team.canCoordinate ? text.rosterEmptyAdd : text.rosterEmpty}</p>
+          )}
           {roster.status !== "Exhausted" && (
             <Button
               className="team-more"

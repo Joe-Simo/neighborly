@@ -137,6 +137,9 @@ const en = (t: Terms, place: string) => ({
     add: "Add",
     addLabel: (name: string) => `Add ${name}`,
     everyone: `Everyone in your ${t.group} is already on this team.`,
+    /** Under an opened roster with nobody on it: for a member, and for whoever can add. */
+    rosterEmpty: "No one is on this team yet.",
+    rosterEmptyAdd: "No one is on this team yet. Use “Add a member” to invite someone.",
     manage: "Manage",
     manageLabel: (name: string) => `Manage ${name}`,
     markNotReady: "Mark not ready for this team",
@@ -283,6 +286,8 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => {
       add: "Agregar",
       addLabel: (name) => `Agregar a ${name}`,
       everyone: `Todas las personas de tu ${t.group} ya están en este equipo.`,
+      rosterEmpty: "Todavía no hay nadie en este equipo.",
+      rosterEmptyAdd: "Todavía no hay nadie en este equipo. Usa «Agregar un miembro» para invitar a alguien.",
       manage: "Administrar",
       manageLabel: (name) => `Administrar a ${name}`,
       markNotReady: "Marcar como no listo para este equipo",
