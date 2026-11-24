@@ -466,6 +466,7 @@ export function TreasurySection() {
             <EntryDetail
               key={view.entry.id}
               entry={view.entry}
+              onCancel={() => setOpen(null)}
               onReverse={(reason) =>
                 settle(
                   () =>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/components/workspace/context";
 import { LiveField } from "@/components/workspace/primitives";
+import { LiveWaiting } from "@/components/workspace/states";
 import { formatFigure } from "@/components/workspace/treasury/money";
 import {
   FormError,
@@ -17,11 +18,15 @@ import { treasuryWords } from "@/lib/words/rooms/treasury";
 export function EntryDetail({
   entry,
   onReverse,
+  onCancel,
 }: {
   entry: LedgerEntry;
+  /** Closes the sheet without changing anything: opening an entry is most often only to read it. */
+  onCancel: () => void;
   onReverse: (reason: string) => Promise<Refusal>;
 }) {
-  const w = treasuryWords(useWorkspace().words).entry;
+  const room = treasuryWords(useWorkspace().words);
+  const w = room.entry;
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -71,6 +76,10 @@ export function EntryDetail({
       </LiveField>
       {error && <FormError message={error} />}
       <div className="live-form-actions">
+        <LiveWaiting when={saving} />
+        <Button type="button" variant="ghost" onClick={onCancel} disabled={saving}>
+          {room.cancel}
+        </Button>
         <Button type="submit" variant="outline" disabled={saving}>
           {saving ? w.reversing : w.reverse}
         </Button>
