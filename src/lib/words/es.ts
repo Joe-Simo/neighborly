@@ -221,7 +221,7 @@ export function es(set: WordSet): Words {
       where: "Dónde",
       whereUnknown: "Lugar por confirmar",
       person: "Persona",
-      coordinator: "Coordinador",
+      coordinator: "Quien coordina",
       unassigned: "Sin asignar",
       fallbackTitle: "Compromiso",
       readyTitle: "Para llegar con calma",
@@ -402,7 +402,8 @@ export function es(set: WordSet): Words {
     },
     visits: {
       title: set === "vincentian" ? "Visitas domiciliarias" : "Visitas a casa",
-      count: (count) => `${esN(count)} ${count === 1 ? "visita" : "visitas"}, siempre de dos en dos`,
+      count: (count, open = 0) =>
+        `${esN(count)} ${count === 1 ? "visita" : "visitas"}${open ? `, ${esN(open)} aún sin segundo visitador` : ", siempre de dos en dos"}`,
       notSaved: "Tu respuesta no se guardó; cada visita sigue mostrando la que diste antes.",
       on: (street) => `Una visita en ${street}`,
       nearby: "una calle cercana",
