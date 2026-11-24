@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { WhenField } from "@/components/workspace/date-field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { LiveField } from "@/components/workspace/primitives";
+import { LiveField, markWrong } from "@/components/workspace/primitives";
+import { refusals } from "@/lib/refusals";
 import { SheetCancel } from "@/components/workspace/live-dialog";
 import { LiveWaiting, LiveFailure, SaveLabel } from "@/components/workspace/states";
 import type { LiveCommand, LiveCommitment } from "@/components/workspace/types";
@@ -96,7 +97,8 @@ export function LiveCommitmentEditor({
       className="live-form"
       onSubmit={(event) => {
         event.preventDefault();
-        const f = new FormData(event.currentTarget);
+        const form = event.currentTarget;
+        const f = new FormData(form);
         const value = (name: string) => String(f.get(name) ?? "").trim();
         const next = {
           title: value("title"),
@@ -105,6 +107,10 @@ export function LiveCommitmentEditor({
           location: value("location"),
           preparation: value("preparation"),
         };
+        // An end at or before its start is said on the end, here, as the add form says it: never only after review, from the server.
+        if (next.start && next.end && next.end <= next.start)
+          markWrong(form, "end", words.notices.refused[refusals.endAfterStart] ?? refusals.endAfterStart);
+        if (!form.checkValidity()) return;
         setDraft(next);
         setReview({
           type: "reviseCommitment",
