@@ -61,7 +61,7 @@ const books = {
       notUrgentBy: (name: string) => `${name} la marcó como no urgente`,
       callingBack: (name: string) => `${name} devuelve la llamada`,
       drafting: "Preparando el borrador…",
-      draft: "Preparar borrador",
+      draft: "Preparar una petición",
       markReturned: "Marcar como devuelta",
       markReturnedFor: (name: string) => `Marcar como devuelta: ${name}`,
       quietTitle: "Nadie espera que le devuelvan la llamada.",
