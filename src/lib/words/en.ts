@@ -433,6 +433,7 @@ export function en(set: WordSet) {
       share: "Share address",
       copied: "Copied",
       copiedStatus: "Address copied.",
+      copyFailed: "This device didn’t let the address be copied. Tap the address above to select it, then copy it yourself.",
       privacy: "This address is yours alone; anyone who has it can see when and where you serve, and the preparation written for each commitment. A home visit shows the time and the street, never a neighbor’s name or need. If it reaches the wrong hands, make a new one and the old one stops working.",
       makeNew: "Make a new address",
       makeNewTitle: "Make a new address?",

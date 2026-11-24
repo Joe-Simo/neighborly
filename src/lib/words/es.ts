@@ -425,6 +425,7 @@ export function es(set: WordSet): Words {
       share: "Compartir dirección",
       copied: "Copiada",
       copiedStatus: "Dirección copiada.",
+      copyFailed: "Este dispositivo no dejó copiar la dirección. Toca la dirección de arriba para seleccionarla y cópiala tú.",
       privacy: "Esta dirección es solo tuya; quien la tenga puede ver cuándo y dónde sirves, y la preparación escrita para cada compromiso. Una visita muestra la hora y la calle, nunca el nombre ni la necesidad de un vecino. Si llega a manos equivocadas, crea una nueva y la anterior deja de funcionar.",
       makeNew: "Crear una dirección nueva",
       makeNewTitle: "¿Crear una dirección nueva?",

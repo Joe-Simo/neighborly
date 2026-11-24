@@ -34,6 +34,8 @@ const noChange = () => () => {};
 
 function CalendarAddressView({ address, busy, error, renewed, onCreate, titled = true }: { address: string | null; busy: boolean; error: string; renewed: boolean; onCreate: () => void; titled?: boolean }) {
   const [copied, setCopied] = useState(false);
+  // A copy the device refuses is said, with how to copy the address by hand (the field selects itself when tapped).
+  const [copyFailed, setCopyFailed] = useState(false);
   const [replacing, setReplacing] = useState(false);
   const text = useWorkspace().words.calendar;
   const device = useSyncExternalStore(noChange, () => likelyCalendar(navigator.userAgent), () => "google" as const);
@@ -74,13 +76,23 @@ function CalendarAddressView({ address, busy, error, renewed, onCreate, titled =
             ) : (
               <Button
                 variant="outline"
-                onClick={() => void navigator.clipboard.writeText(address).then(() => setCopied(true))}
+                onClick={() => {
+                  setCopyFailed(false);
+                  void Promise.resolve()
+                    .then(() => navigator.clipboard.writeText(address))
+                    .then(() => setCopied(true))
+                    .catch(() => {
+                      setCopied(false);
+                      setCopyFailed(true);
+                    });
+                }}
               >
                 {copied ? <CircleCheck size={16} aria-hidden="true" className="text-[var(--paper-green)]" /> : <Copy size={16} aria-hidden="true" />} {copied ? text.copied : text.copy}
               </Button>
             )}
           </div>
           <span className="sr-only" role="status">{copied ? text.copiedStatus : ""}</span>
+          {copyFailed && <LiveFailure message={text.copyFailed} kept="" />}
           <p className="tools-small">
             {text.privacy}
           </p>
@@ -91,7 +103,7 @@ function CalendarAddressView({ address, busy, error, renewed, onCreate, titled =
             <LiveDialog title={text.makeNewTitle} description={text.makeNewDetail} onClose={() => setReplacing(false)}>
               <div className="live-form-actions">
                 <Button variant="outline" onClick={() => setReplacing(false)}>{text.keep}</Button>
-                <Button disabled={busy} onClick={() => { setReplacing(false); setCopied(false); onCreate(); }}>{text.makeNew}</Button>
+                <Button disabled={busy} onClick={() => { setReplacing(false); setCopied(false); setCopyFailed(false); onCreate(); }}>{text.makeNew}</Button>
               </div>
             </LiveDialog>
           )}
