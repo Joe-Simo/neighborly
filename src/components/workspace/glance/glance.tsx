@@ -136,7 +136,8 @@ export function Glance({ quiet = false }: { quiet?: boolean }) {
   // Coming up's own list (comingUp), this person's rows only, so the tile always agrees with the rows under it.
   const week = comingUp(data, now).filter((item) => item.assigneeId === data.user.id);
   const next = week[0];
-  const when = next ? formatDate(locale, next.start, { timeZone: data.church.timeZone, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
+  // The date breaks only after its commas, never inside "25 nov" or "4:00 a.m.".
+  const when = next ? formatDate(locale, next.start, { timeZone: data.church.timeZone, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).replace(/([^,])\s/g, "$1\u00a0") : "";
   const mine: Tile[] = [
     { href: "/app/mine", label: w.visits, figure: `${week.length}`, line: [w.visitsLine(when), w.asks(own.visitAsks)].filter(Boolean).join("\u00a0· "), waits: own.visitAsks > 0 },
     { href: "/app/tasks", label: w.tasks, figure: `${own.tasks}`, line: w.tasksLine(own.tasksLate), waits: own.tasksLate > 0 },
