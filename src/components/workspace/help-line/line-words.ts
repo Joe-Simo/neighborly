@@ -29,6 +29,7 @@ const books = {
       quietTitle: "No one is waiting for a call back.",
       /** No call waiting and none returned: one line; the head carries "Log a call". */
       noneTitle: "No calls yet.",
+      noneDetail: "When the phone rings, choose Log a call. The call waits here until someone calls back.",
       returnedThisWeek: "Returned this week",
       count: (count: number) => (count === 1 ? "1 call" : `${enN(count)} calls`),
       returned: "Returned",
@@ -66,6 +67,7 @@ const books = {
       markReturnedFor: (name: string) => `Marcar como devuelta: ${name}`,
       quietTitle: "Nadie espera que le devuelvan la llamada.",
       noneTitle: "Todavía no hay llamadas.",
+      noneDetail: "Cuando suene el teléfono, elige Anotar una llamada. La llamada espera aquí hasta que alguien la devuelva.",
       returnedThisWeek: "Devueltas esta semana",
       count: (count: number) => (count === 1 ? "1 llamada" : `${esN(count)} llamadas`),
       returned: "Devuelta",

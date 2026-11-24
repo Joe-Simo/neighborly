@@ -61,11 +61,12 @@ export function HelpEmpty({
 }
 
 /** An empty list: one line of words under the room's rule, with no picture. The room's head keeps the step. */
-export function EmptyLine({ line, first }: { line: string; first?: boolean }) {
+export function EmptyLine({ line, first, detail }: { line: string; first?: boolean; detail?: string }) {
   const named = useId();
   return (
     <div className="help-empty-line" data-first={first ? "" : undefined} role="group" aria-labelledby={named}>
       <FollowingHeading id={named}>{line}</FollowingHeading>
+      {detail && <p className="live-muted">{detail}</p>}
     </div>
   );
 }
