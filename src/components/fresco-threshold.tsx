@@ -164,6 +164,7 @@ export function FrescoThreshold() {
       put("--door", door.toFixed(4));
       // Once the doors begin to open the words stay out, even while their button still holds the keyboard.
       host.dataset.opening = String(door > 0);
+      host.dataset.ajar = String(door > .5);
       put("--grow", grow.toFixed(4));
       // How far inside the courtyard the visitor stands: the frame, the doors and the wall are gone at 1.
       put("--inside", inside.toFixed(4));

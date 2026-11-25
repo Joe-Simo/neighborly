@@ -167,7 +167,7 @@
 .neighborly-connected-world.is-connected .painted-world-track[aria-hidden=true] .painted-world-caption,
 .neighborly-connected-world.is-connected .painted-world-track[aria-hidden=true] .painted-world-header,
 .neighborly-connected-world.is-connected .painted-world-track[aria-hidden=true] .painted-world-tools{visibility:hidden}
-.neighborly-connected-world.is-connected .fresco-stage[data-away] .fresco-header{visibility:hidden}
+/* The doors' header stays drawn under the opening's sheet (it takes no pointer while the stage is away), so as the sheet's cut edge lifts across the header the same name and way in are already beneath it, never half a line. */
 .painted-world-opening-actions a{background:#eee7d7e8;padding:0 10px}
 
 
