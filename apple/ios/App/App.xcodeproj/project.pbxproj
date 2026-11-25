@@ -466,7 +466,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 85XHYL924W;
+				CURRENT_PROJECT_VERSION = 2;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -489,7 +490,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 85XHYL924W;
+				CURRENT_PROJECT_VERSION = 2;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -510,7 +512,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 85XHYL924W;
+				CURRENT_PROJECT_VERSION = 2;
 				CODE_SIGN_ENTITLEMENTS = KindHelpsWidget/KindHelpsWidget.entitlements;
 				INFOPLIST_FILE = KindHelpsWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -533,7 +536,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 85XHYL924W;
+				CURRENT_PROJECT_VERSION = 2;
 				CODE_SIGN_ENTITLEMENTS = KindHelpsWidget/KindHelpsWidget.entitlements;
 				INFOPLIST_FILE = KindHelpsWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
