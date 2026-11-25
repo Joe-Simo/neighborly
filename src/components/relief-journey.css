@@ -303,3 +303,5 @@ main.painted-world .fresco-stage .fresco-caption:focus-visible{outline:none}
 @media(min-width:2200px){
   .relief-panel[data-chapter=help] .relief-picture{width:min(100vw,172svh,var(--print),calc((88svh - 400px) * 2));align-self:end;justify-self:center;margin-bottom:6svh;-webkit-mask:none;mask:none;border:1px solid var(--relief-edge);border-radius:3px;box-shadow:var(--relief-card);background:var(--relief-paper)}
 }
+/* On a wide window the doors' line and button are uncovered by the opening's sheet before their headline is through it: they wait for it, in one cut, so no words stand without their headline. A button holding the keyboard stays. */
+@media(min-width:900px),(max-height:500px){.fresco-stage:not([data-come=true]) .fresco-invitation>p:not(.fresco-kicker),.fresco-stage:not([data-come=true]) .fresco-open[data-slot=button]:not(:focus-visible){visibility:hidden}}

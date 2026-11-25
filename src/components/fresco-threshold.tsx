@@ -173,6 +173,8 @@ export function FrescoThreshold() {
       // On a narrow window the headline sits under the opening's sheet until it has cleared, so its cut comes later, ending as the doors begin to open.
       const come = media.matches ? 1 : phone ? clamp((travelled - .62) / .25) : clamp((travelled - .22) / .35);
       put("--come", come.toFixed(4));
+      // The line and button under the headline wait for it: they are never seen while the headline is still under the opening's sheet.
+      host.dataset.come = String(come >= 1);
       // A line part way through its cut keeps the cut's edge and shade beside it, so no letter is ever seen without the paper it comes from.
       [0, 1].forEach(line => { const through = clamp((come - line * .3) / .7); host.dataset[`slip${line}`] = String(through > 0 && through < 1); });
       // Standing in the courtyard, the words are a strip of paper laid on the paving that stands up as the walk ends, and lies back down as the courtyard draws back into its frame.
