@@ -731,9 +731,29 @@ export const measure = internalAction({
   },
 });
 
-/** One yes or no per place, by index; shared with measureReferrals so both ask the same thing. */
-function referralQuestions(count: number) {
-  return Object.fromEntries(Array.from({ length: count }, (_, index) => [`p${index}`, `Does note describe a need of the caller's own household that places.p${index} helps with? ${mentioned}`]));
+/**
+ * One yes or no per place, by index; shared with measureReferrals so both ask the same thing. The place is the subject:
+ * asked whether the note "describes a need the place helps with", the model offered tenant advice for "pide ayuda con
+ * la renta" (0.93); asked this way, two runs on 2026-11-25 offered nothing that did not fit. Spelling out both ends
+ * (criteria) made it stricter still and left plain fits such as an eviction notice and legal help unoffered.
+ */
+function referralQuestions(count: number): Record<string, Question> {
+  return Object.fromEntries(Array.from({ length: count }, (_, index) => {
+    const place = `places.p${index}`;
+    return [`p${index}`, {
+      type: "noul" as const,
+      instructions: `Does ${place} offer help with something note says the caller's own household needs? Count any wording or language for the same thing. ${mentioned}`,
+    }];
+  }));
+}
+/** How sure the model is that each place fits, by index, or null when any answer is not a number. */
+async function referralSure(key: string, note: string, helpsWith: string[], known?: Known) {
+  const answers = await decide(key, { note, places: Object.fromEntries(helpsWith.map((text, index) => [`p${index}`, text])) }, referralQuestions(helpsWith.length), known);
+  if (!answers) return null;
+  const sure = helpsWith.map((_, index) => noul(answers[`p${index}`]));
+  if (!sure.every((value): value is number => value !== null)) return null;
+  console.log(`jev ${JSON.stringify(Object.fromEntries(sure.map((value, index) => [`p${index}`, value])))}`);
+  return sure;
 }
 
 /** A request's own words, the call it came from, and the group's places that say what they help with. Never sent as it is. */
@@ -776,14 +796,9 @@ export const suggestReferrals = action({
     const none = { places: [], verification: "review" as const };
     if (!agencies.length || !note || !env.TYPESAFE_API_KEY || note.length > 2000) return none;
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return none;
-    const key = (index: number) => `p${index}`;
-    const sure = await confidence(env.TYPESAFE_API_KEY,
-      { note, places: Object.fromEntries(agencies.map((place, index) => [key(index), place.helpsWith])) },
-      referralQuestions(agencies.length),
-      { names, addresses, others },
-    );
+    const sure = await referralSure(env.TYPESAFE_API_KEY, note, agencies.map(place => place.helpsWith), { names, addresses, others });
     if (!sure) return none;
-    return { places: agencies.flatMap((place, index) => (sure[key(index)] >= sureEnough ? [place.name] : [])), verification: "checked" };
+    return { places: agencies.flatMap((place, index) => (sure[index] >= sureEnough ? [place.name] : [])), verification: "checked" };
   },
 });
 
@@ -856,8 +871,8 @@ export const measureReferrals = internalAction({
     if (!await ctx.runMutation(internal.drafts.reserveMany, { churchId, count: referralSet.length })) return { status: "no allowance" as const, ...none };
     const places = Object.keys(referralPlaces) as ReferralPlace[];
     const rows = await Promise.all(referralSet.map(async item => {
-      const sure = await confidence(key, { note: item.note, places: Object.fromEntries(places.map((place, index) => [`p${index}`, referralPlaces[place]])) }, referralQuestions(places.length));
-      const scores = Object.fromEntries(places.map((place, index) => [place, Math.round((sure?.[`p${index}`] ?? 0) * 100) / 100]));
+      const sure = await referralSure(key, item.note, places.map(place => referralPlaces[place]));
+      const scores = Object.fromEntries(places.map((place, index) => [place, Math.round((sure?.[index] ?? 0) * 100) / 100]));
       const offered = places.filter(place => scores[place] >= sureEnough);
       const marks = places.map(place => (offered.includes(place) === item.fits.includes(place) ? "right" : offered.includes(place) ? "wrong" : "missed"));
       return { id: item.id, offered, scores, marks, heldOut: !!item.heldOut };

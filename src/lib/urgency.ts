@@ -7,10 +7,16 @@ export type UrgentReason = (typeof urgentReasons)[number];
 /** One sign that a call should be returned first, with the day of the month the note gives for it, if any. */
 export type UrgentSign = { reason: UrgentReason; day: number | null };
 
+/**
+ * Having no food, in English or Spanish. It is itself a negation ("no tienen comida", "doesn't have food"), so it is a
+ * statement of need, never a denial; the request draft reads it as food too (request-draft.ts).
+ */
+export const lacksFood = /\b(?:no food|nothing to eat|out of food|sin comida|no (?:tiene|tienen|tenemos|tengo|hay|queda|quedan) (?:nada de )?comida|nada (?:de|que) comer|(?:does not|doesn't|do not|don't) have (?:any )?food)\b/i;
+
 const signs: Record<UrgentReason, RegExp> = {
   shutoff: /\b(?:shut[- ]?off|disconnect(?:ion|ed)?|cut[- ]?off|turned off|corte de (?:luz|agua))\b/i,
   eviction: /\b(?:evict(?:ion|ed)?|notice to vacate|three[- ]day notice|3[- ]day notice|desalojo)\b/i,
-  noFood: /\b(?:no food|nothing to eat|out of food|sin comida)\b/i,
+  noFood: lacksFood,
   hungry: /\b(?:hungry|hasn't eaten|haven't eaten|has not eaten|have not eaten|con hambre)\b/i,
   child: /\b(?:bab(?:y|ies)|infant|newborn|toddler|child(?:ren)?|kids?|ni[ñn]os?)\b/i,
   elder: /\b(?:elderly|8\d years old|9\d years old|in (?:her|his) (?:eighties|nineties))\b/i,

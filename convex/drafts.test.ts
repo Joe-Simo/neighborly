@@ -486,7 +486,7 @@ describe("a call note drafted into a request", () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
     const { ids, coordinator } = await helpLine();
     const args = { churchId: ids.churchId, callId: ids.callId };
-    await coordinator.run(ctx => ctx.db.patch("calls", ids.callId, { note: "No tiene comida en casa para los niños." }));
+    await coordinator.run(ctx => ctx.db.patch("calls", ids.callId, { note: "Necesitan mercado para los niños esta semana." }));
     const reply = (choice: string, confidence: number) => vi.stubGlobal("fetch", vi.fn(async () => Response.json({ answers: { chosenKind: { type: "choice", choice, confidence, probabilities: {} } } })));
     const missing = "The note does not say what kind of help is asked for.";
     reply("food", 0.93);
