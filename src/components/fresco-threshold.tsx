@@ -164,6 +164,7 @@ export function FrescoThreshold() {
       put("--door", door.toFixed(4));
       // Once the doors begin to open the words stay out, even while their button still holds the keyboard.
       host.dataset.opening = String(door > 0);
+      host.dataset.ajar = String(door > .5);
       put("--grow", grow.toFixed(4));
       // How far inside the courtyard the visitor stands: the frame, the doors and the wall are gone at 1.
       put("--inside", inside.toFixed(4));
@@ -173,6 +174,8 @@ export function FrescoThreshold() {
       // On a narrow window the headline sits under the opening's sheet until it has cleared, so its cut comes later, ending as the doors begin to open.
       const come = media.matches ? 1 : phone ? clamp((travelled - .62) / .25) : clamp((travelled - .22) / .35);
       put("--come", come.toFixed(4));
+      // The line and button under the headline wait for it: they are never seen while the headline is still under the opening's sheet.
+      host.dataset.come = String(come >= 1);
       // A line part way through its cut keeps the cut's edge and shade beside it, so no letter is ever seen without the paper it comes from.
       [0, 1].forEach(line => { const through = clamp((come - line * .3) / .7); host.dataset[`slip${line}`] = String(through > 0 && through < 1); });
       // Standing in the courtyard, the words are a strip of paper laid on the paving that stands up as the walk ends, and lies back down as the courtyard draws back into its frame.
@@ -295,7 +298,6 @@ export function FrescoThreshold() {
         {/* Joe's line between the opening and the doors, set as the lead-in to the doors' one headline. */}
         <p className="fresco-kicker">One call. Two at the door.</p>
         <CutHead><span className="fresco-slot" style={{ "--line": 0 } as CSSProperties}><span>There is room</span><i className="fresco-slip" /></span><span className="fresco-slot" style={{ "--line": 1 } as CSSProperties}><span><em>for you.</em></span><i className="fresco-slip" /></span></CutHead>
-        <p>Bring a little of your time.</p>
         <Button className="fresco-open" onClick={walkIn} onPointerEnter={warm} onFocus={warm} tabIndex={open ? -1 : undefined}>Open the doors<ArrowRight size={18} aria-hidden="true" /></Button>
       </div>
       <div ref={frame} className="fresco-frame">

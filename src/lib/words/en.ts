@@ -104,41 +104,21 @@ export function en(set: WordSet) {
       limited: "Some lists here show only the first records. Use Load more in that section to see the rest.",
     },
     headings: {
-      "help-line": { title: "Every call, returned.", deck: "Messages from the help line, and who is calling back." },
-      neighbors: { title: "Neighbors, by name.", deck: "Each household and the help it has received, kept private." },
-      treasury: { title: "Every gift, cared for.", deck: "What came in, what went out, and what it paid for." },
-      reports: { title: "The year, added up.", deck: "Counts for your council’s yearly report, ready to print." },
-      visits: { title: "Two by two.", deck: "Home visits, the pair who are going, and what they found." },
-      tools: { title: "Your records, in and out.", deck: "From ServWare or a spreadsheet, and back out whenever you like." },
-      team: {
-        title: "A place on the team.",
-        deck: "Each team, who serves on it, and how often.",
-      },
-      people: {
-        title: "People, together.",
-        deck: "Everyone here, with their role and who is ready to serve.",
-      },
-      commitments: {
-        title: "Clear commitments.",
-        deck: "See what’s covered, what’s open and what’s awaiting a reply.",
-      },
-      tasks: {
-        title: "The little things matter.",
-        deck: "Shared tasks and meetings, each with a clear next step.",
-      },
-      week: {
-        title: "Good work, this week.",
-        deck: "Your commitments, shared plans and the things to know.",
-      },
-      mine: {
-        title: "Your part in it.",
-        deck: "What you’ve said yes to, and\u00a0how to prepare.",
-      },
-      "time-off": {
-        title: "Room for life.",
-        deck: "Keep your team informed while you take time away.",
-      },
+      "help-line": { title: "Help line" },
+      "neighbors": { title: "Neighbors" },
+      "treasury": { title: "Treasury" },
+      "reports": { title: "Reports" },
+      "visits": { title: "Home visits" },
+      "tools": { title: "Your files" },
+      "team": { title: "Teams" },
+      "people": { title: "People" },
+      "commitments": { title: "Commitments" },
+      "tasks": { title: "Tasks & meetings" },
+      "week": { title: "This week" },
+      "mine": { title: "My commitments" },
+      "time-off": { title: "Time off" },
     },
+
     actions: {
       team: "Create a team",
       invite: "Invite someone",
@@ -174,21 +154,21 @@ export function en(set: WordSet) {
       choiceAboveTitle: "Your next choice is above.",
       choiceAboveDetail:
         "Answer your invitation when you’re ready. Your other dates will show up here.",
-      quietTitle: "A little breathing room.",
+      quietTitle: "Nothing in the next seven days.",
       quietDetail:
-        "No commitments are scheduled in the next seven days. Later dates are in Commitments.",
+        "Later dates are in Commitments.",
       fromGroup: `From your ${t.group}`,
       changeAnnouncement: "Edit or remove",
       changeAnnouncementLabel: (title: string) => `Edit or remove: ${title}`,
-      noAnnouncementsTitle: `All quiet from the ${t.group}.`,
+      noAnnouncementsTitle: "No announcements.",
       noAnnouncementsDetail: "News from your coordinators will show up here.",
     },
     mine: {
       accepted: "Accepted commitments",
       addToCalendar: "Add these to your phone’s calendar",
-      emptyTitle: "Room for your first yes.",
+      emptyTitle: "No commitments yet.",
       /** Above it the member already has home visits, so a "first" yes would read wrong. */
-      emptyTitleBeside: "Room for a\u00a0commitment too.",
+      emptyTitleBeside: "No commitments yet.",
       emptyDetail:
         "When a coordinator asks you to cover a date, your yes is kept here with what to prepare. To be asked, choose “Receive cover requests” in Time off.",
     },
@@ -256,7 +236,7 @@ export function en(set: WordSet) {
       availabilityAdded: "Available dates added.",
       coverStarted: "Coordinators may now ask you to cover.",
       coverStopped: "Cover requests stopped.",
-      emptyTitle: "Every day is open.",
+      emptyTitle: "No time off planned.",
       emptyDetail:
         "Use Plan time off to add the dates you won’t be available.",
       coverTitle: "Cover requests",
@@ -470,8 +450,8 @@ export function en(set: WordSet) {
       who: "Who",
       none: "Nothing planned",
       open: "Open",
-      quietTitle: "A quiet week.",
-      quietDetail: "Nothing is planned for these days yet. Commitments appear here as soon as they are added.",
+      quietTitle: "Nothing planned.",
+      quietDetail: "Commitments appear here as soon as they are added.",
       sample: "Sample",
       /** Followed by the month and year: "Printed November 2026". */
       printed: "Printed",
@@ -638,9 +618,9 @@ export function en(set: WordSet) {
       hint: "Pass the card to begin.",
       /** The sheet after a first sign-up, before anyone belongs anywhere. The door says "conference" whatever the word set. */
       first: {
-        createKicker: "A small beginning", joinKicker: "An invitation to belong",
-        createTitle: "Make room for your people.", joinTitle: "Your people are here.",
-        createDeck: "Give your conference a private place to organize its people, plans and acts of care.",
+        createKicker: "New conference", joinKicker: "Invitation",
+        createTitle: "Start your conference.", joinTitle: "Join your conference.",
+        createDeck: "Name it and choose its time zone. You can invite people next.",
         joinNamedBefore: "You are invited to join", joinNamedAfter: ". You’ll choose the commitments you accept.",
         joinDeck: "Use your invitation to join your conference. You’ll choose the commitments you accept.",
         choose: "Choose how to begin", start: "Start a conference", invited: "I have an invitation",

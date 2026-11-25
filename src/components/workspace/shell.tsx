@@ -173,7 +173,7 @@ export function LiveWorkspace({
     };
   }, [tabTitle, groupName]);
   // Every room reads in the person's own language, the leaders' rooms included (words/rooms).
-  const translatedHeadings: Partial<Record<LiveArea, { title: string; deck: string }>> = words.headings;
+  const translatedHeadings: Partial<Record<LiveArea, { title: string; deck?: string }>> = words.headings;
   const ownPerson = data.people.find((person) => person.id === data.user.id);
   const isOwner = ownPerson?.role === "owner";
   const selected = selectedCommitment;
@@ -771,7 +771,7 @@ export function LiveWorkspace({
                 {data.church.sample ? ` · ${words.shell.sample}` : ""}
               </p>
               <h1 ref={headline} tabIndex={-1}>{heading.title}</h1>
-              <p className="live-deck">{heading.deck}</p>
+              {heading.deck && <p className="live-deck">{heading.deck}</p>}
             </div>
             <div className="live-head-actions" key={`actions-${area}`}>
               {primary &&

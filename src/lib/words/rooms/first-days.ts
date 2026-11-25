@@ -9,8 +9,8 @@ import type { Terms } from "../sets";
 export const en = (t: Terms, place: string) => ({
   /** This week, in place of three figures at zero and two empty lists. The head carries its press, "Invite someone". */
   week: {
-    /** The room's own head while nothing has been made yet, for the owner and members alike, in place of "Good work, this week.", which needs work to praise. */
-    head: "Your first week.",
+    /** The room's own head while nothing has been made yet, for the owner and members alike, in place of "This week". */
+    head: "Your first week",
     title: "Invite the people you serve with.",
     detail: "Once people join, their commitments and the ones still waiting for a yes show here.",
   },
@@ -26,7 +26,7 @@ export const en = (t: Terms, place: string) => ({
     },
     members: {
       yes: { lead: "Say yes", rest: "Take on something coming up this week." },
-      mine: { lead: "See your part", rest: "Everything you have taken on, in one place." },
+      mine: { lead: "See your part", rest: "What you have said yes to." },
       away: { lead: "Mark days away", rest: "So no one asks you while you are gone." },
     },
   },
@@ -35,7 +35,7 @@ export const en = (t: Terms, place: string) => ({
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- every room's table is given the terms and the place; these sentences name neither
 export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   week: {
-    head: "Tu primera semana.",
+    head: "Tu primera semana",
     title: "Invita a las personas con quienes sirves.",
     detail: "Cuando se unan personas, aquí verás sus compromisos y los que aún esperan un sí.",
   },
@@ -50,7 +50,7 @@ export const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     },
     members: {
       yes: { lead: "Da tu sí", rest: "Toma a tu cargo algo de esta semana." },
-      mine: { lead: "Mira tu parte", rest: "Todo lo que tomaste a tu cargo, en un solo lugar." },
+      mine: { lead: "Mira tu parte", rest: "Lo que aceptaste." },
       away: { lead: "Marca tus días fuera", rest: "Así nadie te pide nada mientras no estás." },
     },
   },

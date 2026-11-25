@@ -14,7 +14,7 @@ const en = {
   title: "How we made it",
   tab: "How we made it · Kind Helps",
   description: "How Kind Helps was made: the painting, the rules its paper keeps, how the assistant is held to a person’s say, and why it is free for every conference.",
-  preview: "The painting, the paper’s rules, the assistant, and a promise: free for every conference.",
+  preview: "The painting, the paper’s rules, the assistant, and why it is free.",
   enter: "Enter Kind Helps",
   translated: null as null | [string, string, string],
   courtyard: {
@@ -105,7 +105,7 @@ const en = {
     ] },
     { title: "One painting, made\u00a0of\u00a0paper", blocks: [
       "Kind Helps is drawn as layered paper relief: cut sheets laid on one another, each with its own edge and its own shadow. The courtyard behind the doors, the hands passing the card and the four pictures of the story are one painting in that material.",
-      "The painted artwork was made with Codex’s image generator from written direction, and chosen by the author. The page adds nothing to it. On the home page it moves by its own depth: the near stone and the far hills part around the table as you walk in, the light follows a sun that sets at dusk, and the people, each painted three times, turn from one of their paintings to the next. Around it, the paper moves.",
+      "The painted artwork was made with Codex’s image generator from written direction, and chosen by the author. The page adds nothing to it. On the home page it moves by its own depth: the near stone and the far hills part around the table as you walk in, the light follows a sun that sets at dusk, and the people, each painted three times, turn from one of their paintings to the next.",
     ] },
     { title: "Cut along its own depth", blocks: [
       "The courtyard was painted whole. Its own depth cuts it into sheets without painting anything new: drawn apart here as six sheets with the people at the table on a seventh, and on the home page laid into four planes that move as you walk in. Every cut edge is the painting’s, so laid together the sheets are the painting again.",
@@ -116,7 +116,7 @@ const en = {
       ["Seven sheets, each at its own depth.", "The seven sheets drawn fully apart, back to front: sky, tower and far cloister, people, table and arcade, garden bench, floor, doorway."],
     ] } },
     { title: "The rules the paper keeps", table: "anatomy", blocks: [
-      "A ministry’s software is read by tired people at the end of a long day. So every screen follows a few rules that do not bend.",
+      "A ministry’s software is read by tired people at the end of a long day, so every screen keeps these rules.",
       [
         { lead: "Ochre means waiting.", rest: "A call not yet returned, a request not yet decided, a room still opening.", tone: "waiting" },
         { lead: "Plum means something is wrong.", rest: "There is no red anywhere. A mistake is named plainly, with the way to put it right.", tone: "wrong" },
@@ -140,13 +140,13 @@ const en = {
       "Every screen a volunteer uses is in English and Spanish, and so are A week, the privacy and accessibility pages, and this one. The Spanish is its own fixed words, written for each screen, not translated by a machine as the page opens, so the same button always says the same thing.",
       "The founder approved the Spanish. Where a page is a translation it says so at the top, and the English governs.",
     ] },
-    { title: "Drawn, judged, redrawn", table: "process", blocks: [
+    { title: "Before and after", table: "process", blocks: [
       "Every screen was drawn, then judged against the rules above, then drawn again. Here are four real pairs from this week’s reviews, each one change.",
     ] },
     { title: "From picture to room", table: "trace", blocks: [
       "One call, followed through the work: the picture that was chosen for it, the slip it became on the home page, and the room where a volunteer answers it.",
     ] },
-    { title: "Measured, not guessed", table: "frames", blocks: [
+    { title: "Speed", table: "frames", blocks: [
       "The rule every change that moves something is held to: it is filmed on a Mac at desktop and phone widths, and it lands only when no frame runs over 33 milliseconds or, where a page already ran over, when it is no slower than before.",
       [
         { lead: "Under a second.", rest: "The sample conference opens in about {#0.85} seconds at desk width and 1.1 on a phone, measured on our test machine." },
@@ -156,7 +156,7 @@ const en = {
         { lead: "With Reduce Motion too.", rest: "The same films are run again with Reduce Motion on. Then the courtyard is simply there." },
       ],
     ] },
-    { title: "Made for everyone", blocks: [
+    { title: "Accessibility", blocks: [
       "Conference members are of every age, and many read with larger text or listen with a screen reader. So we check the screens with VoiceOver in the iPhone simulator, at the largest text size, by keyboard alone, and with Reduce Motion on. These are our own checks, not a certification.",
       "There is one focus ring, the same 4px corner on every control, drawn when you move by keyboard, and no color carries meaning on its own: waiting, wrong and done are always said in words too.",
       "On the iPhone the app follows Apple’s own ways: a long press on a row opens the system’s context menu with the same actions as the web.",
@@ -182,7 +182,7 @@ const es: typeof en = {
   title: "Cómo lo hicimos",
   tab: "Cómo lo hicimos · Kind Helps",
   description: "Cómo se hizo Kind Helps: la pintura, las reglas de su papel, cómo el asistente queda sujeto a una persona, y por qué es gratis para toda conferencia.",
-  preview: "La pintura, las reglas del papel, el asistente y una promesa: gratis para toda conferencia.",
+  preview: "La pintura, las reglas del papel, el asistente y por qué es gratis.",
   enter: "Entrar a Kind Helps",
   translated: ["Esta página es una traducción. Si algo difiere, vale la ", "página en inglés", "."],
   courtyard: {
@@ -264,7 +264,7 @@ const es: typeof en = {
     ] },
     { title: "Una sola pintura, hecha de papel", blocks: [
       "Kind Helps está dibujado como relieve de papel en capas: hojas cortadas puestas unas sobre otras, cada una con su propio borde y su propia sombra. El patio tras las puertas, las manos que pasan la tarjeta y las cuatro imágenes de la historia son una sola pintura en ese material.",
-      "La obra pintada se hizo con el generador de imágenes de Codex a partir de indicaciones escritas, y la eligió el autor. La página no le añade nada. En la página de inicio se mueve según su propia profundidad: la piedra cercana y las colinas lejanas se separan alrededor de la mesa al entrar, la luz sigue a un sol que se pone al atardecer, y las personas, pintadas tres veces cada una, pasan de una de sus pinturas a la siguiente. Alrededor, se mueve el papel.",
+      "La obra pintada se hizo con el generador de imágenes de Codex a partir de indicaciones escritas, y la eligió el autor. La página no le añade nada. En la página de inicio se mueve según su propia profundidad: la piedra cercana y las colinas lejanas se separan alrededor de la mesa al entrar, la luz sigue a un sol que se pone al atardecer, y las personas, pintadas tres veces cada una, pasan de una de sus pinturas a la siguiente.",
     ] },
     { title: "Cortado según su propia profundidad", blocks: [
       "El patio se pintó entero. Su propia profundidad lo corta en hojas sin pintar nada nuevo: aquí se separa en seis hojas, con las personas de la mesa en una séptima, y en la página de inicio se reúne en cuatro planos que se mueven al entrar. Cada borde cortado es de la pintura, así que juntas las hojas vuelven a ser la pintura.",
@@ -275,7 +275,7 @@ const es: typeof en = {
       ["Siete hojas, cada una a su profundidad.", "Las siete hojas del todo separadas, del fondo al frente: cielo, torre y claustro del fondo, personas, mesa y arcada, banco del jardín, suelo, puerta."],
     ] } },
     { title: "Las reglas que guarda el papel", table: "anatomy", blocks: [
-      "El programa de un ministerio lo leen personas cansadas al final de un día largo. Por eso cada pantalla sigue unas pocas reglas que no se doblan.",
+      "El programa de un ministerio lo leen personas cansadas al final de un día largo, así que cada pantalla guarda estas reglas.",
       [
         { lead: "Ocre es esperar.", rest: "Una llamada aún sin devolver, una petición aún sin decidir, una sección que todavía se abre.", tone: "waiting" },
         { lead: "Ciruela es que algo está mal.", rest: "No hay rojo en ninguna parte. Un error se nombra con claridad, junto con la manera de corregirlo.", tone: "wrong" },
@@ -299,13 +299,13 @@ const es: typeof en = {
       "Cada pantalla que usa un voluntario está en inglés y en español, y también Una semana, las páginas de privacidad y de accesibilidad, y esta. El español son palabras fijas propias, escritas para cada pantalla, no traducidas por una máquina al abrir la página, así que el mismo botón siempre dice lo mismo.",
       "Quien fundó el proyecto aprobó el texto en español. Cuando una página es una traducción lo dice arriba, y vale la versión en inglés.",
     ] },
-    { title: "Dibujado, juzgado, redibujado", table: "process", blocks: [
+    { title: "Antes y después", table: "process", blocks: [
       "Cada pantalla se dibujó, se juzgó con las reglas de arriba y se volvió a dibujar. Estos son cuatro pares reales de las revisiones de esta semana, cada uno de un solo cambio.",
     ] },
     { title: "De la imagen a la sección", table: "trace", blocks: [
       "Una llamada, seguida por todo el trabajo: la imagen que se eligió para ella, el papelito que fue en la portada y la sección donde un voluntario la atiende.",
     ] },
-    { title: "Medido, no supuesto", table: "frames", blocks: [
+    { title: "Velocidad", table: "frames", blocks: [
       "La regla que cumple cada cambio que mueve algo: se filma en una Mac en anchos de escritorio y de teléfono, y entra solo cuando ningún cuadro pasa de 33 milisegundos o, donde una página ya pasaba, cuando no va más lenta que antes.",
       [
         { lead: "Menos de un segundo.", rest: "La conferencia de muestra abre en unos {#0.85} segundos en el ancho de escritorio y en {#1.1} en un teléfono, medido en nuestra máquina de pruebas." },
@@ -315,7 +315,7 @@ const es: typeof en = {
         { lead: "También con Reducir movimiento.", rest: "Las mismas grabaciones se repiten con Reducir movimiento activado. Entonces el patio simplemente está ahí." },
       ],
     ] },
-    { title: "Hecho para todos", blocks: [
+    { title: "Accesibilidad", blocks: [
       "Los miembros de una conferencia tienen todas las edades, y muchos leen con letra más grande o escuchan con un lector de pantalla. Por eso revisamos las pantallas con VoiceOver en el simulador del iPhone, con el tamaño de letra más grande, solo con el teclado y con Reducir movimiento activado. Son revisiones nuestras, no una certificación.",
       "Hay un solo anillo de foco, con la misma esquina de 4 px en cada control, que aparece al moverse con el teclado, y ningún color dice algo por sí solo: esperando, error y hecho siempre se dicen también con palabras.",
       "En el iPhone la aplicación sigue las costumbres de Apple: una pulsación larga sobre una fila abre el menú contextual del sistema con las mismas acciones que en la web.",

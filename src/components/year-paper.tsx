@@ -162,7 +162,7 @@ export function YearPaper({ language = "en" }: { language?: Language }) {
           </picture>
         </div>
         <figcaption>
-          <h2 id="year-paper-title" className="year-paper-title">{words.title}</h2>
+          <h2 id="year-paper-title" className="sr-only">{words.title}</h2>
           <p>{words.lead}</p>
           <p className="year-paper-month" aria-hidden="true">{months[0]}</p>
           <span className="sr-only year-paper-told" aria-live="polite" />

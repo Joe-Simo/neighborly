@@ -58,6 +58,11 @@ export function ChapterSheet({ to }: { to: keyof typeof sheets }) {
       // Each value is written on the sheet alone, and only when it has changed.
       if (nowAcross !== across) { across = nowAcross; sheet.style.setProperty("--across", across); sheet.toggleAttribute("data-away", across === "0"); }
       if (across !== "0" && nowFoot !== foot) { foot = nowFoot; sheet.style.setProperty("--foot", foot); }
+      if (caption && place) {
+        // The sheet's cut edge never crosses the caption's words: once the edge (curved, so given a margin) would reach the line, the line leaves in one cut, on the courtyard and on the sheet alike.
+        const covered = across !== "0" && (1 - Number(across)) * sheetWidth < place.right + Math.max(48, sheetWidth * .06);
+        if (caption.hasAttribute("data-covered") !== covered) { caption.toggleAttribute("data-covered", covered); words?.toggleAttribute("data-covered", covered); }
+      }
       if (words && place && across !== "0") {
         // The sheet stands moved right by the share it has yet to cross; the words are moved back by as much, onto the caption.
         const now = `${((Number(across) - 1) * sheetWidth + place.left).toFixed(1)}px ${place.top.toFixed(1)}px`;
@@ -106,8 +111,8 @@ export function PageTurn({ children }: { children: ReactNode }) {
     const follower = to.nextElementSibling ?? to.parentElement?.nextElementSibling ?? null;
     let follow = Infinity, ahead = 0, seen = scrollY, reachedCrease = false, crowded = false;
     const still = matchMedia("(prefers-reduced-motion: reduce)");
-    // Where chapters are not held (relief-journey.css lets them scroll as plain pages up to 820px), nothing is turned. Read from the media query, never from a computed style.
-    const plain = matchMedia("(max-width: 820px)");
+    // Where chapters are not held (relief-journey.css lets them scroll as plain pages up to 820px, and on a tablet held upright), nothing is turned. Read from the media query, never from a computed style.
+    const plain = matchMedia("(max-width: 820px), (max-width: 1100px) and (max-aspect-ratio: 799/1000)");
     // The page is the whole window, `tall` of it the chapter's own.
     let on = false, tall = 0, last = -1, near = false, geometry: TurnGeometry | null = null, bottom = 0;
     const measure = () => {

@@ -159,8 +159,8 @@ const en = (t: Terms, place: string) => ({
   },
   /** The visit sheet: what the pair carries to the door, made to be printed. */
   sheet: {
-    title: "For the two at the door.",
-    deck: "The visit sheet, to print and carry. It has room to write and to pray.",
+    title: "Visit sheet",
+    deck: "Print it and take it along. It has room for notes and a prayer.",
     didNotOpen: "The visit sheet didn’t open.",
     recovery: "Nothing was changed. Try again, or go back to Home visits.",
     opening: "Opening the visit sheet",
@@ -352,8 +352,8 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => {
       askPerson: "Pedirle a esta persona",
     },
     sheet: {
-      title: "Para los dos que llegan a la puerta.",
-      deck: "La hoja de la visita, para imprimir y llevar. Tiene espacio para escribir y para orar.",
+      title: "Hoja de la visita",
+      deck: "Imprímela y llévala. Tiene espacio para notas y una oración.",
       didNotOpen: "La hoja de la visita no se abrió.",
       recovery: `No se cambió nada. Inténtalo de nuevo o vuelve a ${room}.`,
       opening: "Abriendo la hoja de la visita",

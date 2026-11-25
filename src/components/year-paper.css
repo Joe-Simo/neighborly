@@ -13,7 +13,6 @@
 /* A cut, never a fade: once the canvas has drawn the poster's frame, the poster is put away. */
 .year-paper[data-live=true] .year-paper-window picture{visibility:hidden}
 .year-paper figcaption{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:4px 24px;width:100%}
-.year-paper-title{grid-column:1;margin:0;font:400 clamp(28px,2.9vw,52px)/1.1 'Newsreader','Newsreader Fallback',Georgia,serif;letter-spacing:-.02em}
 .year-paper figcaption p{grid-column:1;max-width:60ch;text-wrap:balance;margin:0;font-size:clamp(17px,1.25vw,22px);line-height:1.4;color:#3d4f43}
 .year-paper figcaption .year-paper-month{grid-column:2;grid-row:1 / span 2;align-self:end;font:400 clamp(20px,1.9vw,34px)/1.2 'Newsreader','Newsreader Fallback',Georgia,serif;font-feature-settings:"lnum","tnum";color:#293f32;white-space:nowrap}
 @media(max-width:767px){

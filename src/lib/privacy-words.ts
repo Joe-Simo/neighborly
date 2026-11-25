@@ -14,7 +14,7 @@ const en = {
   /** Under the title of a page that is a translation: [before the link, the link to the English page, after it]. English has none. */
   translated: null as null | [string, string, string],
   sections: [
-    { title: "Your records belong to your conference", blocks: ["Kind Helps is free software for a conference to keep its own work in one place. What a conference writes here belongs to the conference, not to us."] },
+    { title: "Your records belong to your conference", blocks: ["Kind Helps is free software for a conference to keep its own work. What a conference writes here belongs to the conference, not to us."] },
     { title: "What a conference keeps here", blocks: [[
       ["Its members:", "name, email, role, teams, availability, time off, commitments, tasks, meetings and announcements."],
       ["The neighbors it helps:", "name, phone, email, address, how many adults and children, language and notes. If the conference chooses to record them: who lives in the household by relationship and birth year (no names, no birth dates), monthly income and expenses, and landlord or utility account details."],
@@ -69,7 +69,7 @@ const es: typeof en = {
   enter: "Entrar a Kind Helps",
   translated: ["Esta página es una traducción. Si algo difiere, vale la ", "página en inglés", "."],
   sections: [
-    { title: "Tus registros pertenecen a tu conferencia", blocks: ["Kind Helps es un programa gratuito para que una conferencia guarde su propio trabajo en un solo lugar. Lo que una conferencia escribe aquí pertenece a la conferencia, no a nosotros."] },
+    { title: "Tus registros pertenecen a tu conferencia", blocks: ["Kind Helps es un programa gratuito para que una conferencia guarde su propio trabajo. Lo que una conferencia escribe aquí pertenece a la conferencia, no a nosotros."] },
     { title: "Qué guarda aquí una conferencia", blocks: [[
       ["Sus miembros:", "nombre, correo electrónico, rol, equipos, disponibilidad, días libres, compromisos, tareas, reuniones y avisos."],
       ["Los vecinos a quienes ayuda:", "nombre, teléfono, correo electrónico, dirección, cuántos adultos y niños, idioma y notas. Si la conferencia decide anotarlos: quién vive en el hogar, por parentesco y año de nacimiento (sin nombres ni fechas de nacimiento), ingresos y gastos mensuales, y datos de la cuenta del arrendador o de los servicios."],
