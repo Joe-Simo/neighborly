@@ -36,29 +36,31 @@ export const identity = internalQuery({
 
 
 /** What one visitor's session in the sample may ask the model for in a day; the sample's monthly allowance stays the ceiling. */
-export const sampleSessionAllowance = 12;
+export const sampleSessionAllowance = 100;
 /**
  * What every sample visitor together may ask for in a day. One address can open thirty sessions a minute, so the
  * per-session allowance alone would let one visitor spend the sample's whole month in minutes; this keeps it to a day.
  */
-export const sampleDailyAllowance = 200;
+export const sampleDailyAllowance = 5000;
 /**
  * What one person may ask for in a day when no group is named (the team draft), where no monthly allowance applies.
- * Without it, five a minute was the only bound, all day, every day.
+ * Without it, the per-minute limit was the only bound, all day, every day.
  */
-export const personalDailyAllowance = 30;
+export const personalDailyAllowance = 1000;
 /** The day's row every sample session shares in aiUsageBySession; a Clerk session id never starts with "*". */
 const sampleDay = "*sample";
+/** What one person (or one sample session) may ask for in a minute: far above a person clicking, well below a script. */
+export const perMinuteAllowance = 60;
 /**
  * What one account may ask for in a day across every group it belongs to. The monthly allowance is per group, and
  * anyone signed in can start a group, so without this one account opening group after group had no ceiling at all.
  */
-export const accountDailyAllowance = 300;
+export const accountDailyAllowance = 20000;
 /**
  * What everyone together may ask for in a day: the ceiling on the whole service's spend, whatever the number of
  * accounts or groups. Every person's and group's own limits stay below it; this only stops a crowd of new accounts.
  */
-export const serviceDailyAllowance = 3000;
+export const serviceDailyAllowance = 200000;
 /** The day's row every request to the model counts in, in aiUsageBySession. */
 const serviceDay = "*all";
 type DayRow = { _id: Id<"aiUsageBySession">; count: number } | null;
@@ -72,9 +74,9 @@ const dayRow = (ctx: MutationCtx, session: string, day: string) =>
   ctx.db.query("aiUsageBySession").withIndex("by_session_day", q => q.eq("session", session).eq("day", day)).unique();
 
 /**
- * Counts one request to the model, or says why it may not be made: the person's five a minute, or
+ * Counts one request to the model, or says why it may not be made: the person's per-minute limit, or
  * the group's allowance for the month. A refusal is not an error; the draft simply comes back for review.
- * Every sample visitor is the same account, so there the five a minute and a small daily allowance belong to the
+ * Every sample visitor is the same account, so there the per-minute limit and a small daily allowance belong to the
  * visitor's own sign-in session instead: one visitor can never use up the sample for everyone.
  */
 export const reserve = internalMutation({
@@ -99,10 +101,10 @@ export const reserve = internalMutation({
     const account = accountKey ? await daily(accountKey) : null;
     const service = await daily(serviceDay);
     const previous = session ? null : await ctx.db.query("aiUsage").withIndex("by_user", q => q.eq("userId", userId)).unique();
-    if (own && own.windowStart === windowStart && own.minute >= 5) return "minute" as const;
+    if (own && own.windowStart === windowStart && own.minute >= perMinuteAllowance) return "minute" as const;
     if (own && own.count >= sampleSessionAllowance) return "month" as const;
     if (everyone && everyone.count >= sampleDailyAllowance) return "month" as const;
-    if (previous?.windowStart === windowStart && previous.count >= 5) return "minute" as const;
+    if (previous?.windowStart === windowStart && previous.count >= perMinuteAllowance) return "minute" as const;
     if (personalDay && personalDay.count >= personalDailyAllowance) return "month" as const;
     if (account && account.count >= accountDailyAllowance) return "month" as const;
     if (service && service.count >= serviceDailyAllowance) return "month" as const;
