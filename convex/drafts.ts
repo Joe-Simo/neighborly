@@ -1,5 +1,5 @@
 import { ConvexError, v } from "convex/values";
-import { action, internalAction, internalQuery, query, env, type ActionCtx } from "./_generated/server";
+import { action, internalAction, internalQuery, query, env, type ActionCtx, type MutationCtx } from "./_generated/server";
 import { internalMutation } from "./functions";
 import type { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
@@ -49,6 +49,27 @@ export const sampleDailyAllowance = 200;
 export const personalDailyAllowance = 30;
 /** The day's row every sample session shares in aiUsageBySession; a Clerk session id never starts with "*". */
 const sampleDay = "*sample";
+/**
+ * What one account may ask for in a day across every group it belongs to. The monthly allowance is per group, and
+ * anyone signed in can start a group, so without this one account opening group after group had no ceiling at all.
+ */
+export const accountDailyAllowance = 300;
+/**
+ * What everyone together may ask for in a day: the ceiling on the whole service's spend, whatever the number of
+ * accounts or groups. Every person's and group's own limits stay below it; this only stops a crowd of new accounts.
+ */
+export const serviceDailyAllowance = 3000;
+/** The day's row every request to the model counts in, in aiUsageBySession. */
+const serviceDay = "*all";
+type DayRow = { _id: Id<"aiUsageBySession">; count: number } | null;
+/** Adds `count` to one day's row in aiUsageBySession, or starts it. */
+async function addToDay(ctx: MutationCtx, row: DayRow, session: string, day: string, windowStart: number, count: number) {
+  if (row) await ctx.db.patch("aiUsageBySession", row._id, { windowStart, count: row.count + count });
+  else await ctx.db.insert("aiUsageBySession", { session, day, windowStart, minute: 0, count });
+}
+const today = () => new Date().toISOString().slice(0, 10);
+const dayRow = (ctx: MutationCtx, session: string, day: string) =>
+  ctx.db.query("aiUsageBySession").withIndex("by_session_day", q => q.eq("session", session).eq("day", day)).unique();
 
 /**
  * Counts one request to the model, or says why it may not be made: the person's five a minute, or
@@ -66,19 +87,25 @@ export const reserve = internalMutation({
     const visitor = scheduledFor !== undefined || isSampleVisitor(identity?.subject);
     // Clerk names the session in `sid`; a token without one counts as a single session, so it is held tightest.
     const session = visitor ? scheduledFor ?? `${typeof identity?.sid === "string" ? identity.sid : "unnamed"}` : null;
-    const day = new Date().toISOString().slice(0, 10);
-    const daily = (key: string) => ctx.db.query("aiUsageBySession").withIndex("by_session_day", q => q.eq("session", key).eq("day", day)).unique();
+    const day = today();
+    const daily = (key: string) => dayRow(ctx, key, day);
     const own = session ? await daily(session) : null;
     const everyone = session ? await daily(sampleDay) : null;
     // With no group named, the person's own day is the ceiling a group's month would otherwise be.
     const personal = session || churchId ? null : `*user:${userId}`;
-    const today = personal ? await daily(personal) : null;
+    const personalDay = personal ? await daily(personal) : null;
+    // The account's day across all its groups, and the whole service's day.
+    const accountKey = session ? null : `*account:${userId}`;
+    const account = accountKey ? await daily(accountKey) : null;
+    const service = await daily(serviceDay);
     const previous = session ? null : await ctx.db.query("aiUsage").withIndex("by_user", q => q.eq("userId", userId)).unique();
     if (own && own.windowStart === windowStart && own.minute >= 5) return "minute" as const;
     if (own && own.count >= sampleSessionAllowance) return "month" as const;
     if (everyone && everyone.count >= sampleDailyAllowance) return "month" as const;
     if (previous?.windowStart === windowStart && previous.count >= 5) return "minute" as const;
-    if (today && today.count >= personalDailyAllowance) return "month" as const;
+    if (personalDay && personalDay.count >= personalDailyAllowance) return "month" as const;
+    if (account && account.count >= accountDailyAllowance) return "month" as const;
+    if (service && service.count >= serviceDailyAllowance) return "month" as const;
     const month = new Date().toISOString().slice(0, 7);
     const used = churchId ? await ctx.db.query("aiUsageByChurch").withIndex("by_church_month", q => q.eq("churchId", churchId).eq("month", month)).unique() : null;
     if (used && used.count >= monthlyAllowance) return "month" as const;
@@ -91,8 +118,9 @@ export const reserve = internalMutation({
       windowStart, count: previous.windowStart === windowStart ? previous.count + 1 : 1,
     });
     else await ctx.db.insert("aiUsage", { userId, windowStart, count: 1 });
-    if (today) await ctx.db.patch("aiUsageBySession", today._id, { windowStart, count: today.count + 1 });
-    else if (personal) await ctx.db.insert("aiUsageBySession", { session: personal, day, windowStart, minute: 0, count: 1 });
+    if (personal) await addToDay(ctx, personalDay, personal, day, windowStart, 1);
+    if (accountKey) await addToDay(ctx, account, accountKey, day, windowStart, 1);
+    await addToDay(ctx, service, serviceDay, day, windowStart, 1);
     if (used) await ctx.db.patch("aiUsageByChurch", used._id, { count: used.count + 1 });
     else if (churchId) await ctx.db.insert("aiUsageByChurch", { churchId, month, count: 1 });
     return "ok" as const;
@@ -589,14 +617,19 @@ export const weekNote = query({
   },
 });
 
-/** Counts a whole measuring run against a group's month, or refuses it when the month has no room. */
+/** Counts a whole measuring run against a group's month and the service's day, or refuses it when either has no room. */
 export const reserveMany = internalMutation({
   args: { churchId: v.id("churches"), count: v.number() },
   returns: v.boolean(),
   handler: async (ctx, { churchId, count }) => {
+    if (!Number.isInteger(count) || count < 0) return false;
     const month = new Date().toISOString().slice(0, 7);
     const used = await ctx.db.query("aiUsageByChurch").withIndex("by_church_month", q => q.eq("churchId", churchId).eq("month", month)).unique();
     if ((used?.count ?? 0) + count > monthlyAllowance) return false;
+    const day = today();
+    const service = await dayRow(ctx, serviceDay, day);
+    if ((service?.count ?? 0) + count > serviceDailyAllowance) return false;
+    await addToDay(ctx, service, serviceDay, day, Math.floor(Date.now() / 60_000) * 60_000, count);
     if (used) await ctx.db.patch("aiUsageByChurch", used._id, { count: used.count + count });
     else await ctx.db.insert("aiUsageByChurch", { churchId, month, count });
     return true;
