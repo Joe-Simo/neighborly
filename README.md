@@ -2,6 +2,8 @@
 
 Free software for the parish conferences of the Society of St. Vincent de Paul and groups like them: the help line, neighbor records, home visits in pairs, the treasury, the yearly report and the volunteers' own week, in English and Spanish. Live at [kindhelps.com](https://kindhelps.com). To try it without an account, open the home page and choose **Look around a sample conference**.
 
+Kind Helps stays free for every conference. [GitHub Sponsors](https://github.com/sponsors/Joe-Simo) gifts go to the developer who runs it and pay for its servers; they are not gifts to a conference, a parish or the Society.
+
 Kind Helps is independent. It is not affiliated with or endorsed by the Society of St. Vincent de Paul. "Neighbor" always means the person being helped. The internal project name is Neighborly.
 
 ## How it is built

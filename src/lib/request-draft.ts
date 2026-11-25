@@ -1,3 +1,4 @@
+import { lacksFood } from "./urgency";
 export const requestKinds = ["rent", "utility", "food", "voucher", "other"] as const;
 export type RequestKind = (typeof requestKinds)[number];
 /** Who is paid. A draft never proposes paying the neighbor. */
@@ -22,9 +23,9 @@ const kindWords: Record<Exclude<RequestKind, "other">, RegExp> = {
   voucher: /\b(?:voucher|thrift|furniture|clothes|clothing|mattress|bed|ropa|muebles)\b/i,
 };
 const payeeWords: Record<DraftPayeeKind, RegExp> = {
-  landlord: /\b(?:landlord|property manager|leasing office)\b/i,
-  utility: /\b(?:electric company|power company|water company|gas company|utility company|fpl|lcec|teco)\b/i,
-  vendor: /\b(?:thrift store|store|grocer)\b/i,
+  landlord: /\b(?:landlord|property manager|leasing office|dueñ[oa] de la casa|dueñ[oa]|arrendador[a]?|caser[oa])\b/i,
+  utility: /\b(?:electric company|power company|water company|gas company|utility company|fpl|lcec|teco|compañía de (?:luz|agua|gas|electricidad))\b/i,
+  vendor: /\b(?:thrift store|store|grocer|tienda)\b/i,
 };
 /** Local utilities a volunteer writes by their initials. */
 const utilityNames = /\b(FPL|LCEC|TECO)\b/;
@@ -127,7 +128,7 @@ function only<T>(values: T[]): T | null {
 }
 
 /** How many times a group may ask the model in one month. At Jev's price this is a few cents; it is here so a mistake cannot run up a bill. */
-export const monthlyAllowance = 2000;
+export const monthlyAllowance = 100000;
 /**
  * Every line a draft can carry about a blank field, in English. The screen finds each by its key and says it in
  * the reader's language (words.assistant.notes), so a line added here needs its translations there.
@@ -160,7 +161,9 @@ export function prepareRequestDraft(note: string): RequestDraft {
   for (const clause of clauses(note)) {
     const stated = amounts(clause);
     const mentioned = (Object.keys(kindWords) as (keyof typeof kindWords)[]).filter((kind) => kindWords[kind].test(clause));
-    if (unsure.test(clause)) {
+    // Having no food is a need stated as a negation; only what else the clause says can make it unsure.
+    if (lacksFood.test(clause) && !mentioned.includes("food")) mentioned.push("food");
+    if (unsure.test(clause.replace(new RegExp(lacksFood.source, "gi"), ""))) {
       // A question, a negation or an "if" states nothing; what it mentions must be confirmed by a person.
       if (stated.length || mentioned.length) doubtful = true;
       continue;

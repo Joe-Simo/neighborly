@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { refusals } from "../src/lib/refusals";
 import { parseScheduledTime, parseCalendarDate, overlapsTimeOff, expandWeeklySchedule } from "../src/lib/scheduling";
-import { internal } from "./_generated/api";
+import { components, internal } from "./_generated/api";
 import { accountEmailConfiguration } from "./notifications";
 import { queueCoverRequest, cancelPendingNotification } from "./notificationEvents";
 import { query, type QueryCtx, type MutationCtx } from "./_generated/server";
@@ -10,6 +10,10 @@ import { user, membership, firstMembership } from "./access";
 import { isSampleVisitor } from "./demo";
 import type { Id } from "./_generated/dataModel";
 import { addName } from "./knownNames";
+import { HOUR, RateLimiter } from "@convex-dev/rate-limiter";
+
+/** Anyone signed in may start a group, and each group has its own monthly assistant allowance: three a day per account is room for a mistake and nothing more. */
+const starts = new RateLimiter(components.rateLimiter, { groupStart: { kind: "fixed window", rate: 3, period: 24 * HOUR } });
 
 const churchId = v.id("churches");
 const text = v.string();
@@ -60,6 +64,7 @@ export const createChurch = mutation({ args: { name: text, timeZone: text, displ
   const account = await user(ctx);
   if (isSampleVisitor((await ctx.auth.getUserIdentity())?.subject)) throw new ConvexError("The sample account can only look around the sample conference. Create your own account to start a conference.");
   const name = required(args.name); const displayName = required(args.displayName); const zone = required(args.timeZone);
+  if (!(await starts.limit(ctx, "groupStart", { key: account.id })).ok) throw new ConvexError("You have started several conferences today. Try again tomorrow.");
   try { new Intl.DateTimeFormat("en", { timeZone: zone }).format(0); } catch { throw new ConvexError("Enter a valid time zone."); }
   const id = await ctx.db.insert("churches", { name, timeZone: zone, wordSet: "vincentian" });
   await ctx.db.insert("memberships", { churchId:id,userId:account.id,name:displayName,email:account.email,role:"owner",active:true,approved:true,coverOptIn:false });

@@ -1,5 +1,5 @@
 import { ConvexError, v } from "convex/values";
-import { action, internalAction, internalQuery, query, env, type ActionCtx } from "./_generated/server";
+import { action, internalAction, internalQuery, query, env, type ActionCtx, type MutationCtx } from "./_generated/server";
 import { internalMutation } from "./functions";
 import type { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
@@ -36,24 +36,47 @@ export const identity = internalQuery({
 
 
 /** What one visitor's session in the sample may ask the model for in a day; the sample's monthly allowance stays the ceiling. */
-export const sampleSessionAllowance = 12;
+export const sampleSessionAllowance = 100;
 /**
  * What every sample visitor together may ask for in a day. One address can open thirty sessions a minute, so the
  * per-session allowance alone would let one visitor spend the sample's whole month in minutes; this keeps it to a day.
  */
-export const sampleDailyAllowance = 200;
+export const sampleDailyAllowance = 5000;
 /**
  * What one person may ask for in a day when no group is named (the team draft), where no monthly allowance applies.
- * Without it, five a minute was the only bound, all day, every day.
+ * Without it, the per-minute limit was the only bound, all day, every day.
  */
-export const personalDailyAllowance = 30;
+export const personalDailyAllowance = 1000;
 /** The day's row every sample session shares in aiUsageBySession; a Clerk session id never starts with "*". */
 const sampleDay = "*sample";
+/** What one person (or one sample session) may ask for in a minute: far above a person clicking, well below a script. */
+export const perMinuteAllowance = 60;
+/**
+ * What one account may ask for in a day across every group it belongs to. The monthly allowance is per group, and
+ * anyone signed in can start a group, so without this one account opening group after group had no ceiling at all.
+ */
+export const accountDailyAllowance = 20000;
+/**
+ * What everyone together may ask for in a day: the ceiling on the whole service's spend, whatever the number of
+ * accounts or groups. Every person's and group's own limits stay below it; this only stops a crowd of new accounts.
+ */
+export const serviceDailyAllowance = 200000;
+/** The day's row every request to the model counts in, in aiUsageBySession. */
+const serviceDay = "*all";
+type DayRow = { _id: Id<"aiUsageBySession">; count: number } | null;
+/** Adds `count` to one day's row in aiUsageBySession, or starts it. */
+async function addToDay(ctx: MutationCtx, row: DayRow, session: string, day: string, windowStart: number, count: number) {
+  if (row) await ctx.db.patch("aiUsageBySession", row._id, { windowStart, count: row.count + count });
+  else await ctx.db.insert("aiUsageBySession", { session, day, windowStart, minute: 0, count });
+}
+const today = () => new Date().toISOString().slice(0, 10);
+const dayRow = (ctx: MutationCtx, session: string, day: string) =>
+  ctx.db.query("aiUsageBySession").withIndex("by_session_day", q => q.eq("session", session).eq("day", day)).unique();
 
 /**
- * Counts one request to the model, or says why it may not be made: the person's five a minute, or
+ * Counts one request to the model, or says why it may not be made: the person's per-minute limit, or
  * the group's allowance for the month. A refusal is not an error; the draft simply comes back for review.
- * Every sample visitor is the same account, so there the five a minute and a small daily allowance belong to the
+ * Every sample visitor is the same account, so there the per-minute limit and a small daily allowance belong to the
  * visitor's own sign-in session instead: one visitor can never use up the sample for everyone.
  */
 export const reserve = internalMutation({
@@ -66,19 +89,25 @@ export const reserve = internalMutation({
     const visitor = scheduledFor !== undefined || isSampleVisitor(identity?.subject);
     // Clerk names the session in `sid`; a token without one counts as a single session, so it is held tightest.
     const session = visitor ? scheduledFor ?? `${typeof identity?.sid === "string" ? identity.sid : "unnamed"}` : null;
-    const day = new Date().toISOString().slice(0, 10);
-    const daily = (key: string) => ctx.db.query("aiUsageBySession").withIndex("by_session_day", q => q.eq("session", key).eq("day", day)).unique();
+    const day = today();
+    const daily = (key: string) => dayRow(ctx, key, day);
     const own = session ? await daily(session) : null;
     const everyone = session ? await daily(sampleDay) : null;
     // With no group named, the person's own day is the ceiling a group's month would otherwise be.
     const personal = session || churchId ? null : `*user:${userId}`;
-    const today = personal ? await daily(personal) : null;
+    const personalDay = personal ? await daily(personal) : null;
+    // The account's day across all its groups, and the whole service's day.
+    const accountKey = session ? null : `*account:${userId}`;
+    const account = accountKey ? await daily(accountKey) : null;
+    const service = await daily(serviceDay);
     const previous = session ? null : await ctx.db.query("aiUsage").withIndex("by_user", q => q.eq("userId", userId)).unique();
-    if (own && own.windowStart === windowStart && own.minute >= 5) return "minute" as const;
+    if (own && own.windowStart === windowStart && own.minute >= perMinuteAllowance) return "minute" as const;
     if (own && own.count >= sampleSessionAllowance) return "month" as const;
     if (everyone && everyone.count >= sampleDailyAllowance) return "month" as const;
-    if (previous?.windowStart === windowStart && previous.count >= 5) return "minute" as const;
-    if (today && today.count >= personalDailyAllowance) return "month" as const;
+    if (previous?.windowStart === windowStart && previous.count >= perMinuteAllowance) return "minute" as const;
+    if (personalDay && personalDay.count >= personalDailyAllowance) return "month" as const;
+    if (account && account.count >= accountDailyAllowance) return "month" as const;
+    if (service && service.count >= serviceDailyAllowance) return "month" as const;
     const month = new Date().toISOString().slice(0, 7);
     const used = churchId ? await ctx.db.query("aiUsageByChurch").withIndex("by_church_month", q => q.eq("churchId", churchId).eq("month", month)).unique() : null;
     if (used && used.count >= monthlyAllowance) return "month" as const;
@@ -91,8 +120,9 @@ export const reserve = internalMutation({
       windowStart, count: previous.windowStart === windowStart ? previous.count + 1 : 1,
     });
     else await ctx.db.insert("aiUsage", { userId, windowStart, count: 1 });
-    if (today) await ctx.db.patch("aiUsageBySession", today._id, { windowStart, count: today.count + 1 });
-    else if (personal) await ctx.db.insert("aiUsageBySession", { session: personal, day, windowStart, minute: 0, count: 1 });
+    if (personal) await addToDay(ctx, personalDay, personal, day, windowStart, 1);
+    if (accountKey) await addToDay(ctx, account, accountKey, day, windowStart, 1);
+    await addToDay(ctx, service, serviceDay, day, windowStart, 1);
     if (used) await ctx.db.patch("aiUsageByChurch", used._id, { count: used.count + 1 });
     else if (churchId) await ctx.db.insert("aiUsageByChurch", { churchId, month, count: 1 });
     return "ok" as const;
@@ -589,14 +619,19 @@ export const weekNote = query({
   },
 });
 
-/** Counts a whole measuring run against a group's month, or refuses it when the month has no room. */
+/** Counts a whole measuring run against a group's month and the service's day, or refuses it when either has no room. */
 export const reserveMany = internalMutation({
   args: { churchId: v.id("churches"), count: v.number() },
   returns: v.boolean(),
   handler: async (ctx, { churchId, count }) => {
+    if (!Number.isInteger(count) || count < 0) return false;
     const month = new Date().toISOString().slice(0, 7);
     const used = await ctx.db.query("aiUsageByChurch").withIndex("by_church_month", q => q.eq("churchId", churchId).eq("month", month)).unique();
     if ((used?.count ?? 0) + count > monthlyAllowance) return false;
+    const day = today();
+    const service = await dayRow(ctx, serviceDay, day);
+    if ((service?.count ?? 0) + count > serviceDailyAllowance) return false;
+    await addToDay(ctx, service, serviceDay, day, Math.floor(Date.now() / 60_000) * 60_000, count);
     if (used) await ctx.db.patch("aiUsageByChurch", used._id, { count: used.count + count });
     else await ctx.db.insert("aiUsageByChurch", { churchId, month, count });
     return true;
@@ -696,9 +731,29 @@ export const measure = internalAction({
   },
 });
 
-/** One yes or no per place, by index; shared with measureReferrals so both ask the same thing. */
-function referralQuestions(count: number) {
-  return Object.fromEntries(Array.from({ length: count }, (_, index) => [`p${index}`, `Does note describe a need of the caller's own household that places.p${index} helps with? ${mentioned}`]));
+/**
+ * One yes or no per place, by index; shared with measureReferrals so both ask the same thing. The place is the subject:
+ * asked whether the note "describes a need the place helps with", the model offered tenant advice for "pide ayuda con
+ * la renta" (0.93); asked this way, two runs on 2026-11-25 offered nothing that did not fit. Spelling out both ends
+ * (criteria) made it stricter still and left plain fits such as an eviction notice and legal help unoffered.
+ */
+function referralQuestions(count: number): Record<string, Question> {
+  return Object.fromEntries(Array.from({ length: count }, (_, index) => {
+    const place = `places.p${index}`;
+    return [`p${index}`, {
+      type: "noul" as const,
+      instructions: `Does ${place} offer help with something note says the caller's own household needs? Count any wording or language for the same thing. ${mentioned}`,
+    }];
+  }));
+}
+/** How sure the model is that each place fits, by index, or null when any answer is not a number. */
+async function referralSure(key: string, note: string, helpsWith: string[], known?: Known) {
+  const answers = await decide(key, { note, places: Object.fromEntries(helpsWith.map((text, index) => [`p${index}`, text])) }, referralQuestions(helpsWith.length), known);
+  if (!answers) return null;
+  const sure = helpsWith.map((_, index) => noul(answers[`p${index}`]));
+  if (!sure.every((value): value is number => value !== null)) return null;
+  console.log(`jev ${JSON.stringify(Object.fromEntries(sure.map((value, index) => [`p${index}`, value])))}`);
+  return sure;
 }
 
 /** A request's own words, the call it came from, and the group's places that say what they help with. Never sent as it is. */
@@ -741,14 +796,9 @@ export const suggestReferrals = action({
     const none = { places: [], verification: "review" as const };
     if (!agencies.length || !note || !env.TYPESAFE_API_KEY || note.length > 2000) return none;
     if (await ctx.runMutation(internal.drafts.reserve, { userId, churchId: args.churchId }) !== "ok") return none;
-    const key = (index: number) => `p${index}`;
-    const sure = await confidence(env.TYPESAFE_API_KEY,
-      { note, places: Object.fromEntries(agencies.map((place, index) => [key(index), place.helpsWith])) },
-      referralQuestions(agencies.length),
-      { names, addresses, others },
-    );
+    const sure = await referralSure(env.TYPESAFE_API_KEY, note, agencies.map(place => place.helpsWith), { names, addresses, others });
     if (!sure) return none;
-    return { places: agencies.flatMap((place, index) => (sure[key(index)] >= sureEnough ? [place.name] : [])), verification: "checked" };
+    return { places: agencies.flatMap((place, index) => (sure[index] >= sureEnough ? [place.name] : [])), verification: "checked" };
   },
 });
 
@@ -821,8 +871,8 @@ export const measureReferrals = internalAction({
     if (!await ctx.runMutation(internal.drafts.reserveMany, { churchId, count: referralSet.length })) return { status: "no allowance" as const, ...none };
     const places = Object.keys(referralPlaces) as ReferralPlace[];
     const rows = await Promise.all(referralSet.map(async item => {
-      const sure = await confidence(key, { note: item.note, places: Object.fromEntries(places.map((place, index) => [`p${index}`, referralPlaces[place]])) }, referralQuestions(places.length));
-      const scores = Object.fromEntries(places.map((place, index) => [place, Math.round((sure?.[`p${index}`] ?? 0) * 100) / 100]));
+      const sure = await referralSure(key, item.note, places.map(place => referralPlaces[place]));
+      const scores = Object.fromEntries(places.map((place, index) => [place, Math.round((sure?.[index] ?? 0) * 100) / 100]));
       const offered = places.filter(place => scores[place] >= sureEnough);
       const marks = places.map(place => (offered.includes(place) === item.fits.includes(place) ? "right" : offered.includes(place) ? "wrong" : "missed"));
       return { id: item.id, offered, scores, marks, heldOut: !!item.heldOut };

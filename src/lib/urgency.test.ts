@@ -22,6 +22,14 @@ describe("signs that a call should be returned first", () => {
     expect(urgentSigns("Asked about food for a family of five. They have no food today and three kids.").map((sign) => sign.reason)).toEqual(["noFood", "child"]);
   });
 
+  test("having no food in Spanish, or said with a verb, is a need and not a denial", () => {
+    const reasons = (note: string) => urgentSigns(note).map((sign) => sign.reason);
+    expect(reasons("Tiene dos niños y no tienen comida.")).toEqual(["noFood", "child"]);
+    expect(reasons("No hay comida en la casa.")).toEqual(["noFood"]);
+    expect(reasons("They don't have any food until Friday.")).toEqual(["noFood"]);
+    expect(reasons("Has food. Only calling about the gas bill.")).toEqual([]);
+  });
+
   test("an ordinary request is not urgent", () => {
     expect(urgentSigns("Behind on November rent. The landlord says four hundred fifty by Friday.")).toEqual([]);
   });

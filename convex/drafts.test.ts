@@ -3,7 +3,8 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { convexTest } from "convex-test";
 import schema from "./schema";
 import { api, internal } from "./_generated/api";
-import { personalDailyAllowance, sampleDailyAllowance } from "./drafts";
+import { perMinuteAllowance, personalDailyAllowance, sampleDailyAllowance, sampleSessionAllowance } from "./drafts";
+import { monthlyAllowance } from "../src/lib/request-draft";
 
 const modules = import.meta.glob(["./**/*.ts", "!./**/*.test.ts"]);
 const description = "Our Welcome team serves every other Sunday. We need two people from 9am to 10am.";
@@ -105,11 +106,11 @@ describe("reviewable team drafting", () => {
     const fetch = vi.fn(async () => Response.json({ answers: { teamName: { type: "noul", noul: 2 } } }));
     vi.stubGlobal("fetch", fetch);
     const { signed } = await setup();
-    for (let index = 0; index < 5; index++) {
+    for (let index = 0; index < perMinuteAllowance; index++) {
       expect((await signed.action(api.drafts.suggestTeam, { description })).verification).toBe("review");
     }
     await expect(signed.action(api.drafts.suggestTeam, { description })).rejects.toThrow("wait a minute");
-    expect(fetch).toHaveBeenCalledTimes(5);
+    expect(fetch).toHaveBeenCalledTimes(perMinuteAllowance);
   });
 });
 
@@ -221,7 +222,7 @@ describe("a call note drafted into a request", () => {
     const { t, ids, coordinator } = await helpLine();
     await t.run(async ctx => {
       await ctx.db.patch("calls", ids.callId, { note: "Rosa Delgado has a power shut-off notice for the 21st. Lives alone." });
-      await ctx.db.insert("aiUsageByChurch", { churchId: ids.churchId, month: new Date().toISOString().slice(0, 7), count: 2000 });
+      await ctx.db.insert("aiUsageByChurch", { churchId: ids.churchId, month: new Date().toISOString().slice(0, 7), count: monthlyAllowance });
     });
     expect(await coordinator.action(api.drafts.readUrgency, { churchId: ids.churchId, callId: ids.callId })).toEqual({ signs: [{ reason: "shutoff", day: 21 }, { reason: "alone", day: null }], verification: "review" });
     expect(fetch).not.toHaveBeenCalled();
@@ -296,12 +297,12 @@ describe("a call note drafted into a request", () => {
     vi.stubGlobal("fetch", fetch);
     const { t, ids, coordinator } = await helpLine();
     const month = new Date().toISOString().slice(0, 7);
-    await t.run(ctx => ctx.db.insert("aiUsageByChurch", { churchId: ids.churchId, month, count: 1999 }));
+    await t.run(ctx => ctx.db.insert("aiUsageByChurch", { churchId: ids.churchId, month, count: monthlyAllowance - 1 }));
     const args = { churchId: ids.churchId, callId: ids.callId };
     expect((await coordinator.action(api.drafts.draftRequest, args)).verification).toBe("checked");
     expect((await coordinator.action(api.drafts.draftRequest, args)).verification).toBe("review");
     expect(fetch).toHaveBeenCalledTimes(1);
-    expect((await t.run(ctx => ctx.db.query("aiUsageByChurch").collect()))[0].count).toBe(2000);
+    expect((await t.run(ctx => ctx.db.query("aiUsageByChurch").collect()))[0].count).toBe(monthlyAllowance);
   });
 
   test("before the yearly report: rules find what does not add up, the model reads only picked notes, nothing changes", async () => {
@@ -485,7 +486,7 @@ describe("a call note drafted into a request", () => {
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
     const { ids, coordinator } = await helpLine();
     const args = { churchId: ids.churchId, callId: ids.callId };
-    await coordinator.run(ctx => ctx.db.patch("calls", ids.callId, { note: "No tiene comida en casa para los niños." }));
+    await coordinator.run(ctx => ctx.db.patch("calls", ids.callId, { note: "Necesitan mercado para los niños esta semana." }));
     const reply = (choice: string, confidence: number) => vi.stubGlobal("fetch", vi.fn(async () => Response.json({ answers: { chosenKind: { type: "choice", choice, confidence, probabilities: {} } } })));
     const missing = "The note does not say what kind of help is asked for.";
     reply("food", 0.93);
@@ -618,7 +619,7 @@ describe("a call note drafted into a request", () => {
     vi.stubEnv("TYPESAFE_API_KEY", "");
     expect(await t.action(internal.drafts.measure, { churchId: ids.churchId })).toMatchObject({ status: "no key", rows: [] });
     vi.stubEnv("TYPESAFE_API_KEY", "test-provider-key");
-    await t.run(ctx => ctx.db.insert("aiUsageByChurch", { churchId: ids.churchId, month: new Date().toISOString().slice(0, 7), count: 1990 }));
+    await t.run(ctx => ctx.db.insert("aiUsageByChurch", { churchId: ids.churchId, month: new Date().toISOString().slice(0, 7), count: monthlyAllowance - 10 }));
     expect(await t.action(internal.drafts.measure, { churchId: ids.churchId })).toMatchObject({ status: "no allowance", rows: [] });
     expect(fetch).not.toHaveBeenCalled();
   });
@@ -634,12 +635,12 @@ describe("the sample's allowance is each visitor's own", () => {
     }));
     const session = (sid: string) => t.withIdentity({ subject: "clerk|visitor", email: "demo@kindhelps.com", emailVerified: true, sid });
     const ask = (sid: string) => session(sid).mutation(internal.drafts.reserve, { userId, churchId });
-    // Five a minute each, so the clock moves a minute between rounds.
+    // A per-minute limit each, so the clock moves a minute between rounds.
     // Noon UTC tomorrow: the test fails when the faked time is behind the real clock, so it always runs ahead of it.
     vi.useFakeTimers({ now: (Math.floor(Date.now() / 86_400_000) + 1) * 86_400_000 + 43_200_000 });
     const answers: string[] = [];
-    for (let i = 0; i < 14; i++) { if (i % 5 === 0) vi.advanceTimersByTime(60_000); answers.push(await ask("sess_a")); }
-    expect(answers.filter(a => a === "ok")).toHaveLength(12);
+    for (let i = 0; i < sampleSessionAllowance + 2; i++) { if (i % perMinuteAllowance === 0) vi.advanceTimersByTime(60_000); answers.push(await ask("sess_a")); }
+    expect(answers.filter(a => a === "ok")).toHaveLength(sampleSessionAllowance);
     expect(answers.at(-1)).toBe("month");
     // A second visitor is not held by the first one's use.
     expect(await ask("sess_b")).toBe("ok");

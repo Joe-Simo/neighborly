@@ -91,6 +91,7 @@ export const serverRefusalsEs: Record<string, string> = {
   "Enter a valid email address.": "Escribe un correo válido.",
   "Enter a valid name.": "Escribe un nombre válido.",
   "Enter a valid time zone.": "Escribe una zona horaria válida.",
+  "You have started several conferences today. Try again tomorrow.": "Hoy ya empezaste varias conferencias. Vuelve a intentarlo mañana.",
   "Enter a valid value.": "Escribe un valor válido.",
   "Enter an amount in dollars and cents, more than zero.": "Escribe un monto en dólares y centavos, mayor que cero.",
   "Enter how many vouchers, as a whole number.": "Escribe cuántos vales, en número entero.",

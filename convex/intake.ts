@@ -23,7 +23,7 @@ import { noteLanded } from "./intakeNotify";
  */
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
-export const LIMITS = { ipPerHour: 10, devicePerHour: 5, contactPerDay: 3, confirmTriesPerIpHour: 20, codeTries: 5, floodPerTeamHour: 20, unverifiedPerTeamDay: 3, partnerPerDay: 10, partnerCodesPerDay: 5 } as const;
+export const LIMITS = { ipPerHour: 10, devicePerHour: 5, contactPerDay: 3, confirmTriesPerIpHour: 20, codeTries: 5, floodPerTeamHour: 20, unverifiedPerTeamDay: 3, partnerPerDay: 10, partnerCodesPerDay: 5, codesPerDay: 400 } as const;
 const JOIN_DAYS = 7;
 
 /** Counts one more in a fixed window; false when that would pass `max`. */
@@ -208,6 +208,9 @@ const channels: { [By in Destination["by"]]: (ctx: MutationCtx, to: string, mess
 
 export async function sendCode(ctx: MutationCtx, requestId: Id<"webRequests"> | undefined, churchId: Id<"churches">, destination: Destination, language: "en" | "es", code: string, statusLink: string, now: number) {
   const outboxId = await ctx.db.insert("outbox", { churchId, webRequestId: requestId, kind: "help_code", recipient: destination.to, state: "awaiting_configuration", createdAt: now });
+  // The whole service's day of codes: past it the row stays unsent, so a crowd of addresses cannot spend the sending
+  // account's quota or its standing with mail providers. Every per-address and per-destination cap stays below it.
+  if (!(await bump(ctx, "codes:all", DAY, LIMITS.codesPerDay, now))) return;
   // Neutral on purpose: the code and the person's own link, never the need or the team.
   const message = paperEmail({ kind: "help_code", language, set: "general", place: code, link: statusLink });
   const providerId = await channels[destination.by](ctx, destination.to, message, `help_code:${requestId ?? churchId}:${now}`);

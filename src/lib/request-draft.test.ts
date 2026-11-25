@@ -140,4 +140,12 @@ describe("near-miss names", () => {
   test("the scrub for the model also takes a misspelled name at a sentence's start", () => {
     expect(withoutIdentity("Delgadoo is behind on rent.", { names: ["Rosa Delgado"], addresses: [] })).toBe("[name] is behind on rent.");
   });
+  test("a Spanish note with no food names two kinds, and the landlord as who is paid", () => {
+    const draft = prepareRequestDraft("Recibió aviso de desalojo. Debe $600 de renta al dueño. Tiene dos niños y no tienen comida.");
+    expect(draft.kind).toBeNull();
+    expect(draft.notes).toContain(draftNotes.kindSeveral);
+    expect(draft.notes).not.toContain(draftNotes.doubtful);
+    expect(draft.payeeKind).toBe("landlord");
+    expect(draft.amountRequested).toBe(60000);
+  });
 });
