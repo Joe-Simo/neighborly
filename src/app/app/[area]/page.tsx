@@ -16,10 +16,10 @@ export async function generateMetadata({ params }: { params: Promise<{ area: str
   const { area } = await params;
   const matched = liveAreas.find((candidate) => candidate === area);
   if (!matched) return {};
-  // The room's own deck is its description. The tab itself is named by the head (first-tab.ts), not here; signed in,
-  // it then follows the person's language (shell.tsx). The link preview keeps the English name.
-  const title = `${areaTitles[matched]} · Kind Helps`, description = headings[matched].deck;
-  return { description, openGraph: { ...linkPreview, url: `/app/${matched}`, title, description }, twitter: { ...linkCardIn("en"), title, description } };
+  // The tab itself is named by the head (first-tab.ts), not here; signed in, it then follows the person's language
+  // (shell.tsx). The link preview keeps the English name and the site's own description.
+  const title = `${areaTitles[matched]} · Kind Helps`;
+  return { openGraph: { ...linkPreview, url: `/app/${matched}`, title }, twitter: { ...linkCardIn("en"), title } };
 }
 
 export default async function Page({

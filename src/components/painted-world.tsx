@@ -20,10 +20,10 @@ import "./public-touch.css";
 import { useCutHold } from "./cut-hold";
 
 const chapters = {
-  opening: { number: "01", name: "An open hand", title: <>Good things begin<br />with <em>an open hand.</em></>, copy: "A little care can go a long way." },
-  meal: { number: "02", name: "A meal shared", title: <>A meal,<br /><em>made together.</em></>, copy: "A meal becomes more when it is shared." },
+  opening: { number: "01", name: "An open hand", title: <>Good things begin<br />with <em>an open hand.</em></>, copy: "" },
+  meal: { number: "02", name: "A meal shared", title: <>A meal,<br /><em>made together.</em></>, copy: "" },
   visit: { number: "03", name: "A visit made", title: <>A knock.<br /><em>A familiar face.</em></>, copy: "Sit down. Listen to the whole story." },
-  welcome: { number: "04", name: "A welcome offered", title: <>A place<br /><em>for everyone.</em></>, copy: "Small acts of care become a community." },
+  welcome: { number: "04", name: "A welcome offered", title: <>A place<br /><em>for everyone.</em></>, copy: "" },
   complete: { number: "04", name: "Good work, together", title: <>Good work,<br /><em>together.</em></>, copy: "Answer the next call for help with your conference." },
 } as const;
 /** The open hand holding the card, for wide screens: 1440 for one pixel per point, 2880 for two. */
@@ -260,7 +260,7 @@ export function PaintedWorld({ scenes, heroOnly = false, passed = false, onPass,
           <div aria-live="polite" aria-atomic="true">
           <p className="painted-world-kicker" aria-hidden={heroOnly || undefined}>{chapter.name}</p>
           <h1>{chapter.title}</h1>
-          <p className={heroOnly ? "painted-world-description painted-world-slogan" : "painted-world-description"}>{chapter.copy}</p>
+          {chapter.copy && <p className={heroOnly ? "painted-world-description painted-world-slogan" : "painted-world-description"}>{chapter.copy}</p>}
           </div>
           {/* On the first frame it says what Kind Helps is, with a quiet way into the sample. */}
           {heroOnly && <p className="painted-world-description painted-world-what">A free app for St. Vincent de Paul conferences: the help line, home visits in pairs, the ledger and the yearly report. <SampleLink className="painted-world-sample" prefetch={false}>Look around a sample conference</SampleLink></p>}

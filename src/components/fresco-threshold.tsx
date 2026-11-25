@@ -298,7 +298,6 @@ export function FrescoThreshold() {
         {/* Joe's line between the opening and the doors, set as the lead-in to the doors' one headline. */}
         <p className="fresco-kicker">One call. Two at the door.</p>
         <CutHead><span className="fresco-slot" style={{ "--line": 0 } as CSSProperties}><span>There is room</span><i className="fresco-slip" /></span><span className="fresco-slot" style={{ "--line": 1 } as CSSProperties}><span><em>for you.</em></span><i className="fresco-slip" /></span></CutHead>
-        <p>Bring a little of your time.</p>
         <Button className="fresco-open" onClick={walkIn} onPointerEnter={warm} onFocus={warm} tabIndex={open ? -1 : undefined}>Open the doors<ArrowRight size={18} aria-hidden="true" /></Button>
       </div>
       <div ref={frame} className="fresco-frame">

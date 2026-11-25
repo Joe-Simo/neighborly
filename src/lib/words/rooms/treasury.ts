@@ -69,7 +69,7 @@ const en = (t: Terms, place: string) => ({
   },
   ledger: {
     first: {
-      title: "Start with what you have.",
+      title: "No opening balance yet.",
       deck: `Record the balance your ${t.group} holds today. Every gift and every payment after it will add up from there.`,
       action: "Record the opening balance",
     },
@@ -110,7 +110,7 @@ const en = (t: Terms, place: string) => ({
     tied: `Every payment for a ${t.neighbor} is tied to a request`,
     columns: { date: "Date", what: "What", for: "For", in: "In", out: "Out", balance: "Balance" },
     soFar: (month: string) => `${month} so far`,
-    quiet: { title: "A quiet month so far.", deck: "Nothing is recorded in {month} yet. {amount} was carried in." },
+    quiet: { title: "No entries yet.", deck: "{amount} was carried into {month}." },
     foot: {
       label: "Also in Treasury",
       gifts: (count: number) => (count === 1 ? "1 gift is not deposited yet" : `${enN(count)} gifts are not deposited yet`),
@@ -291,7 +291,7 @@ const en = (t: Terms, place: string) => ({
     backOnShelf: "Back on the shelf",
     received: "Received",
     empty: {
-      title: "Nothing on the shelf yet.",
+      title: "No vouchers yet.",
       deck: "When the thrift store hands you vouchers, record how many. Each one given on a request comes off the count by itself.",
       action: "Record vouchers received",
     },
@@ -350,7 +350,7 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => ({
   },
   ledger: {
     first: {
-      title: "Empieza con lo que tienes.",
+      title: "Todavía no hay saldo inicial.",
       deck: `Anota el saldo que tu ${t.group} tiene hoy. Cada donativo y cada pago que venga después se sumará a partir de ahí.`,
       action: "Anotar el saldo inicial",
     },
@@ -389,7 +389,7 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     tied: `Cada pago para un ${t.neighbor} va unido a una petición`,
     columns: { date: "Fecha", what: "Qué", for: "Para", in: "Entrada", out: "Salida", balance: "Saldo" },
     soFar: (month) => `${month}, hasta hoy`,
-    quiet: { title: "Un mes tranquilo hasta ahora.", deck: "Todavía no hay nada anotado en {month}. El mes empezó con {amount}." },
+    quiet: { title: "Todavía no hay movimientos.", deck: "El mes de {month} empezó con {amount}." },
     foot: {
       label: "También en Tesorería",
       gifts: (count) => (count === 1 ? "1 donativo aún no se ha depositado" : `${esN(count)} donativos aún no se han depositado`),
@@ -562,7 +562,7 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => ({
     backOnShelf: "De vuelta en el estante",
     received: "Recibido",
     empty: {
-      title: "Todavía no hay nada en el estante.",
+      title: "Todavía no hay vales.",
       deck: "Cuando la tienda de segunda mano te entregue vales, anota cuántos. Cada uno que se entrega por una petición se descuenta solo.",
       action: "Anotar vales recibidos",
     },

@@ -76,7 +76,7 @@ const en = (t: Terms, place: string) => ({
   },
   /** The year as one piece: the words in bold, the rest of their sentence, and the three figures beside it. */
   year: {
-    title: "The year, added up.",
+    title: "The year’s totals",
     paidDirect: "Paid direct",
     paidDirectOrVouchers: "Paid direct or given as vouchers",
     neverCash: ", never in cash.",
@@ -402,7 +402,7 @@ const es = (t: Terms, place: string): ReturnType<typeof en> => {
       open: "Abrir la línea de ayuda",
     },
     year: {
-      title: "El año, en cifras.",
+      title: "Totales del año",
       paidDirect: "Se pagó directamente",
       paidDirectOrVouchers: "Se pagó directamente o se entregó en vales",
       neverCash: ", nunca en efectivo.",

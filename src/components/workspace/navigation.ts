@@ -70,7 +70,7 @@ export const primaryActions: Partial<Record<LiveArea, ActionKind>> = {
  */
 export type LiveHeading = {
   title: string;
-  deck: string;
+  deck?: string;
   room?: "help";
   art: { picture: ReliefName; focus?: string; band?: number };
 };
@@ -83,73 +83,60 @@ export type LiveHeadingOverride = Pick<LiveHeading, "title" | "deck"> & {
 };
 export const headings: Record<LiveArea, LiveHeading> = {
   week: {
-    title: "Good work, this week.",
-    deck: "Your commitments, shared plans and the things to know.",
+    title: "This week",
     art: { picture: "week", band: 0.8 },
   },
   team: {
-    title: "A place on the team.",
-    deck: "People belong here, even when their plans change.",
+    title: "Teams",
     art: { picture: "teams" },
   },
   people: {
-    title: "People, together.",
-    deck: "Your community and the teams they make possible.",
+    title: "People",
     art: { picture: "people" },
   },
   commitments: {
-    title: "Clear commitments.",
-    deck: "See what’s covered, what’s open and what’s awaiting a reply.",
+    title: "Commitments",
     art: { picture: "commitment" },
   },
   mine: {
-    title: "Your part in it.",
-    deck: "What you’ve accepted, with the preparation to feel ready.",
+    title: "My commitments",
     art: { picture: "mine" },
   },
   "time-off": {
-    title: "Room for life.",
-    deck: "Keep your team informed while you take time away.",
+    title: "Time off",
     art: { picture: "rest", band: 0.2 },
   },
   tasks: {
-    title: "The little things matter.",
-    deck: "Shared tasks and meetings, each with a clear next step.",
+    title: "Tasks & meetings",
     art: { picture: "tasks" },
   },
   "help-line": {
-    title: "Every call, returned.",
-    deck: "Messages from the help line, and who is calling back.",
+    title: "Help line",
     art: { picture: "call", band: 0.42 },
     room: "help",
   },
   neighbors: {
-    title: "Neighbors, by name.",
-    deck: "Each household and the help it has received, kept private.",
+    title: "Neighbors",
     art: { picture: "neighbors" },
     room: "help",
   },
   treasury: {
-    title: "Every gift, cared for.",
-    deck: "What came in, what went out, and what it paid for.",
+    title: "Treasury",
     art: { picture: "help" },
     room: "help",
   },
   reports: {
-    title: "The year, added up.",
-    deck: "Counts for your council's yearly report, ready to print.",
+    title: "Reports",
     art: { picture: "year", band: 0.85 },
     room: "help",
   },
   visits: {
-    title: "Two by two.",
-    deck: "Home visits, the pair who are going, and what they found.",
+    title: "Home visits",
     art: { picture: "visit", band: 0.6 },
     room: "help",
   },
   tools: {
-    title: "Your records, in and out.",
-    deck: "From ServWare or a spreadsheet, and back out whenever you like.",
+    title: "Your files",
     art: { picture: "files" },
     room: "help",
   },
