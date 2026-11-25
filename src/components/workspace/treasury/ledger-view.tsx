@@ -295,8 +295,8 @@ export function LedgerView({
               <div className="help-row" key={request.requestId}>
                 <div>
                   <h3>
-                    {/* The payee's name never splits, and "to" goes with it: the line breaks after the amount or not at all. */}
-                    {fill(room.lines.amountTo, { amount: formatFigure(request.remaining), name: sampleSaid(request.payeeName).replaceAll(" ", "\u00a0") })}
+                    {/* "To" goes with the payee; a long payee wraps at its own spaces, never inside a word, and the heading is balanced so no word stands alone. */}
+                    {fill(room.lines.amountTo, { amount: formatFigure(request.remaining), name: sampleSaid(request.payeeName) })}
                   </h3>
                   <p>
                     {room.lines.kindFor(categoryLabel(room, request.kind))}{" "}

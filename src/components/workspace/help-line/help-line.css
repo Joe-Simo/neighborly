@@ -549,6 +549,8 @@
   .help-row[data-quiet] { grid-template-columns: 66px minmax(0, 1fr); }
   .help-returned-body { display: flex; flex-direction: column; }
   .help-returned-body > .help-returned { order: 9; margin-top: var(--space-16); }
+  /* The words always stand in the second column beside the time; auto-placed, a narrow phone set them under it in the 66px column, a word a line. */
+  .help-row[data-quiet] > .help-returned-body { grid-column: 2; grid-row: 1; }
 }
 /* Accounts sheet: "Show numbers" runs on from the covered-numbers note, in the note's own size, its tap area kept. */
 .live-dialog .help-form-note-act .help-text-action[data-slot="button"] { min-height: 24px; font-size: inherit; color: var(--live-ink); vertical-align: baseline; }

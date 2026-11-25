@@ -836,3 +836,6 @@
   column-gap: 0.75rem;
   margin: 0;
 }
+
+/* A payment's heading ("$615 to Chapel Lane Property Group") wraps at its spaces in even lines, never inside a word. */
+.live-app .help-row > div > h3 { text-wrap: balance; }
